@@ -1,0 +1,74 @@
+#ifndef ROOMSIMULATION_H
+#define ROOMSIMULATION_H
+
+#include <QWidget>
+#include <QWidget>
+#include <QLayout>
+#include <QDockWidget>
+#include <QtGui>
+#include <QGroupBox>
+#include <QTableWidget>
+#include <QLineEdit>
+#include <QGroupBox>
+#include <QCheckBox>
+#include <QLabel>
+#include <QPushButton>
+#include <QApplication>
+#include <QGraphicsEllipseItem>
+#include <QGraphicsRectItem>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <vector>
+#include <environment/microphoneNode.h>
+#include <QGraphicsSceneMouseEvent>
+
+class interActionManager;
+
+struct roomVariables
+{
+    int yPixelCount;
+    double pixel2RealRatio;
+    int pixel4EachAtom;
+    item
+
+};
+
+//Will simulate the room with help of atoms and mic item
+//Most probably will have responsibility of opening the sound also
+class roomSimulation : public QGraphicsView
+{
+    Q_OBJECT
+
+public:
+
+    //** UI related functions **//
+    roomSimulation(QRectF boudingRect, QWidget *parent = 0);
+    void setRoomRect(QRectF roomRect);
+    void setAtoms();
+    void setMicrophonePos();
+    void setBoundingLines();
+
+
+signals:
+
+public slots:
+
+protected:
+
+private:
+
+    void calcRoomParameters();
+
+    interActionManager* hndl_interActionManager;
+
+    QRectF         _roomBoudingRect;
+    QGraphicsScene *_room_scene;
+    QGraphicsView  *_room_QView;
+    microphoneNode *_micArr;
+    std::vector<QGraphicsRectItem*> _vectorOfAtoms;
+
+    roomVariables _roomParameters;
+
+};
+
+#endif // ROOMSIMULATION_H
