@@ -143,7 +143,7 @@ public:
     {
         double f0 = 1000;
         double ts = 1.0 / sampleRate;
-        double vz = 100;
+        double vz = 200;
         for (size_t i = 0; i < readSize; i++)
         {
             double realTime =  i  * ts;

@@ -7,7 +7,7 @@
 #include <QGraphicsScene>
 #include <soundIO/IOManager.h>
 #include <audiperiph/trainer.h>
-
+#include <memory>
 
 void roomDialogs::writeWav()
 {
@@ -34,18 +34,17 @@ void roomDialogs::writeWav()
 int
 roomDialogs::postprocess()
 {
-    if (m_noices.empty())
+    if (m_noicePoints.empty())
         return -1;
 
     std::cout << " RoomDialogs <process>: There are noices over the radius sound will make further process" << std::endl;
-    std::map< int, std::vector<double> > wholeData;
-    for (size_t i = 0; i < m_noices.size(); i++)
+    std::vector< radAngData< roomAtom* > > allData = std::move(m_noicePoints.getAllValue());
+    for (size_t i = 0; i < allData.size(); i++)
     {
-        std::vector<double> chunkData(m_soundParameters.samplePerOutput, 0);
-        m_noices[i]->sumWhole(chunkData);
-        wholeData[m_noices[i]->getInfo().getAngle()] = std::move(chunkData);
+        auto dataVal = std::move(allData[i].data->sumWhole());
+        m_oracle.insertData(allData[i].data->getInfo(), allData[i].radius, allData[i].angle, dataVal) ;
     }
-    m_oracle.startFeature(wholeData);
+    m_oracle.startFeature();
     return 1;
 }
 
@@ -193,11 +192,13 @@ int roomDialogs::createDialog(roomAtom *ptrAtom)
     }
 }
 
-void roomDialogs::setSoundNoices(const std::vector<roomAtom *> &noices)
+void roomDialogs::setSoundNoices(const radAngMultAccess< roomAtom* >&noices)
 {
    m_isPostProcess = true;
-   m_noices = noices;
-   for (auto elem : m_noices)
+   m_noicePoints = noices;
+   std::vector< roomAtom* > allData = std::move(m_noicePoints.getAllData());
+   //const auto& allData = noices.getAllData();
+   for (const auto& elem : allData)
    {
      m_cord2Listen[elem->getInfo().getRealPos()] = std::make_pair(m_id++, elem);
    }

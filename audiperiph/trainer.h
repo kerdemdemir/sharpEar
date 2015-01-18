@@ -80,16 +80,13 @@ public:
             Save();
     }
 
-    std::pair<double, double> getResults()
+    double getResult()
     {
-        std::pair<double, double> returnVal = std::make_pair(probibilty, probibilityNoice);
-        probibilty = 0;
-        probibilityNoice = 0;
-        return returnVal;
+        return probibilty;
     }
 
 
-    void Probability(int speakerID, int noiceID, const FeatureOutput &features);
+    void Probability(int speakerID, const FeatureOutput &features);
     void Validate(const std::string& fileName, int state, const FeatureOutput &features);
     void printValidationResults();
     void finalizeValidation(int state, const std::string& fileName);
@@ -122,7 +119,7 @@ public:
 
     std::vector<arma::mat> pitchData;
     std::vector<arma::mat> filterBankData;
-    void compareResults(std::vector<double>& resultVec, int state, int noice, Method method);
+    void compareResults(std::vector<double>& resultVec, int state, Method method);
     std::vector< GMM<> > gMFCCVec;
     std::vector< GMM<> > gPitchVec;
     std::vector< GMM<> > gResultVec;

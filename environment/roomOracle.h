@@ -35,43 +35,74 @@
 #include <audiperiph/trainer.h>
 #include <environment/microphoneNode.h>
 #include <map>
+#include <utility/multAccessData.h>
 
 class roomDialogs;
 
+constexpr double THRESHOLD = 0.3;
+
 struct snrHelper
 {
+    using angleVal = std::pair < int, double >;
+    using angleValVec = std::vector < std::pair< int, double > > ;
+    using angleValVecIte = std::vector < std::pair< int, double > > ::iterator;
 
-    snrHelper(const std::pair< double, double >& in)
+    void insert( const SoundInfo& key, int radius, int angle, const DataType& data)
     {
-        snrProbility = in;
+        SharedDataVec lsharedData = std::make_shared<DataType>(std::move(data));
+        if (key.isSource())
+        {
+            m_source = key;
+        }
+        else if (key.isSound())
+            m_sounds[key] = lsharedData;
+        m_soundDigger.insert(radius, angle, lsharedData);
     }
 
-    snrHelper() = default;
-
-    snrHelper operator+ (const snrHelper& rhs)
+    std::vector<radAngData<SharedDataVec>>* getSourceArc()
     {
-        return snrHelper (std::make_pair(snrProbility.first + rhs.snrProbility.first,
-                                          snrProbility.second + rhs.snrProbility.second));
+       auto radius = m_soundDigger.findClosestRadius(m_source.getRadius());
+       auto sourceArc = m_soundDigger.getByRadius(radius);
+       return sourceArc;
     }
 
-    snrHelper operator/ (int divider)
+
+    void pushResult(int angle, double result)
     {
-        return snrHelper (std::make_pair(snrProbility.first / divider,
-                                          snrProbility.second / divider));
+        resultVec.push_back( std::make_pair(angle, result));
     }
 
-    double getSecond()
+    void startDigging()
     {
-        return snrProbility.second;
+        angleValVecIte maxElem = findSource();
+        int deltaAngle = 3 * std::abs(resultVec[0].first - resultVec[1].first);
+        int maxStart = maxElem->first - deltaAngle;
+        int maxEnd = maxElem->first + deltaAngle;
+        //std::vector< std::pair < int, double > >
+        auto sortedAngleEnergy =  std::move (m_soundDigger.findMax(maxStart, maxEnd));
+
+        for (auto& elem : sortedAngleEnergy)
+        {
+
+        }
     }
 
-    double getFirst()
+    angleValVecIte findSource()
     {
-        return snrProbility.first;
+        return  std::max_element(resultVec.begin(), resultVec.end(),
+            []( angleVal&  lhs,  angleVal& rhs)
+            {
+                return lhs.second < rhs.second;
+            });
     }
 
-    std::pair< double, double > snrProbility;
+    SoundInfo m_source;
+    std::unordered_map < SoundInfo,  SharedDataVec > m_sounds;
+    radAngDataSummer < std::shared_ptr< std::vector < double > > > m_soundDigger;
+
+    std::vector < std::pair< int, double > > resultVec;
 };
+
 
 
 class roomOracle
@@ -90,12 +121,17 @@ public:
         }
     }
 
-    void startFeature(const std::map<int, std::vector<double> > &input );
+    void startFeature();
     void feedTrainer(const DataConstIter data, int angle );
 
 
     void preprocess(const std::vector<ref_t<SoundData<CDataType> > > &input);
     void postprocess(const std::vector<ref_t<SoundData<CDataType> > > &input);
+
+    void insertData(const SoundInfo& key, int radius, int angle, const DataType& data)
+    {
+        m_digger.insert(key, radius, angle, data);
+    }
 
 private:
 
@@ -105,12 +141,14 @@ private:
     int m_speakerID;
     int m_noiceID;
     std::map<int, Method> m_bestMethod;
-    std::vector< std::pair<int, snrHelper > > m_angleProb;
+    std::vector< std::pair<int, std::vector<double> > > m_angleProb;
 
     std::vector<double> m_weight;
     FeatureOutput m_featureOutput;
     Trainer m_trainer;
     microphoneNode& m_array;
+
+    snrHelper m_digger;
 
     void feedArray(const std::vector<ref_t<SoundData<CDataType> > > &input, const std::vector<double> &weights);
     void fftWeight();

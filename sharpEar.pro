@@ -4,8 +4,6 @@
 #
 #-------------------------------------------------
 
-include( C:\qwt-6.1.0\qwt-6.1.0\examples\examples.pri )
-
 QT       += core gui
 QT       += widgets
 QMAKE_CXXFLAGS += -std=gnu++0x -pthread -lpthread
@@ -61,7 +59,8 @@ HEADERS  += mainwindow.h\
     utility/types.h \
     utility/commons.h \
     soundIO/soundIO.h \
-    soundIO/IOManager.h
+    soundIO/IOManager.h \
+    utility/multAccessData.h
 
 FORMS    += mainwindow.ui
 INCLUDEPATH += "C:\qwt-6.1.0\include"

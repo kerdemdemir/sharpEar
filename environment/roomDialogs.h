@@ -38,6 +38,7 @@
 #include <functional>
 #include <QObject>
 #include <environment/roomOracle.h>
+#include <utility/multAccessData.h>
 
 class microphoneNode;
 class roomAtom;
@@ -116,7 +117,7 @@ public:
          std::cout << " Room Dialogs <Set fileName> A new fileName been set, fileName: " << m_fileName << std::endl;
      }
 
-     void setSoundNoices(const std::vector< roomAtom* >& noices);
+     void setSoundNoices(const radAngMultAccess<roomAtom *> &noices);
 
 
 private:
@@ -124,7 +125,7 @@ private:
      bool m_mouseClick;
      std::map< Point, SoundData<CDataType> > m_cord2Data;
      std::map< Point, std::pair<int, roomAtom* > > m_cord2Listen;
-     std::vector < roomAtom* > m_noices;
+     radAngMultAccess< roomAtom* > m_noicePoints;
      int m_id;
      size_t m_packetCount;
      std::string m_fileName;

@@ -9,7 +9,7 @@ microphoneNode::microphoneNode(const packetSound &sound, const roomVariables &ro
 {
     m_SoundParameters = sound;
     m_RoomVariables   = room;
-    m_sceneWidth    = 20;
+    m_sceneWidth    = 10;
 
     m_arrayData.resize(m_RoomVariables.numberOfMics);
     for (auto& elem : m_arrayData)

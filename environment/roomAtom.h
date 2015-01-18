@@ -160,7 +160,7 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget);
 
     void sumWhole(std::vector<double>& output);
-    void sumWhole(std::vector< std::complex<double> >& output);
+    std::vector<double> sumWhole();
 
     void start();
     void setColor(bool isDrawColor, double min, double max);

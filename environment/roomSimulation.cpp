@@ -13,7 +13,7 @@
 #include "roomAtom.h"
 #include "sharpplot.h"
 #include <QPen>
-
+#include <utility/multAccessData.h>
 
 
 //#define DEBUG_TEST_MODE
@@ -281,26 +281,36 @@ roomSimulation::findClosePoint(int xPos, int yPos)
 void
 roomSimulation::getAllNoicesArc(roomAtom* arcCenter)
 {
-    std::vector< roomAtom* > noicePoints;
+    radAngMultAccess< roomAtom* > noicePoints;
+    //std::vector< roomAtom* > noicePoints;
     SoundInfo soundInfo = arcCenter->getInfo();
     Point centerScenePos = _micArr->getSceneMiddlePos();
     std::cout << " Room Simulation <getAllNoicesArc> A noiced sound is add so candidate noice points will be set " << std::endl;
     double angle = soundInfo.getAngle() ;
     double radius = soundInfo.getRadius();
-    for (int curAngle = angle - 45 ; curAngle < angle + 45; curAngle += 5)
-    {
-        double cosVal  = radius * cos(curAngle * GLOBAL_PI / 180.0);
-        double yPos = _room_scene->sceneRect().top() + (abs(cosVal) / _roomParameters.pixel2RealRatio);
-        double sinVal  = radius * sin(curAngle * GLOBAL_PI / 180.0);
-        double xPos = centerScenePos.first + ( sinVal / _roomParameters.pixel2RealRatio );
-        roomAtom *atom = findClosePoint(xPos, yPos);
-        if (atom == NULL)
-            continue;
+    int radiusEpsilon = _roomParameters.pixel4EachAtom * _roomParameters.pixel2RealRatio;
+    int radiusElemCount = 100 / radiusEpsilon; // 100cm is 1 meter
 
-        std::cout <<  "Room Simulation <getAllNoicesArc> A new output point added for Arc point will be printed" << std::endl;
-        atom->getInfo().setOutput(true);
-        atom->print();
-        noicePoints.push_back(atom);
+    for (int curRadius = (radius - radiusElemCount/2 * radiusEpsilon);
+         curRadius < (radius + radiusElemCount/2 * radiusEpsilon);
+         curRadius += radiusEpsilon)
+    {
+        for (int curAngle = angle - 45 ; curAngle < angle + 45; curAngle += 3)
+        {
+            double cosVal  = curRadius * cos(curAngle * GLOBAL_PI / 180.0);
+            double yPos = _room_scene->sceneRect().top() + (abs(cosVal) / _roomParameters.pixel2RealRatio);
+            double sinVal  = curRadius * sin(curAngle * GLOBAL_PI / 180.0);
+            double xPos = centerScenePos.first + ( sinVal / _roomParameters.pixel2RealRatio );
+            roomAtom *atom = findClosePoint(xPos, yPos);
+            if (atom == NULL)
+                continue;
+
+            std::cout <<  "Room Simulation <getAllNoicesArc> A new output point added for Arc point will be printed" << std::endl;
+            atom->getInfo().setOutput(true);
+            atom->print();
+            noicePoints.insert(curRadius, curAngle, atom);
+        }
+        std::cout <<  "Room Simulation <getAllNoicesArc> Radius " << curRadius << " done. " << std::endl;
     }
     _roomDialogs->setSoundNoices(noicePoints);
 }

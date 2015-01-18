@@ -23,6 +23,12 @@ IOManager::init(std::string& fileName, int id, bool isPulse)
 }
 
 int
+IOManager::upSample()
+{
+
+}
+
+int
 IOManager::read(SoundData<CDataType> &output)
 {
     ioIterator iter  = m_ID2Params.find(output.getID());

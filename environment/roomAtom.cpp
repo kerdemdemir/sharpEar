@@ -70,19 +70,22 @@ roomAtom::sumWhole(std::vector< double > & output)
         elem /= m_RoomVariables.numberOfMics;
 }
 
-void
-roomAtom::sumWhole(std::vector< std::complex<double> >& output)
+std::vector< double >
+roomAtom::sumWhole()
 {
+    std::vector< double > output(m_SoundParameters.samplePerOutput);
     for (int i = 0; i < m_RoomVariables.numberOfMics; i++)
     {
         for (size_t k = 0; k <  output.size(); k++)
         {
-                output[k] += m_array.accessData(i, k, m_arrayDelay[i]);
+                output[k] += m_array.accessData(i, k, m_arrayDelay[i]).real();
         }
     }
 
     for (auto& elem : output)
         elem /= m_RoomVariables.numberOfMics;
+
+    return output;
 }
 
 void roomAtom::setColor(bool isDraw, double min, double max)

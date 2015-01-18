@@ -24,8 +24,8 @@ static const char* defaultFilePathRoot = "C:/Qt/Tools/QtCreator/bin/build-sharpE
 enviromentSetup::enviromentSetup(QWidget *parent) : QWidget (parent)
                 , hndl_interActionManager(hndl_interActionManager->getDataShareInstance())
 {
-    st_environmentParamaters.micNumber = 21;
-    st_environmentParamaters.distanceBetweenMic = 10;
+    st_environmentParamaters.micNumber = 61;
+    st_environmentParamaters.distanceBetweenMic = 5;
     st_environmentParamaters.listenRange = 2000; //cm
     st_environmentParamaters.dx_dy       = 20;
     _rowCountSoundInput = 0;

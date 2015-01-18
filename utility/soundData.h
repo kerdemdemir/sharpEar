@@ -35,7 +35,6 @@
 #include <iostream>
 
 
-
 struct SoundInfo
 {
     bool isSound() const
@@ -89,6 +88,11 @@ struct SoundInfo
         return posCm;
     }
 
+    double getDistance() const
+    {
+        return std::sqrt(posCm.first * posCm.first + posCm.second * posCm.second);
+    }
+
     SoundInfo (Point posGraph, Point posReal, int ang, int rad, STypes sType = STypes::UNDEFINED )
     {
         posScene = posGraph;
@@ -111,6 +115,25 @@ struct SoundInfo
         std::cout << std::endl;
     }
 
+    bool operator==(const SoundInfo &rhs) const
+    {
+        if (posCm == rhs.getRealPos())
+            return true;
+        else
+        {
+            if (radius == rhs.getRadius() && angle == rhs.getAngle())
+                return true;
+            else
+                return false;
+        }
+    }
+
+    bool operator<(const SoundInfo &rhs) const
+    {
+        return (getDistance() < rhs.getDistance());
+    }
+
+
 private:
 
     Point posScene;
@@ -121,6 +144,19 @@ private:
     bool boolOutput;
 
 };
+
+
+namespace std
+{
+    template<>
+    struct hash<SoundInfo>
+    {
+        size_t operator()(const SoundInfo& v) const
+        {
+            return make_hash(v.getRealPos());
+        }
+    };
+}
 
 template< typename T >
 struct SoundData
@@ -245,7 +281,7 @@ struct SoundData
     }
 
     bool operator==(const SoundData<IterType> &rhs) const {
-        return info.getRealPos() == rhs.getRealPos();
+        return info == rhs.setInfo();
     }
 
     bool operator<(const SoundData<IterType> &rhs) const{

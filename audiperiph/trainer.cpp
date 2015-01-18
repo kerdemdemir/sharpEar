@@ -139,7 +139,7 @@ void Trainer::printValidationResults()
     std::cout << "**********************************" << std::endl;
 }
 
-void Trainer::Probability(int speakerID, int noiceID, const FeatureOutput &features)
+void Trainer::Probability(int speakerID, const FeatureOutput &features)
 {
     std::vector < double > resultVec(NUMBER_OF_PEOPLE);
     Method speakerMethod = features.getMethod();
@@ -177,7 +177,7 @@ void Trainer::Probability(int speakerID, int noiceID, const FeatureOutput &featu
             }
         }
     }
-    compareResults(resultVec, speakerID, noiceID, speakerMethod);
+    compareResults(resultVec, speakerID, speakerMethod);
 }
 
 
@@ -186,7 +186,7 @@ void Trainer::Probability(int speakerID, int noiceID, const FeatureOutput &featu
 
 
 void
-Trainer::compareResults(std::vector<double>& resultVec, int state, int noice, Method method)
+Trainer::compareResults(std::vector<double>& resultVec, int state, Method method)
 {
     double resultSum =std::accumulate(resultVec.begin(),resultVec.end(),0.0);
 
@@ -194,7 +194,6 @@ Trainer::compareResults(std::vector<double>& resultVec, int state, int noice, Me
         resultVec[k] = resultVec[k] / resultSum;
     auto maxResult = std::max_element(resultVec.begin(), resultVec.end());
     probibilty = resultVec[state];
-    probibilityNoice = resultVec[noice];
     size_t distance = std::distance(resultVec.begin(), maxResult);
     bool correctTag = false;
     if ((int)distance == state)

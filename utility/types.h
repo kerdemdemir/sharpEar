@@ -34,10 +34,8 @@
 #include <vector>
 #include <utility>
 #include <functional>
-
-
-
-
+#include <memory>
+#include <map>
 
 using Point = std::pair<int, int>;
 using DPoint = std::pair<double, double>;
@@ -48,6 +46,10 @@ using CDataIter = std::vector<std::complex<double>>::iterator;
 using DataIter = std::vector<double>::iterator;
 using DataConstIter = std::vector<double>::const_iterator;
 using CDataConstIter = std::vector<std::complex<double>>::const_iterator;
+using SharedDataVec = std::shared_ptr<DataType>;
+
+template<class T>
+using SharedData = std::shared_ptr<T>;
 template<class T>
 using ref_t = std::reference_wrapper<T>;
 
