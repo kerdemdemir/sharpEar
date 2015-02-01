@@ -179,10 +179,28 @@ struct radAngDataSummer : public radAngMultAccess < T >
         std::sort(angleSum.begin(), angleSum.end(),
                   []( const std::pair < int, double >& lhs, const std::pair < int, double >& rhs)
         {
+             return lhs.first < rhs.first;
+        });
+
+        //Sum previous and next elements to get bandwidth
+        auto curElem = angleSum.begin();
+        int counter = 0;
+        std::vector< std::pair < int, double > > angleNewSum = angleSum;
+        angleNewSum[counter].second = (curElem + 1)->second + 2*curElem->second;
+        while ( curElem++ != angleSum.end() -1)
+        {
+            angleNewSum[++counter].second = curElem->second + ((curElem - 1)->second + (curElem + 1)->second);
+        }
+        angleNewSum[counter].second = (curElem - 1)->second + 2*curElem->second;
+
+
+        std::sort(angleNewSum.begin(), angleNewSum.end(),
+                  []( const std::pair < int, double >& lhs, const std::pair < int, double >& rhs)
+        {
              return lhs.second > rhs.second;
         });
 
-        return angleSum;
+        return angleNewSum;
     }
 
 };

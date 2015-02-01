@@ -36,10 +36,11 @@
 #include <environment/microphoneNode.h>
 #include <map>
 #include <utility/multAccessData.h>
+#include <fftw3.h>
 
 class roomDialogs;
 
-constexpr double THRESHOLD = 0.3;
+constexpr double THRESHOLD = 0.4;
 
 struct snrHelper
 {
@@ -72,10 +73,12 @@ struct snrHelper
         resultVec.push_back( std::make_pair(angle, result));
     }
 
-    void startDigging()
+    std::vector<double> startDigging()
     {
         angleValVecIte maxElem = findSource();
-        int deltaAngle = 3 * std::abs(resultVec[0].first - resultVec[1].first);
+        m_one = maxElem->first;
+        int delta = std::abs(resultVec[0].first - resultVec[1].first);
+        int deltaAngle = 2 * delta;
         int maxStart = maxElem->first - deltaAngle;
         int maxEnd = maxElem->first + deltaAngle;
         //std::vector< std::pair < int, double > >
@@ -83,8 +86,30 @@ struct snrHelper
 
         for (auto& elem : sortedAngleEnergy)
         {
+            auto existsIter = std::find_if(m_zeros.begin(), m_zeros.end(), [deltaAngle, elem](int i)
+            {
+                return (elem.first >= i - deltaAngle && elem.first <= i + deltaAngle);
+            });
 
+            if (existsIter != m_zeros.end())
+            {
+                std::cout << " Digger <startDigging>  Angle " << elem.first << " is extension of angle "
+                          <<  *existsIter << " it won't be taken to account " << std::endl;
+                continue;
+            }
+
+            if (elem.second > THRESHOLD)
+            {
+                m_zeros.push_back(elem.first);
+            }
         }
+        std::vector<double> returnVal (resultVec.size(), 0.5);
+        int totalDelta = abs(resultVec.front().first - resultVec.back().first) / delta;
+        returnVal[totalDelta/2 + m_one / delta] = 1;
+        for ( auto& elem : m_zeros )
+           returnVal[totalDelta/2 + (elem / delta)] = 0;
+        resultVec.clear();
+        return returnVal;
     }
 
     angleValVecIte findSource()
@@ -97,6 +122,10 @@ struct snrHelper
     }
 
     SoundInfo m_source;
+
+    std::vector<int> m_zeros;
+    int m_one;
+
     std::unordered_map < SoundInfo,  SharedDataVec > m_sounds;
     radAngDataSummer < std::shared_ptr< std::vector < double > > > m_soundDigger;
 

@@ -196,10 +196,5 @@ void roomDialogs::setSoundNoices(const radAngMultAccess< roomAtom* >&noices)
 {
    m_isPostProcess = true;
    m_noicePoints = noices;
-   std::vector< roomAtom* > allData = std::move(m_noicePoints.getAllData());
    //const auto& allData = noices.getAllData();
-   for (const auto& elem : allData)
-   {
-     m_cord2Listen[elem->getInfo().getRealPos()] = std::make_pair(m_id++, elem);
-   }
 }

@@ -51,7 +51,34 @@ void roomOracle::feedTrainer(const DataConstIter data, int angle)
 void
 roomOracle::fftWeight()
 {
-    m_digger.startDigging();
+    std::vector<double> zerosOnesVec = m_digger.startDigging();
+    std::vector<double> fftwData ( zerosOnesVec.size(), 0 );
+    fftw_plan fftwPlan = fftw_plan_r2r_1d(zerosOnesVec.size(), zerosOnesVec.data(), fftwData.data(), FFTW_HC2R , FFTW_ESTIMATE);
+    fftw_execute(fftwPlan);
+    m_weight.resize(m_array.getElemCount(), 0);
+
+    if (fftwData.size() > m_weight.size())
+    {
+        int extra = fftwData.size() - m_weight.size();
+        int counter = 0;
+        for (int i = extra/2; i < fftwData.size() - extra/2; i++, counter++)
+        {
+            if (counter > m_weight.size())
+                break;
+            m_weight[counter] = fftwData[i];
+        }
+    }
+    else
+    {
+        int extra = m_weight.size() - fftwData.size() ;
+        int counter = 0;
+        for (int i = extra/2; i < m_weight.size() - extra/2; i++, counter++)
+        {
+            if (counter > fftwData.size())
+                break;
+            m_weight[i] = fftwData[counter];
+        }
+    }
 }
 
 

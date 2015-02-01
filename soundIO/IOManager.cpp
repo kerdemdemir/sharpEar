@@ -22,11 +22,6 @@ IOManager::init(std::string& fileName, int id, bool isPulse)
     return 0;
 }
 
-int
-IOManager::upSample()
-{
-
-}
 
 int
 IOManager::read(SoundData<CDataType> &output)
