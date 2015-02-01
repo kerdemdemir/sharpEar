@@ -24,7 +24,7 @@ static const char* defaultFilePathRoot = "C:/Qt/Tools/QtCreator/bin/build-sharpE
 enviromentSetup::enviromentSetup(QWidget *parent) : QWidget (parent)
                 , hndl_interActionManager(hndl_interActionManager->getDataShareInstance())
 {
-    st_environmentParamaters.micNumber = 21;
+    st_environmentParamaters.micNumber = 41;
     st_environmentParamaters.distanceBetweenMic = 10;
     st_environmentParamaters.listenRange = 2000; //cm
     st_environmentParamaters.dx_dy       = 20;
@@ -86,6 +86,7 @@ void enviromentSetup::addDefaultFileNames()
     int currentRow = 0;
     std::vector < QString > defaultFileNames = {
     QString("audiocheck.net_sin_1000Hz_-3dBFS_5s.wav"),
+    QString("audiocheck.net_sin_1000Hz_-3dBFS_10s.wav"),
     QString("196971__margo-heston__i-see-five-lamps-f.wav"),
     QString("196406__margo-heston__the-airplane-is-blue-m.wav"),
     QString("f1lcapae.wav"),
