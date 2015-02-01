@@ -197,6 +197,7 @@ private:
     std::vector<double>                      m_distCenter; // Distance of each microphone from center
     std::vector<double>                      m_sceneCenterDist; // Distance of each microphone for draw
     std::vector< Point >                     m_elemPosCm;// Spatial position of each microphone
+    std::complex<double> fractionalDelayedData(CDataConstIter inData, double delay) const;
 };
 
 #endif // MICROPHONENODE_H

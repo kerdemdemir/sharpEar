@@ -5,6 +5,9 @@
 #include <QBrush>
 #include <QPainter>
 
+
+constexpr int FILTERSIZE = 11;
+
 microphoneNode::microphoneNode(const packetSound &sound, const roomVariables &room)
 {
     m_SoundParameters = sound;
@@ -69,8 +72,34 @@ double
 microphoneNode::getDelay(int index, double focusDist, int steeringAngle) const
 {
     double dist = focusDist - m_distCenter[index] * sin(steeringAngle * GLOBAL_PI / 180) +  ( pow(m_distCenter[index], 2) / (2.0 * focusDist));
-    return dist / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec;
+    return dist / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec ;
 }
+
+std::complex<double>
+microphoneNode::fractionalDelayedData(CDataConstIter inData, double delay ) const
+{
+    double fraction = delay - ((long)delay);
+    int centreTap = FILTERSIZE / 2;  // Position of centre FIR tap
+    std::complex<double> result = 0;
+    for (int t=0 ; t<FILTERSIZE ; t++)
+    {
+       // Calculated shifted x position
+       double x = t - fraction;
+
+       // Calculate sinc function value
+       double sinc = sin( M_PI * (x-centreTap)) / (M_PI * (x-centreTap));
+
+       // Calculate (Hamming) windowing function value
+       double window = 0.54 - 0.46 * cos(2.0 * M_PI * (x+0.5) / FILTERSIZE);
+
+       // Calculate tap weight
+       double tapWeight = window * sinc;
+       auto curData = *( inData + t );
+       result += tapWeight * curData;
+    }
+    return result;
+}
+
 
 void
 microphoneNode::feed(const SoundData<CDataType>& input, const std::vector<double>& weights)
@@ -106,12 +135,20 @@ microphoneNode::feed(const SoundData<CDataType>& input, const std::vector<double
         {
             if (k + delayPos < tempLeap[i].size())
             {
-                m_arrayData[i][k] += tempLeap[i][k] * weights[i];
+                if ( k > FILTERSIZE/2 && k < tempLeap[i].size() - FILTERSIZE/2)
+                {
+                    m_arrayData[i][k] += fractionalDelayedData(tempLeap[i].begin() + k - FILTERSIZE/2, delay) * weights[i];
+                }
+                else
+                    m_arrayData[i][k] += tempLeap[i][k] * weights[i];
             }
             else if (k < m_arrayData[i].size())
             {
                 SingleCDataType soundData = *beginIter++;
-                m_arrayData[i][k] += soundData * weights[i];
+                if ( k > FILTERSIZE/2 && k < tempLeap[i].size() - FILTERSIZE/2)
+                    m_arrayData[i][k] += fractionalDelayedData(beginIter + k - FILTERSIZE/2, delay) * weights[i];
+                else
+                    m_arrayData[i][k] += soundData * weights[i];
             }
             else
             {

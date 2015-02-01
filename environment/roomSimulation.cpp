@@ -89,7 +89,7 @@ void
 roomSimulation::calcRoomParameters()
 {
 
-    _soundParameters.samplesPerSec = 16000; //* UP_SAMPLE_RATE;
+    _soundParameters.samplesPerSec = 44000; //* UP_SAMPLE_RATE;
      if (ENABLE_UPSAMPLING)
         _soundParameters.samplesPerSec *= UP_SAMPLE_RATE;
 
