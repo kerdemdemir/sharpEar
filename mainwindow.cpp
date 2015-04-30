@@ -63,7 +63,7 @@ void MainWindow::setPanels()
     //One line but important step which set the room
     centralWidget()->showMaximized();
     QRectF boundingRectForRoom(QPointF(dialogWidgetRightPoint, geometry().y())
-                               , QSize(900,900));
+                               , QSize(650,650));
     setCentralWidget(hndl_interActionManager->createRoom(boundingRectForRoom));
 }
 

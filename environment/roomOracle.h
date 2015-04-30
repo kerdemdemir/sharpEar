@@ -172,14 +172,15 @@ private:
     std::map<int, Method> m_bestMethod;
     std::vector< std::pair<int, std::vector<double> > > m_angleProb;
 
-    std::vector<double> m_weight;
+    CDataType m_weight;
+
     FeatureOutput m_featureOutput;
     Trainer m_trainer;
     microphoneNode& m_array;
 
     snrHelper m_digger;
 
-    void feedArray(const std::vector<ref_t<SoundData<CDataType> > > &input, const std::vector<double> &weights);
+    void feedArray(const std::vector<ref_t<SoundData<CDataType> > > &input, const CDataType &weights);
     void fftWeight();
 };
 

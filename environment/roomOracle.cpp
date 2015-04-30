@@ -1,19 +1,19 @@
 #include <environment/roomOracle.h>
-
+#include <sharpplot.h>
 
 void roomOracle::preprocess(const std::vector<ref_t<SoundData<CDataType> > > &input )
 {
-   std::vector<double> weights(m_array.getElemCount(), 1);
-   feedArray(input, weights);
+   fftWeight();
+   //m_weight.resize(m_array.getElemCount(), 1);
+   feedArray(input, m_weight);
 }
 
 void roomOracle::postprocess(const std::vector<ref_t<SoundData<CDataType> > > &input)
 {
-    m_weight.resize(m_array.getElemCount(), 1);
     feedArray(input, m_weight);
 }
 
-void roomOracle::feedArray(const std::vector<ref_t<SoundData<CDataType> > > &input, const std::vector<double>& weights )
+void roomOracle::feedArray(const std::vector<ref_t<SoundData<CDataType> > > &input, const CDataType &weights )
 {
     if (input.empty())
         std::cout << "RoomOracle <startFeature> no candidate points input was empty" << std::endl;
@@ -51,34 +51,37 @@ void roomOracle::feedTrainer(const DataConstIter data, int angle)
 void
 roomOracle::fftWeight()
 {
-    std::vector<double> zerosOnesVec = m_digger.startDigging();
-    std::vector<double> fftwData ( zerosOnesVec.size(), 0 );
-    fftw_plan fftwPlan = fftw_plan_r2r_1d(zerosOnesVec.size(), zerosOnesVec.data(), fftwData.data(), FFTW_HC2R , FFTW_ESTIMATE);
-    fftw_execute(fftwPlan);
-    m_weight.resize(m_array.getElemCount(), 0);
+    const int N = m_array.getElemCount() + 1;
 
-    if (fftwData.size() > m_weight.size())
-    {
-        int extra = fftwData.size() - m_weight.size();
-        int counter = 0;
-        for (int i = extra/2; i < fftwData.size() - extra/2; i++, counter++)
-        {
-            if (counter > m_weight.size())
-                break;
-            m_weight[counter] = fftwData[i];
-        }
-    }
-    else
-    {
-        int extra = m_weight.size() - fftwData.size() ;
-        int counter = 0;
-        for (int i = extra/2; i < m_weight.size() - extra/2; i++, counter++)
-        {
-            if (counter > fftwData.size())
-                break;
-            m_weight[i] = fftwData[counter];
-        }
-    }
+    std::vector< std::complex<double> > in (N, 0.5);
+    std::vector< std::complex<double> > out (N);
+    //std::vector< std::complex<double> > polarOut (N);
+
+    auto middleElem = in.begin() + in.size()/2;
+    std::fill( middleElem - 2, middleElem + 3, 1); //zero phase
+
+    auto plotIn = new sharpPlot("Angles", "Values", false);
+    plotIn->drawBasicGraph(in, -45, 90 / N); plotIn->update();
+
+    fftw_plan my_plan  = fftw_plan_dft_1d(N, reinterpret_cast<fftw_complex*>(&in[0]),
+                                             reinterpret_cast<fftw_complex*>(&out[0]), FFTW_BACKWARD, FFTW_ESTIMATE);
+    fftw_execute(my_plan);
+
+    auto plotOut = new sharpPlot("WeightsOut", "ApartureOut", false);
+    plotOut->drawBasicGraph(out); plotOut->update();
+
+    auto outMiddle = out.begin() + out.size()/2;
+    m_weight.assign(outMiddle, out.end());
+    m_weight.insert( m_weight.end(), out.begin() + 1, outMiddle);
+    //m_weight.assign(out.begin() + 1 , out.end());
+
+    auto plot = new sharpPlot("Weights", "Aparture", false);
+    plot->drawBasicGraph(m_weight); plot->update();
+//    std::transform( out.begin(), out.end(), polarOut.begin(),
+//                    []( auto& in ){
+//                                    return  std::complex<double>( std::abs(in), std::arg(in) );
+//                                  } );
+
 }
 
 

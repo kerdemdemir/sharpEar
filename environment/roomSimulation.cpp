@@ -279,7 +279,7 @@ roomSimulation::findClosePoint(int xPos, int yPos)
 }
 
 void
-roomSimulation::getAllNoicesArc(roomAtom* arcCenter)
+roomSimulation::getAllNoicesArc(roomAtom* arcCenter, int range, int )
 {
     radAngMultAccess< roomAtom* > noicePoints;
     //std::vector< roomAtom* > noicePoints;
@@ -295,7 +295,7 @@ roomSimulation::getAllNoicesArc(roomAtom* arcCenter)
          curRadius < (radius + radiusElemCount/2 * radiusEpsilon);
          curRadius += radiusEpsilon)
     {
-        for (int curAngle = angle - 45 ; curAngle < angle + 45; curAngle += 3)
+        for (int curAngle = angle - range ; curAngle < angle + range; curAngle += 3)
         {
             double cosVal  = curRadius * cos(curAngle * GLOBAL_PI / 180.0);
             double yPos = _room_scene->sceneRect().top() + (abs(cosVal) / _roomParameters.pixel2RealRatio);

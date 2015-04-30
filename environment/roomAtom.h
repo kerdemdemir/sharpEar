@@ -52,6 +52,7 @@ public:
     {
         m_SoundParameters = sound;
         m_RoomVariables   = room;
+        isNearField = false;
     }
 
     double getDistance(QPointF pos, bool isCm) const
@@ -84,6 +85,9 @@ public:
         double radius = m_array.getRelativeRadius(realPos);
         SoundInfo newInfo(scenePos, realPos, angle, radius);
         m_selfData = newInfo;
+        auto nearFieldDistCM = (2 * m_array.getMicLenghtMeter() * m_array.getMicLenghtMeter()) / WAVE_LENGHT_METER * 100;
+        if ( getDistance( m_array.getMiddlePos(), true ) < nearFieldDistCM )
+            isNearField = true;
         setFocusDelay();
     }
 
@@ -120,13 +124,14 @@ protected:
         for (size_t i = 0; i < arrayPos.size(); i++)
         {
             double dist = getDistance(arrayPos[i], true);
-            m_arrayDelay[i]    =  dist / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec;
+            m_arrayDelay[i] = dist / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec;
         }
     }
 
     SoundInfo m_selfData;
     std::vector<double> m_arrayDelay;
 
+    bool isNearField;
     packetSound   m_SoundParameters;
     roomVariables m_RoomVariables;
     const microphoneNode& m_array;

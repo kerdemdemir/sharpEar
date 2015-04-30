@@ -21,6 +21,8 @@ void
 roomAtom::sumPart( )
 {
     const auto& arrayData = m_array.getData();
+    const auto& weightData = m_array.m_weights;
+
     std::fill(m_sumData.begin(), m_sumData.end(), 0);
 
 
@@ -29,7 +31,7 @@ roomAtom::sumPart( )
         size_t startingSample =  m_sumOffset + m_arrayDelay[i];
         for (size_t k  = 0; k < m_sumData.size(); k++)
         {
-                m_sumData[k] += arrayData[i][startingSample + k];
+                m_sumData[k] += weightData[i] * arrayData[i][startingSample + k];
         }
     }
 
@@ -142,6 +144,12 @@ void roomAtom::paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QW
 
     if (isDrawColor)
     {
+        if ( isNearField )
+        {
+            painter->fillRect( rec, QColor(Qt::black) );
+            return;
+        }
+
         auto grayScaleVal = (((m_relativeVal * 255.0)/60.0));
         QColor colorBlackToWhite = QColor::fromHsv(359, 0, grayScaleVal);
         painter->fillRect(rec, colorBlackToWhite);

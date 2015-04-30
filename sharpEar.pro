@@ -63,7 +63,7 @@ HEADERS  += mainwindow.h\
     utility/multAccessData.h
 
 FORMS    += mainwindow.ui
-INCLUDEPATH += "C:\qwt-6.1.0\include"
+INCLUDEPATH += "C:\qwt-6.1.2\include"
 INCLUDEPATH += "C:\boost_1_55_0"
 INCLUDEPATH += "$$_PRO_FILE_PWD_/includes/"
 
@@ -76,16 +76,16 @@ LIBS += -larmadillo.dll
 LIBS += -lfftw3-3 -lblas.dll -llapack.dll -lmsys-xml2-2
 
 CONFIG(debug, debug|release) {
-    LIBS += -L"C:\qwt-6.1.0\lib" -lqwtd
+    LIBS += -L"C:\qwt-6.1.2\lib" -lqwtd
     LIBS += -L"C:\boost_1_55_0\stage\lib"
-    LIBS += -lboost_program_options-mgw48-mt-d-1_55 -lboost_system-mgw48-mt-d-1_55 -lboost_thread-mgw48-mt-d-1_55 -lboost_filesystem-mgw48-mt-d-1_55
-    LIBS += -lboost_random-mgw48-mt-d-1_55 -lboost_math_c99-mgw48-mt-d-1_55
+    LIBS += -lboost_program_options-mgw49-mt-d-1_55 -lboost_system-mgw49-mt-d-1_55 -lboost_thread-mgw49-mt-d-1_55 -lboost_filesystem-mgw49-mt-d-1_55
+    LIBS += -lboost_random-mgw49-mt-d-1_55 -lboost_math_c99-mgw49-mt-d-1_55
 }
 CONFIG(release, debug|release) {
-    LIBS += -L"C:\qwt-6.1.0\lib" -lqwt
-    LIBS += -L"C:\boost_1_55_0\stage\lib" -lboost_system-mgw48-mt-1_55 -lboost_thread-mgw48-mt-1_55
-    LIBS += -lboost_program_options-mgw48-mt-1_55 -lboost_filesystem-mgw48-mt-1_55
-    LIBS += -lboost_random-mgw48-mt-1_55 -lboost_math_c99-mgw48-mt-1_55
+    LIBS += -L"C:\qwt-6.1.2\lib" -lqwt
+    LIBS += -L"C:\boost_1_55_0\stage\lib" -lboost_system-mgw49-mt-1_55 -lboost_thread-mgw49-mt-1_55
+    LIBS += -lboost_program_options-mgw49-mt-1_55 -lboost_filesystem-mgw49-mt-1_55
+    LIBS += -lboost_random-mgw49-mt-1_55 -lboost_math_c99-mgw49-mt-1_55
 }
 
 

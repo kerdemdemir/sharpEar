@@ -5,7 +5,7 @@
 #include <qwt_symbol.h>
 #include <qwt_legend.h>
 #include <QWidget>
-
+#include <qwt_plot_renderer.h>
 
 sharpPlot::sharpPlot(std::string plotTitle, std::string curveTitle, bool isLowFilter,
                      QWidget *parent) : QwtPlot(QwtText(QString(plotTitle.c_str())), parent)
@@ -49,13 +49,28 @@ sharpPlot::lowPassFilter(std::vector<std::pair <double, double> >& data, int win
 }
 
 
+void sharpPlot::drawBasicGraph(CDataType& data, double startPoint, double jump )
+{
+    QPolygonF points;
+    for (size_t i = 0; i < data.size(); i++)
+    {
+        points << QPointF( startPoint + i * jump, std::abs(data[i]) );
+    }
+
+    auto minMax = std::minmax_element(data.begin(), data.end(), [](SingleCDataType a, SingleCDataType b)
+    {
+         return std::abs(a) < std::abs(b);
+    });
+
+    draw( points, std::abs(*minMax.first),  std::abs(*minMax.second), startPoint, startPoint + jump * data.size() );
+}
+
+
 void
 sharpPlot::drawBasicGraph(std::vector<std::pair <double, double> >& data)
 {
     QPolygonF points;
-    QTimer tT;
-    tT.setSingleShot(true);
-    connect(&tT, SIGNAL(timeout()), &q, SLOT(quit()));
+
     if (_isLowFilter)
         lowPassFilter(data, 10);
 
@@ -64,16 +79,27 @@ sharpPlot::drawBasicGraph(std::vector<std::pair <double, double> >& data)
         points << QPointF( elem.first, elem.second );
     }
 
-
-    setTitle( _plotTitle.c_str() );
-    setCanvasBackground( Qt::white );
-
     auto minMax = std::minmax_element(data.begin(), data.end(), [](std::pair <double, double> a, std::pair <double, double> b)
     {
          return a.second < b.second;
     });
-    setAxisScale( QwtPlot::yLeft, minMax.first->second,  minMax.second->second);
-    setAxisScale( QwtPlot::xBottom, data.front().first, data.back().first );
+
+    draw( points, minMax.first->second, minMax.second->second, data.front().first, data.back().first );
+}
+
+
+void
+sharpPlot::draw(QPolygonF & points, double yAxisMin, double yAxisMax, double xAxisMin, double xAxisMax)
+{
+    QTimer tT;
+    QwtPlotRenderer renderer;
+    tT.setSingleShot(true);
+    connect(&tT, SIGNAL(timeout()), &q, SLOT(quit()));
+
+    setTitle( _plotTitle.c_str() );
+    setCanvasBackground( Qt::white );
+    setAxisScale( QwtPlot::yLeft, yAxisMin,  yAxisMax);
+    setAxisScale( QwtPlot::xBottom, xAxisMin, xAxisMax );
     insertLegend( new QwtLegend() );
 
     grid = new QwtPlotGrid();
@@ -90,10 +116,15 @@ sharpPlot::drawBasicGraph(std::vector<std::pair <double, double> >& data)
     updateAxes();
     update();
     replot();
+    QString curTitle = _curveTitle.c_str(); curTitle += ".pdf";
+    renderer.renderDocument(this, curTitle, QSizeF(100, 100));
     repaint();
     tT.start(1000);
     q.exec();
-    if(tT.isActive()){
+    if(tT.isActive())
+    {
        tT.stop();
     }
 }
+
+

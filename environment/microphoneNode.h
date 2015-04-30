@@ -43,7 +43,7 @@ public:
 
     microphoneNode(const packetSound &sound, const roomVariables &room);
 
-    void feed( const SoundData<CDataType>& input, const std::vector<double>& weights);
+    void feed( const SoundData<CDataType>& input, const CDataType& weights);
 
     void
     setElemCount(double micNumber)
@@ -173,7 +173,18 @@ public:
         }
     }
 
+    double getMicLenght() const
+    {
+        return m_elemCount * m_RoomVariables.distancesBetweenMics;
+    }
+
+    double getMicLenghtMeter() const
+    {
+        return m_elemCount * m_RoomVariables.distancesBetweenMics / 100.0;
+    }
+
     double getDelay(int index, double focusDist, int steeringAngle) const;
+    CDataType m_weights; //public for now
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
@@ -191,6 +202,7 @@ private:
     Point m_center;
     Point m_sceneCenter;
     int m_sceneWidth;
+
 
     std::vector< std::vector< std::complex<double> >  >  m_arrayData; // For each microphone I am keeping data
     std::map< int, std::vector < std::vector< std::complex< double > > > > m_leapData; // Leap Data for each source

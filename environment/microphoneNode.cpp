@@ -102,10 +102,11 @@ microphoneNode::fractionalDelayedData(CDataConstIter inData, double delay ) cons
 
 
 void
-microphoneNode::feed(const SoundData<CDataType>& input, const std::vector<double>& weights)
+microphoneNode::feed(const SoundData<CDataType>& input, const CDataType& weights)
 {
     using leapIter =  std::map< int, std::vector < std::vector< std::complex< double > > > >::iterator;
 
+    m_weights = weights;
     if (m_arrayData.empty() || m_arrayData.size() != (size_t)m_RoomVariables.numberOfMics)
         std::cout << "microphoneNode: Data is empty or data size different than Array element count" << std::endl;
     bool isFirst = false;

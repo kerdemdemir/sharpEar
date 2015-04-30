@@ -9,6 +9,8 @@
 #include <audiperiph/trainer.h>
 #include <memory>
 
+#define DEBUG_TEST_MODE
+
 void roomDialogs::writeWav()
 {
     std::cout << " RoomDialogs <writeWav>: One iteration has finished will check for output" << std::endl;
@@ -34,6 +36,10 @@ void roomDialogs::writeWav()
 int
 roomDialogs::postprocess()
 {
+#ifdef DEBUG_TEST_MODE
+
+#endif
+
     if (m_noicePoints.empty())
         return -1;
 
@@ -47,6 +53,7 @@ roomDialogs::postprocess()
     m_oracle.startFeature();
     return 1;
 }
+
 
 int
 roomDialogs::process()
