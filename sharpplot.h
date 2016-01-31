@@ -31,16 +31,14 @@
 #define SHARPPLOT_H
 
 #include <vector>
+#include <utility/types.h>
 #include <qwt_plot.h>
 #include <qeventloop.h>
-#include <utility/types.h>
 
 class QWidget;
 class QwtSymbol;
 class QwtPlotCurve;
 class QwtPlotGrid;
-
-
 
 
 class sharpPlot : public QwtPlot
@@ -49,8 +47,10 @@ class sharpPlot : public QwtPlot
 
 public:
     sharpPlot(std::string plotTitle, std::string curveTitle, bool isLowFilter, QWidget  *parent = 0);
+    void drawBasicGraph(CDataType& data, double startPoint = 0.0, double jump = 1.0 );
     void drawBasicGraph(std::vector<std::pair<double, double> > &data);
-    void drawBasicGraph(CDataType& data, double startPoint = 0.0, double jump = 1.0);
+    void drawBasicGraph( DataType& data, double startPoint = 0.0, double jump = 1.0 );
+
     void draw(QPolygonF & points, double yAxisMin, double yAxisMax, double xAxisMin, double xAxisMax);
 private:
 
@@ -62,6 +62,7 @@ private:
     QwtPlotCurve *curve;
     QwtPlotGrid *grid;
     QEventLoop q;
+
     void lowPassFilter(std::vector<std::pair<double, double> > &data, int windowSize);
 };
 

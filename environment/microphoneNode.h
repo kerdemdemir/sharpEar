@@ -34,6 +34,8 @@
 #include <map>
 #include <QGraphicsItem>
 #include <utility/soundData.h>
+#include <environment/arrayaparture.h>
+#include <math.h>
 
 class QPainter;
 
@@ -44,15 +46,6 @@ public:
     microphoneNode(const packetSound &sound, const roomVariables &room);
 
     void feed( const SoundData<CDataType>& input, const CDataType& weights);
-
-    void
-    setElemCount(double micNumber)
-    {
-        m_RoomVariables.numberOfMics = micNumber;
-        m_arrayData.resize(micNumber);
-        elemDistCenter();
-        setElemPos();
-    }
 
     void
     setDistCount(double distanceBetweenMics, int numberOfElem)
@@ -80,7 +73,7 @@ public:
     {
         double xPos = relativePos.first - m_center.first  ;
         double yPos = relativePos.second - m_center.second ;
-        return  atan (   xPos / (yPos ? yPos : EPSILON)  ) * 180 / M_PI ;
+        return  atan (   xPos / (yPos ? yPos : EPSILON)  ) * 180 / 3.14159265358979323846 ;
     }
 
     double
@@ -91,27 +84,43 @@ public:
         return sqrt(pow(xPos, 2) + pow(yPos, 2));
     }
 
+
     void renewBuffers()
     {
-        for (size_t i = 0; i < m_arrayData.size(); i++)
+        for ( auto& aparture : m_apartureList)
         {
-            std::fill(m_arrayData[i].begin(), m_arrayData[i].end(), 0);
+            aparture.clearData();
         }
     }
 
-    std::vector<Point>* getMicPositionsInCm()
+    void backupBuffer()
     {
-        return &m_elemPosCm;
+        m_BackUpApartureList = m_apartureList;
+        for ( auto& aparture : m_apartureList)
+        {
+            aparture.clearData();
+            aparture.clearLeapData();
+        }
     }
 
-    const std::vector<double>& getDistCenter() const
+    void resetBuffers()
     {
-        return m_distCenter;
+        for ( auto& aparture : m_apartureList)
+        {
+            aparture.clearData();
+            aparture.clearLeapData();
+        }
     }
 
-    const std::vector< Point >& getPositions() const
+    void takeBackBuffer()
     {
-        return m_elemPosCm;
+        m_apartureList = m_BackUpApartureList;
+    }
+
+
+    QPoint getPosition( int index ) const
+    {
+        return m_apartureList[index].getPos();
     }
 
     Point getMiddlePos() const
@@ -125,32 +134,31 @@ public:
     }
 
     const
-    std::vector<std::vector< std::complex<double> > >&
-    getData() const
+    ArrayAparture&
+    getAparture( int apartureIndex ) const
     {
-        return m_arrayData;
+        return m_apartureList[apartureIndex];
+    }
+
+    const
+    CDataType&
+    getData( int apartureIndex ) const
+    {
+        return m_apartureList[apartureIndex].getData();
     }
 
     std::complex<double>
-    accessData(int aparatureNumber, int index, int delay) const
+    getData( int apartureIndex, int dataIndex  ) const
     {
-        if ((index + delay) < (int)m_arrayData[aparatureNumber].size())
-        {
-            return m_arrayData[aparatureNumber][index + delay];
-        }
-        else
-        {
-            std::complex<double> output;
-            for (auto& elem : m_leapData)
-            {
-                if ((index + delay) > (int)m_leapData.size())
-                    output += 0;
-                else
-                    output += elem.second[aparatureNumber][((index + delay) - m_arrayData[aparatureNumber].size())];
-            }
-            return output;
-        }
+        return m_apartureList[apartureIndex].getData( dataIndex );
     }
+
+    std::complex<double>
+    getFocussedData( int apartureIndex, int dataIndex  ) const
+    {
+        return m_apartureList[apartureIndex].getFocusData( dataIndex );
+    }
+
 
     int
     getElemCount() const
@@ -160,18 +168,6 @@ public:
 
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget);
-
-    void print () const
-    {
-        std::cout << "Microphone <print> There are " << m_elemCount << " elements in the array"
-                  << " Center " << m_center.first << "," << m_center.second << std::endl;
-        for (size_t i = 0; i < m_distCenter.size(); i++)
-        {
-           std::cout << "Microphone <print> Elem Number " << i
-                     << " Positions: " << m_elemPosCm[i].first << "," << m_elemPosCm[i].second << std::endl;
-
-        }
-    }
 
     double getMicLenght() const
     {
@@ -183,9 +179,24 @@ public:
         return m_elemCount * m_RoomVariables.distancesBetweenMics / 100.0;
     }
 
-    double getDelay(int index, double focusDist, int steeringAngle) const;
-    CDataType m_weights; //public for now
+    void adjustArrayFocus( const SoundInfo& in, ArrayFocusMode mode )
+    {
+        m_mode = mode;
+        for ( size_t i = 0; i < m_apartureList.size(); i++ )
+        {
+            m_apartureList[i].adjustArrayFocus(in, mode);
+        }
 
+    }
+
+    ArrayFocusMode getMode() const
+    {
+        return m_mode;
+    }
+
+    double getDelay(int index, double focusDist, int steeringAngle) const;
+    double getDistDelay(int index, double focusDist) const;
+    double weightRealSum;
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
@@ -202,13 +213,13 @@ private:
     Point m_center;
     Point m_sceneCenter;
     int m_sceneWidth;
+    SoundInfo m_sourceInfo;
+    ArrayFocusMode m_mode;
 
 
-    std::vector< std::vector< std::complex<double> >  >  m_arrayData; // For each microphone I am keeping data
-    std::map< int, std::vector < std::vector< std::complex< double > > > > m_leapData; // Leap Data for each source
-    std::vector<double>                      m_distCenter; // Distance of each microphone from center
+    std::vector< ArrayAparture > m_apartureList;
+    std::vector< ArrayAparture > m_BackUpApartureList;
     std::vector<double>                      m_sceneCenterDist; // Distance of each microphone for draw
-    std::vector< Point >                     m_elemPosCm;// Spatial position of each microphone
     std::complex<double> fractionalDelayedData(CDataConstIter inData, double delay) const;
 };
 

@@ -148,6 +148,13 @@ struct radAngDataSummer : public radAngMultAccess < T >
     }
 
 
+    std::vector< std::pair < int, double > >
+    findMaxOffSet (int angle, int offSet)
+    {
+        int angleStart = angle - offSet < -90 ? -90 : angle - offSet;
+        int angleStop = angle + offSet > 90 ? 90 : angle + offSet;
+        return findMax( angleStart, angleStop);
+    }
 
     // Operand of the std::transform eg (std::plus) could be pass as Template or Functor this func could be more generic.
     std::vector< std::pair < int, double > >

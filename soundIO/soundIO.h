@@ -37,6 +37,26 @@
 #include <memory>
 #include <math.h>
 
+inline
+int createPulse( CDataType& data, size_t readSize,  double sampleRate )
+{
+    double f0 = 3000;
+    double ts = 1.0 / sampleRate;
+    double vz = 200;
+    for (size_t i = 0; i < readSize; i++)
+    {
+        double realTime =  i  * ts;
+        double realPart =  cos(2.0*GLOBAL_PI*realTime*f0) *
+                    exp(-1.0 * ((i - readSize/2) * (i - readSize/2)) / ( vz * vz));
+
+
+        data.emplace_back(realPart, 0);
+
+    }
+    return data.size();
+
+}
+
 class IOParams
 {
 public:
@@ -141,21 +161,7 @@ public:
 
     int pulse(double sampleRate)
     {
-        double f0 = 2000;
-        double ts = 1.0 / sampleRate;
-        double vz = 100;
-        for (size_t i = 0; i < readSize; i++)
-        {
-            double realTime =  i  * ts;
-            double realPart =  cos(2.0*GLOBAL_PI*realTime*f0) *
-                        exp(-1.0 * ((i - readSize/2) * (i - readSize/2)) / ( vz * vz));
-            double imagePart = sin(2.0*GLOBAL_PI*realTime*f0) *
-                        exp(-1.0 * ((i - readSize/2) * (i - readSize/2)) / ( vz * vz));
-
-            data.emplace_back(realPart, imagePart);
-
-        }
-        return data.size();
+        return createPulse( data, readSize, sampleRate);
     }
 
     bool isWritten()

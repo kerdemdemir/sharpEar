@@ -43,6 +43,7 @@
 class microphoneNode;
 class roomAtom;
 class QGraphicsScene;
+class roomSimulation;
 
 
 class roomDialogs
@@ -55,7 +56,6 @@ public:
         m_soundParameters = sound;
         m_roomVariables = room;
         m_mouseClick = false;
-        m_isPostProcess = false;
         m_packetCount = 0;
         m_id = 0;
     }
@@ -96,18 +96,18 @@ public:
     }
 
 
-    bool mouseReleased(QMouseEvent *event)
+    bool mouseReleased(const QPointF& pos)
      {
-        if ((m_mouseClick) && (event->pos() == m_lastPoint))
+        if ((m_mouseClick) && (pos == m_lastPoint))
          {
              return true;
          }
          return false;
      }
 
-     void mouseClicked(QMouseEvent *event)
+     void mouseClicked(const QPointF& pos)
      {
-         m_lastPoint = event->pos();
+         m_lastPoint = pos;
          m_mouseClick = true;
      }
 
@@ -117,20 +117,21 @@ public:
          std::cout << " Room Dialogs <Set fileName> A new fileName been set, fileName: " << m_fileName << std::endl;
      }
 
-     void setSoundNoices(const radAngMultAccess<roomAtom *> &noices);
 
+     void setRoomSimulation( roomSimulation* mainWindow )
+     {
+        m_oracle.setRoomSimulation(mainWindow);
+     }
 
 private:
 
      bool m_mouseClick;
      std::map< Point, SoundData<CDataType> > m_cord2Data;
      std::map< Point, std::pair<int, roomAtom* > > m_cord2Listen;
-     radAngMultAccess< roomAtom* > m_noicePoints;
      int m_id;
      size_t m_packetCount;
      std::string m_fileName;
-     QPoint m_lastPoint;
-     bool m_isPostProcess;
+     QPointF m_lastPoint;
      IOManager m_audioIO;
      roomOracle m_oracle;
      packetSound m_soundParameters;

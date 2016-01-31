@@ -53,6 +53,7 @@ public:
         m_SoundParameters = sound;
         m_RoomVariables   = room;
         isNearField = false;
+        isRadiusGuess = false;
     }
 
     double getDistance(QPointF pos, bool isCm) const
@@ -88,17 +89,28 @@ public:
         auto nearFieldDistCM = (2 * m_array.getMicLenghtMeter() * m_array.getMicLenghtMeter()) / WAVE_LENGHT_METER * 100;
         if ( getDistance( m_array.getMiddlePos(), true ) < nearFieldDistCM )
             isNearField = true;
-        setFocusDelay();
+        setArrayDelay();
+        setApartureDist();
     }
 
-    void setFocusDelay()
+    void setArrayDelay()
     {
         m_arrayDelay.resize(m_array.getElemCount());
         for (int i = 0; i < m_array.getElemCount(); i++)
         {
-            m_arrayDelay[i] = m_array.getDelay(i, m_selfData.getRadius(), m_selfData.getAngle());
+            m_arrayDelay[i] = m_array.getDelay( i, m_selfData.getRadius(), m_selfData.getAngle());
         }
     }
+
+    void setApartureDist()
+    {
+        m_apartureDist.resize(m_array.getElemCount());
+        for (int i = 0; i < m_array.getElemCount(); i++)
+        {
+            m_apartureDist[i] = m_array.getDistDelay(i, getDistance( m_array.getPosition(i), true ));
+        }
+    }
+
 
     SoundInfo& getInfo()
     {
@@ -115,23 +127,16 @@ public:
         m_selfData.setType(sType);
     }
 
+    bool isRadiusGuess;
+    bool isNearField;
 protected:
-
-    void setArrayDelay()
-    {
-        m_arrayDelay.resize(m_array.getElemCount());
-        auto& arrayPos = m_array.getPositions();
-        for (size_t i = 0; i < arrayPos.size(); i++)
-        {
-            double dist = getDistance(arrayPos[i], true);
-            m_arrayDelay[i] = dist / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec;
-        }
-    }
 
     SoundInfo m_selfData;
     std::vector<double> m_arrayDelay;
+    std::vector<double> m_apartureDist;
 
-    bool isNearField;
+
+
     packetSound   m_SoundParameters;
     roomVariables m_RoomVariables;
     const microphoneNode& m_array;
@@ -168,6 +173,7 @@ public:
     std::vector<double> sumWhole();
 
     void start();
+    void start2();
     void setColor(bool isDrawColor, double min, double max);
 
     std::pair< Point , double> getResult()
@@ -175,10 +181,21 @@ public:
         return std::make_pair(m_selfData.getRealPos(), m_relativeVal);
     }
 
+    bool isAtomRadiusCloseBy ( roomAtom* in, int offSet)
+    {
+        if ( in == nullptr )
+            return false;
+        if ( std::abs(in->getInfo().getRadius() - getInfo().getRadius()) < offSet )
+            return true;
+        else
+            return false;
+    }
+
 private:
 
     void sumPart();
     double sumSingle();
+    double getAtomDelay( int i, ArrayFocusMode mode );
 
     std::vector< std::complex<double> >  m_sumData;
     double m_relativeVal;

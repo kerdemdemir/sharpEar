@@ -6,8 +6,8 @@
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <soundIO/IOManager.h>
-#include <audiperiph/trainer.h>
 #include <memory>
+#include "interactor.h"
 
 #define DEBUG_TEST_MODE
 
@@ -34,28 +34,6 @@ void roomDialogs::writeWav()
 }
 
 int
-roomDialogs::postprocess()
-{
-#ifdef DEBUG_TEST_MODE
-
-#endif
-
-    if (m_noicePoints.empty())
-        return -1;
-
-    std::cout << " RoomDialogs <process>: There are noices over the radius sound will make further process" << std::endl;
-    std::vector< radAngData< roomAtom* > > allData = std::move(m_noicePoints.getAllValue());
-    for (size_t i = 0; i < allData.size(); i++)
-    {
-        auto dataVal = std::move(allData[i].data->sumWhole());
-        m_oracle.insertData(allData[i].data->getInfo(), allData[i].radius, allData[i].angle, dataVal) ;
-    }
-    m_oracle.startFeature();
-    return 1;
-}
-
-
-int
 roomDialogs::process()
 {
     std::vector< ref_t< SoundData<CDataType> > > soundDataVec;
@@ -69,13 +47,14 @@ roomDialogs::process()
     {
         if (!elem.second.isSound())
             continue;
+
         if ( m_audioIO.read(elem.second) < 0 )
         {
             sendAlertBox("RoomDialogs <process>: Read failed please be sure file is not deleted");
             return -1;
         }
 
-        if (elem.second.getStatus() == SStatus::FINISHED)
+        if (elem.second.getStatus() == SStatus::FINISHED  )
         {
             std::cout << "RoomDialogs <process>: One of the sound files come to end will delete it" << std::endl;
             m_audioIO.remove(elem.second.getID());
@@ -87,19 +66,22 @@ roomDialogs::process()
             }
             m_cord2Data.erase(elem.first);
         }
-
+        else if (m_packetCount == 1 && elem.second.isPulse() && m_cord2Data.size() == 1 )
+        {
+            std::cout << " RoomDialogs <process>: Only source which is a pulse come to end was source file exit simulation" << std::endl;
+            return -1;
+        }
+        //interActionManager::getDataShareInstance()->incomingData( elem.second.getData(), m_soundParameters.samplePerOutput, true);
         soundDataVec.push_back(elem.second);
+
     }
 
     std::cout << " RoomDialogs <process>: Room dialogs readData now will trigger Overseer" << std::endl;
 
     m_oracle.preprocess(soundDataVec);
-    if (postprocess() != -1)
-    {
-        m_oracle.postprocess(soundDataVec);
-    }
     writeWav();
     m_packetCount++;
+
     return 0;
 }
 
@@ -199,9 +181,3 @@ int roomDialogs::createDialog(roomAtom *ptrAtom)
     }
 }
 
-void roomDialogs::setSoundNoices(const radAngMultAccess< roomAtom* >&noices)
-{
-   m_isPostProcess = true;
-   m_noicePoints = noices;
-   //const auto& allData = noices.getAllData();
-}

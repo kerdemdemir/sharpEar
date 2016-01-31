@@ -66,6 +66,22 @@ void sharpPlot::drawBasicGraph(CDataType& data, double startPoint, double jump )
 }
 
 
+void sharpPlot::drawBasicGraph( DataType& data, double startPoint, double jump )
+{
+    QPolygonF points;
+    for (size_t i = 0; i < data.size(); i++)
+    {
+        points << QPointF( startPoint + i * jump, data[i] );
+    }
+
+    auto minMax = std::minmax_element(data.begin(), data.end(), [](SingleCDataType a, SingleCDataType b)
+    {
+         return std::abs(a) < std::abs(b);
+    });
+
+    draw( points, std::abs(*minMax.first),  std::abs(*minMax.second), startPoint, startPoint + jump * data.size() );
+}
+
 void
 sharpPlot::drawBasicGraph(std::vector<std::pair <double, double> >& data)
 {

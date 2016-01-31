@@ -35,6 +35,63 @@
 #include <complex>
 #include <QPoint>
 #include <iostream>
+#include "utility/types.h"
+#include <fftw3.h>
+
+inline
+CDataType sharpFFT( CDataType in, bool isForward )
+{
+    const int N =  in.size() ;
+
+    std::vector< std::complex<double> > out (N);
+
+    CDataType returnVal;
+
+    fftw_plan my_plan;
+    if (!isForward)
+      my_plan = fftw_plan_dft_1d(N, reinterpret_cast<fftw_complex*>(&in[0]),
+                                             reinterpret_cast<fftw_complex*>(&out[0]), FFTW_BACKWARD, FFTW_ESTIMATE);
+    else
+      my_plan = fftw_plan_dft_1d(N, reinterpret_cast<fftw_complex*>(&in[0]),
+                                               reinterpret_cast<fftw_complex*>(&out[0]), FFTW_FORWARD, FFTW_ESTIMATE);
+
+    fftw_execute(my_plan);
+
+    return out;
+}
+
+inline
+CDataType swapVectorWithIn( const CDataType& in )
+{
+
+    auto middlePos = in.begin() + in.size()/2;
+    CDataType returnVal( middlePos , in.end() );
+    returnVal.insert( returnVal.end(), in.begin(), middlePos);
+    return returnVal;
+}
+
+inline
+CDataType sharpIFFT( DataType in )
+{
+    const int N =  in.size() + 1 ;
+
+    std::vector< std::complex<double> > out (N);
+
+    std::vector< std::complex<double> > returnVal (N);
+
+    fftw_plan my_plan = fftw_plan_dft_r2c_1d(N,
+                        reinterpret_cast<double*>(&in[0]),
+                        reinterpret_cast<fftw_complex*>(&out[0]),
+                        FFTW_ESTIMATE);
+
+    fftw_execute(my_plan);
+    auto outMiddle = out.begin() + out.size()/2;
+    returnVal.assign(outMiddle, out.end());
+    returnVal.insert( returnVal.end(), out.begin() + 1, outMiddle);
+
+    return returnVal;
+}
+
 
 
 

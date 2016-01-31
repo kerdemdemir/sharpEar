@@ -33,7 +33,7 @@
 #include <utility/types.h>
 #include <utility/commons.h>
 #include <iostream>
-
+#include <QPoint>
 
 struct SoundInfo
 {
@@ -91,6 +91,11 @@ struct SoundInfo
     double getDistance() const
     {
         return std::sqrt(posCm.first * posCm.first + posCm.second * posCm.second);
+    }
+
+    double getDistance(QPoint pos) const
+    {
+       return sqrt(pow(getRealPos().first - pos.x(), 2.0) + pow(getRealPos().second - pos.y(), 2.0));
     }
 
     SoundInfo (Point posGraph, Point posReal, int ang, int rad, STypes sType = STypes::UNDEFINED )
@@ -163,6 +168,8 @@ struct SoundData
 {
     using IterType = typename T::iterator;
     using ConstIterType = typename T::const_iterator;
+    using value_type = T;
+    using iterator = typename T::iterator;
 
     SoundData (int ID,  Point posGraph, Point posReal, int ang, int rad, STypes sType = STypes::UNDEFINED )
     {
@@ -249,7 +256,7 @@ struct SoundData
         return true;
     }
 
-    STypes getType()
+    STypes getType() const
     {
         return info.getType();
     }
@@ -263,6 +270,11 @@ struct SoundData
     void setOutput()
     {
         info.isOutput() = true;
+    }
+
+    const SoundInfo& getInfo() const
+    {
+        return info;
     }
 
     void print(const std::string& message) const
@@ -280,12 +292,28 @@ struct SoundData
         return dataStatus;
     }
 
+
+    double getDistance(QPoint pos) const
+    {
+       return info.getDistance(pos);
+    }
+
     bool operator==(const SoundData<IterType> &rhs) const {
         return info == rhs.setInfo();
     }
 
     bool operator<(const SoundData<IterType> &rhs) const{
         return info.getRealPos() < rhs.getRealPos();
+    }
+
+    IterType begin()
+    {
+        return dataStart;
+    }
+
+    IterType end()
+    {
+        return dataEnd;
     }
 
 private:

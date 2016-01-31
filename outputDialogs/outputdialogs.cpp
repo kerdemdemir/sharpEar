@@ -41,7 +41,7 @@ void
 outputDialogs::appendDataToAmplitudeGraph(const std::vector<double>::const_iterator _currentSoundData
                                           , size_t sizeOfData)
 {
-    double timeDiffBetweenSamples = (1.0/16000.0 * _sampleSize);
+    double timeDiffBetweenSamples = (1.0/44000.0 * _sampleSize);
     double curTime = (signal_data.elapsedDataSize * timeDiffBetweenSamples);
 
     for (size_t i = 0; i < sizeOfData; i++)

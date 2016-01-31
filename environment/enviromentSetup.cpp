@@ -142,7 +142,7 @@ enviromentSetup::testFilesTableDoubleClicked(int row, int column)
      if (wavFileName.isNull() || wavFileName.isEmpty())
          return;
 
-     wavFileName = (QString(defaultFilePathRoot) + wavFileName);
+     wavFileName = (QString("C:\\") + wavFileName);
      hndl_interActionManager->setWavFileName(std::move(wavFileName.toStdString()));
 }
 

@@ -5,6 +5,7 @@
 
 std::ofstream outputFile;
 
+
 bool operator <(QPoint point1, QPoint point2)
 {
     if (point1.x() < point2.x())

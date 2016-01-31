@@ -1,4 +1,4 @@
-//Copyright (c) 2014,
+ //Copyright (c) 2014,
 //Kadir Erdem Demir
 //All rights reserved.
 
@@ -36,6 +36,8 @@
 #include <vector>
 #include <utility/commons.h>
 #include <utility/workerThread.h>
+#include <utility/soundData.h>
+#include "utility/multAccessData.h"
 
 class interActionManager;
 class QWidget;
@@ -63,11 +65,18 @@ public:
     void defaultMicPos();
     void setBoundingLines();
     void startVisulution();
+    CDataType getImpulseResponce(SoundInfo in, CDataType& weights );
     void reset(valuesBasicUserDialog& userValues);
     //**SoundFile open write**//
     int openFile(std::string fileName);
     void setFocus(double focusDistance, std::vector<double> relativeSourceDist);
     void setFileName(const std::string& input);
+    std::vector< roomAtom*> getMiddleAtoms();
+    std::vector< roomAtom* > getAtomInRadius( int curRadius = -999 );
+    std::vector< roomAtom* > getAtomsInAngle( int angle, int jump = 0 );
+    std::vector<roomAtom*> hndl2Atom;
+
+    radAngMultAccess<roomAtom *> getArcRadius(roomAtom *arcCenter);
 
 protected:
     void mousePressEvent(QMouseEvent *event);
@@ -77,11 +86,13 @@ private:
 
     void calcRoomParameters();
     void assignSoundSource();
-    void threadProcess();
-    void startAtomColoring();
+
     void reset();
     void multiThreadImageCalc();
     roomAtom* findClosePoint(int xPos, int yPos);
+    Worker _workerThread;
+    void threadProcess();
+    void startAtomColoring();
 
     interActionManager* hndl_interActionManager;
 
@@ -95,9 +106,8 @@ private:
 
     roomVariables _roomParameters;
     packetSound   _soundParameters;
+    radAngMultAccess< roomAtom* > atomDatabase;
 
-    std::vector<roomAtom*> hndl2Atom;
-    Worker _workerThread;
 
     void drawAngleValueGraph();
     void drawYAxisGraph(int xAxisCordinates, bool lowPassFilter );
@@ -114,7 +124,6 @@ private:
     std::pair< double, double > _relativeSourceDist;
     std::vector<std::pair< double, double > > _relativeSourceDistVec;
 
-    void getAllNoicesArc(roomAtom *arcCenter);
 };
 
 #endif // ROOMSIMULATION_H

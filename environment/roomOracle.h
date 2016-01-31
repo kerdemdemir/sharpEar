@@ -32,106 +32,18 @@
 
 #include <complex>
 #include <utility/soundData.h>
-#include <audiperiph/trainer.h>
 #include <environment/microphoneNode.h>
 #include <map>
 #include <utility/multAccessData.h>
 #include <fftw3.h>
+#include <speakerProcess/mlModel/tranierlist.h>
 
 class roomDialogs;
-
+class roomSimulation;
+class roomAtom;
 constexpr double THRESHOLD = 0.4;
 
-struct snrHelper
-{
-    using angleVal = std::pair < int, double >;
-    using angleValVec = std::vector < std::pair< int, double > > ;
-    using angleValVecIte = std::vector < std::pair< int, double > > ::iterator;
-
-    void insert( const SoundInfo& key, int radius, int angle, const DataType& data)
-    {
-        SharedDataVec lsharedData = std::make_shared<DataType>(std::move(data));
-        if (key.isSource())
-        {
-            m_source = key;
-        }
-        else if (key.isSound())
-            m_sounds[key] = lsharedData;
-        m_soundDigger.insert(radius, angle, lsharedData);
-    }
-
-    std::vector<radAngData<SharedDataVec>>* getSourceArc()
-    {
-       auto radius = m_soundDigger.findClosestRadius(m_source.getRadius());
-       auto sourceArc = m_soundDigger.getByRadius(radius);
-       return sourceArc;
-    }
-
-
-    void pushResult(int angle, double result)
-    {
-        resultVec.push_back( std::make_pair(angle, result));
-    }
-
-    std::vector<double> startDigging()
-    {
-        angleValVecIte maxElem = findSource();
-        m_one = maxElem->first;
-        int delta = std::abs(resultVec[0].first - resultVec[1].first);
-        int deltaAngle = 2 * delta;
-        int maxStart = maxElem->first - deltaAngle;
-        int maxEnd = maxElem->first + deltaAngle;
-        //std::vector< std::pair < int, double > >
-        auto sortedAngleEnergy =  std::move (m_soundDigger.findMax(maxStart, maxEnd));
-
-        for (auto& elem : sortedAngleEnergy)
-        {
-            auto existsIter = std::find_if(m_zeros.begin(), m_zeros.end(), [deltaAngle, elem](int i)
-            {
-                return (elem.first >= i - deltaAngle && elem.first <= i + deltaAngle);
-            });
-
-            if (existsIter != m_zeros.end())
-            {
-                std::cout << " Digger <startDigging>  Angle " << elem.first << " is extension of angle "
-                          <<  *existsIter << " it won't be taken to account " << std::endl;
-                continue;
-            }
-
-            if (elem.second > THRESHOLD)
-            {
-                m_zeros.push_back(elem.first);
-            }
-        }
-        std::vector<double> returnVal (resultVec.size(), 0.5);
-        int totalDelta = abs(resultVec.front().first - resultVec.back().first) / delta;
-        returnVal[totalDelta/2 + m_one / delta] = 1;
-        for ( auto& elem : m_zeros )
-           returnVal[totalDelta/2 + (elem / delta)] = 0;
-        resultVec.clear();
-        return returnVal;
-    }
-
-    angleValVecIte findSource()
-    {
-        return  std::max_element(resultVec.begin(), resultVec.end(),
-            []( angleVal&  lhs,  angleVal& rhs)
-            {
-                return lhs.second < rhs.second;
-            });
-    }
-
-    SoundInfo m_source;
-
-    std::vector<int> m_zeros;
-    int m_one;
-
-    std::unordered_map < SoundInfo,  SharedDataVec > m_sounds;
-    radAngDataSummer < std::shared_ptr< std::vector < double > > > m_soundDigger;
-
-    std::vector < std::pair< int, double > > resultVec;
-};
-
+using SoundDataRef = ref_t<SoundData<CDataType>>;
 
 
 class roomOracle
@@ -139,27 +51,31 @@ class roomOracle
 public:
 
     roomOracle(size_t sampleRate, size_t packetSize, int speakerID,
-               int noiceID, microphoneNode& array) : m_featureOutput(sampleRate, packetSize), m_array(array)
+               int noiceID, microphoneNode& array) : m_array(array)
     {
+        m_sampleSize = sampleRate;
+        m_packetSize = packetSize;
         m_speakerID = speakerID;
         m_noiceID = noiceID;
-        if (LOAD)
-        {
-            m_trainer.Load();
-            parseValidation();
-        }
-    }
 
-    void startFeature();
+        std::string trainPath("D:/speakerWavs/train1");
+        trainer.initPGrams(0, "F0");
+        train(trainer, trainPath);
+        trainer4.initPGrams(6, "F6");
+        train(trainer4, trainPath);
+        soundPosition = nullptr;
+        isSoundLocated = false;
+    }
     void feedTrainer(const DataConstIter data, int angle );
 
 
-    void preprocess(const std::vector<ref_t<SoundData<CDataType> > > &input);
-    void postprocess(const std::vector<ref_t<SoundData<CDataType> > > &input);
+    void preprocess(const std::vector< SoundDataRef > &input);
+    void postprocess(const std::vector< SoundDataRef > &input);
+    roomAtom* findSpeakerRadius(const std::vector< roomAtom* >& atomList , TrainerComposer &trainerIn);
 
-    void insertData(const SoundInfo& key, int radius, int angle, const DataType& data)
+    void setRoomSimulation( roomSimulation* mainWindow )
     {
-        m_digger.insert(key, radius, angle, data);
+        m_roomSimulation = mainWindow;
     }
 
 private:
@@ -169,19 +85,24 @@ private:
 
     int m_speakerID;
     int m_noiceID;
-    std::map<int, Method> m_bestMethod;
+    int m_sampleSize;
+    int m_packetSize;
     std::vector< std::pair<int, std::vector<double> > > m_angleProb;
 
     CDataType m_weight;
-
-    FeatureOutput m_featureOutput;
-    Trainer m_trainer;
     microphoneNode& m_array;
+    roomSimulation* m_roomSimulation;
+    TrainerComposer trainer;
+    TrainerComposer trainer4;
 
-    snrHelper m_digger;
+    roomAtom* soundPosition;
+    std::vector< double > nullAnglePositions;
+    bool isSoundLocated;
 
-    void feedArray(const std::vector<ref_t<SoundData<CDataType> > > &input, const CDataType &weights);
-    void fftWeight();
+    void feedArray(const std::vector< SoundDataRef > &input, const CDataType &weights);
+    void fftWeight( );
+    void getNoice( );
+
 };
 
 

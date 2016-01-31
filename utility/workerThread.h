@@ -30,13 +30,13 @@
 #ifndef WORKERTHREAD_H
 #define WORKERTHREAD_H
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#include <boost/asio.hpp>
-#pragma GCC diagnostic pop
+#define ASIO_STANDALONE
+
+#include <asio.hpp>
 #include <future>
 #include <memory>
+
+
 
 class Worker
 {
@@ -68,21 +68,28 @@ public:
 
     void process ()
     {
-        for (auto& elem : m_packagedTaskVec)
-            m_io_service.post(std::bind(&std::packaged_task<void()>::operator(), elem.get()));
-        for(auto& elem : m_packagedTaskVec)
+        for (auto elem : m_packagedTaskVec)
+        {
+            m_io_service.post([elem](){
+                (*elem)();
+            });
+        }
+            //m_io_service.post(std::bind(&std::packaged_task<void()>::operator(), elem.get()));
+        for(auto elem : m_packagedTaskVec)
             elem->get_future().wait();
     }
 
     void clearTasks()
     {
-        m_packagedTaskVec.clear();
+        //m_packagedTaskVec.clear();
+        for(auto elem : m_packagedTaskVec)
+            elem->reset();
     }
 
 private:
     size_t m_threadCount;
-    boost::asio::io_service m_io_service;
-    boost::asio::io_service::work m_work;
+    asio::io_service m_io_service;
+    asio::io_service::work m_work;
     std::vector< std::shared_ptr<std::packaged_task<void()> >  > m_packagedTaskVec;
     std::vector< std::thread >      m_threadGroup;
 };
