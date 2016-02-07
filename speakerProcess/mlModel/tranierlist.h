@@ -8,6 +8,7 @@
 #include "speakerProcess/mlModel/gmmModel.h"
 #include "speakerProcess/mlModel/pitchgrams.h"
 #include "speakerProcess/mlModel/tranierlist.h"
+#include "speakerProcess/featureExtractor/f0highlevelfeatures.h"
 #include <QElapsedTimer>
 
 class TrainerComposer : public ModelBase
@@ -31,9 +32,7 @@ public:
         {
             try
             {
-                timer.restart();
                 model->predict( personID );
-                model->predictionTime += timer.elapsed();
             }
             catch ( ... )
             {
@@ -117,6 +116,18 @@ public:
         addModel(pitchGramRunnerModel);
     }
 
+    void initHighLevelGMM()
+    {
+        auto highLevelFeaturePtr = std::make_shared<F0HighLevelFeatures>(3,3);
+        auto gmmF0Model = std::make_shared<GMMModel>("HighLevelFormant");
+        featureList.addExtractor(highLevelFeaturePtr);
+        gmmF0Model->setFeature( highLevelFeaturePtr );
+        gmmF0Model->isLoad = true;
+        addModel(gmmF0Model);
+    }
+
+
+
     void init()
     {
 //        auto mfccFeaturePtr = std::make_shared<MFCCFeatures>();
@@ -126,7 +137,7 @@ public:
 //        //gmmModel->isLoad = true;
 //        addModel(gmmModel);
 
-        auto F0FeaturePtr = std::make_shared<F0Features>(0);
+        auto F0FeaturePtr = std::make_shared<F0Features>(4);
         //auto gmmF0Model = std::make_shared<GMMModel>("Formant", 4);
         featureList.addExtractor(F0FeaturePtr);
         //gmmF0Model->setFeature( F0FeaturePtr );
@@ -134,7 +145,7 @@ public:
         //addModel(gmmF0Model);
 
 
-        auto pitchGramRunnerModel = std::make_shared<PitchGramModel>(3, "F0");
+        auto pitchGramRunnerModel = std::make_shared<PitchGramModel>(3, "F4");
         pitchGramRunnerModel->isLoad = true;
         pitchGramRunnerModel->setFeature( F0FeaturePtr );
         addModel(pitchGramRunnerModel);

@@ -110,8 +110,13 @@ struct SoundInfo
 
     SoundInfo() = default;
 
-    void print() const
+    void print( std::string message = std::string() ) const
     {
+        if ( message != "" )
+        {
+            std::cout << "Message: " << message << std::endl;
+        }
+
         std::cout << "SoundInfo <print> Cordinates: " << posCm.first << "," << posCm.second
                   << " Scene Cordinates: " << posScene.first << "," << posScene.second
                   << " Radius: " << radius << " Angle: " << angle << " Type: " << STypes2Str(soundType);
@@ -139,6 +144,7 @@ struct SoundInfo
     }
 
 
+
 private:
 
     Point posScene;
@@ -147,6 +153,7 @@ private:
     double radius;
     STypes soundType;
     bool boolOutput;
+
 
 };
 
@@ -277,10 +284,31 @@ struct SoundData
         return info;
     }
 
+    double calculateSNR( const std::vector<double>& compareData  )
+    {
+        auto packetSize = std::distance( dataStart, dataEnd);
+        if ( packetSize != compareData.size() )
+            std::cout << " SnrManager: Calculate SNR fails sizes are different ";
+
+        double val;
+        double noice;
+        for ( int i = 0; i < packetSize; i++ )
+        {
+             auto curPower = std::pow ( std::abs(dataStart[i]), 2);
+             val += curPower;
+             noice += std::pow( std::abs(dataStart[i]) - compareData[i], 2 );
+        }
+
+        SNRVal = noice/val;
+        return SNRVal;
+    }
+
     void print(const std::string& message) const
     {
         std::cout << "Sounddata <print> ID: " << id << " Message: " << message << "SoundInfo: ";
-        info.print();    }
+        info.print();
+        std::cout << " SNR: " <<  SNRVal << std::endl;
+    }
 
     void setStatus(SStatus status)
     {
@@ -318,6 +346,7 @@ struct SoundData
 
 private:
 
+    double   SNRVal;
     SStatus  dataStatus;
     IterType dataStart;
     IterType dataEnd;

@@ -61,7 +61,7 @@ public:
         std::string trainPath("D:/speakerWavs/train1");
         trainer.initPGrams(0, "F0");
         train(trainer, trainPath);
-        trainer4.initPGrams(6, "F6");
+        trainer4.initHighLevelGMM();
         train(trainer4, trainPath);
         soundPosition = nullptr;
         isSoundLocated = false;
@@ -71,7 +71,9 @@ public:
 
     void preprocess(const std::vector< SoundDataRef > &input);
     void postprocess(const std::vector< SoundDataRef > &input);
-    roomAtom* findSpeakerRadius(const std::vector< roomAtom* >& atomList , TrainerComposer &trainerIn);
+    roomAtom* findSpeakerRadius(const std::vector< roomAtom* >& atomList,
+                                SoundDataRef originalData,
+                                TrainerComposer &trainerIn);
 
     void setRoomSimulation( roomSimulation* mainWindow )
     {
@@ -99,7 +101,7 @@ private:
     std::vector< double > nullAnglePositions;
     bool isSoundLocated;
 
-    void feedArray(const std::vector< SoundDataRef > &input, const CDataType &weights);
+    SoundDataRef feedArray(const std::vector< SoundDataRef > &input, const CDataType &weights);
     void fftWeight( );
     void getNoice( );
 

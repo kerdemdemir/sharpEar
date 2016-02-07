@@ -17,12 +17,12 @@ void roomOracle::preprocess(const std::vector< SoundDataRef > &input )
     m_weight.resize(m_array.getElemCount(), 1);
     //fftWeight(SoundInfo(),  0 );
     //m_weight.resize(m_array.getElemCount(), 1);
-    feedArray(input, m_weight);
+    auto originalSound = feedArray(input, m_weight);
 
     auto atomsInMiddle = m_roomSimulation->getAtomsInAngle( 0 );
-    roomAtom* bestRadius = findSpeakerRadius( atomsInMiddle, trainer );
+    roomAtom* bestRadius = findSpeakerRadius( atomsInMiddle, originalSound, trainer4 );
     auto atomInRadius = m_roomSimulation->getAtomInRadius( bestRadius->getInfo().getRadius());
-    auto soundPositionLocal = findSpeakerRadius(atomInRadius, trainer );
+    auto soundPositionLocal = findSpeakerRadius(atomInRadius, originalSound, trainer );
     std::cout << " Speaker located in: ";
     soundPositionLocal->print();
     if ( soundPositionLocal->isAtomRadiusCloseBy( soundPosition, 100 ))
@@ -34,12 +34,13 @@ void roomOracle::preprocess(const std::vector< SoundDataRef > &input )
         soundPosition = soundPositionLocal;
         return;
     }
-    getNoice( );
+    //getNoice( );
 
 }
 
 
 roomAtom* roomOracle::findSpeakerRadius( const std::vector< roomAtom* >& atomList,
+                                         SoundDataRef originalData,
                                          TrainerComposer& trainerIn )
 {
     std::vector<double> wholeData(m_packetSize);
@@ -47,14 +48,19 @@ roomAtom* roomOracle::findSpeakerRadius( const std::vector< roomAtom* >& atomLis
     roomAtom* bestPossibleAtom;
     for (auto elem : atomList)
     {
+        std::fill( wholeData.begin(), wholeData.end(), 0);
         if ( elem->isNearField )
             continue;
         elem->sumWhole(wholeData);
+        SoundData<CDataType>& dataOriginal = originalData;
+        auto snrVal = dataOriginal.calculateSNR(wholeData);
+        elem->getInfo().print( QString(" SNR val : %1 ").arg(snrVal).toStdString());
+
+
         trainerIn.featureCalculation( wholeData  );
         trainerIn.predict( 0 );
         auto results = trainerIn.getResults();
         auto curCount = 0;
-
 
         for ( scoreType& holderList : results[0] )
         {
@@ -75,20 +81,28 @@ roomAtom* roomOracle::findSpeakerRadius( const std::vector< roomAtom* >& atomLis
 
 }
 
-void roomOracle::feedArray(const std::vector< SoundDataRef > &input, const CDataType &weights )
+SoundDataRef roomOracle::feedArray(
+        const std::vector< SoundDataRef > &input,
+        const CDataType &weights )
 {
+    SoundDataRef returnVal = input.front();
     if (input.empty())
         std::cout << "RoomOracle <startFeature> no candidate points input was empty" << std::endl;
     for (SoundData<CDataType>& elem : input)
     {
         if ( elem.isSound())
+        {
             m_array.adjustArrayFocus( elem.getInfo(), ArrayFocusMode::NO_FOCUS);
+            returnVal = elem;
+        }
     }
 
     for (SoundData<CDataType>& elem : input)
     {
         m_array.feed(elem, weights);
     }
+
+    return returnVal;
 }
 
 void roomOracle::feedTrainer(const DataConstIter data, int angle)

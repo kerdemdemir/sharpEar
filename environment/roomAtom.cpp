@@ -85,6 +85,7 @@ roomAtom::sumWhole(std::vector< double > & output)
 
     for (auto& elem : output)
         elem /= m_array.weightRealSum;
+
 }
 
 std::vector< double >

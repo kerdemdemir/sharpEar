@@ -92,7 +92,23 @@ CDataType sharpIFFT( DataType in )
     return returnVal;
 }
 
+template< typename T>
+double calculateSNR( const T& originalData, const T& compareData  )
+{
+    if ( originalData.size() != compareData.size() )
+        std::cout << " SnrManager: Calculate SNR fails sizes are different ";
 
+    double val;
+    double noice;
+    for ( int i = 0; i < originalData.size(); i++ )
+    {
+         noice += std::pow(  std::abs(originalData[i] - compareData[i]), 2 );
+         val += std::pow(  std::abs(originalData[i]), 2 );
+    }
+
+    return noice/val;
+
+}
 
 
 struct QpointHash

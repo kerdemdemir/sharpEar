@@ -12,7 +12,7 @@ microphoneNode::microphoneNode(const packetSound &sound, const roomVariables &ro
 {
     m_SoundParameters = sound;
     m_RoomVariables   = room;
-    m_sceneWidth    = 10;
+    m_sceneWidth    = 5;
 
     for ( int i = 0; i < m_RoomVariables.numberOfMics; i++)
     {
@@ -32,22 +32,6 @@ microphoneNode::elemDistCenter()
 {
     double elemDistFromMid = 0;
     m_sceneCenterDist.clear();
-
-    for (int i = 0; i < m_RoomVariables.numberOfMics; i++)
-    {
-        if (m_RoomVariables.numberOfMics % 2 == 0)
-        {
-            elemDistFromMid = m_RoomVariables.numberOfMics / 2;
-            m_apartureList[i].setDistanceFromCenter( (double(i - elemDistFromMid) + 0.5) * m_RoomVariables.distancesBetweenMics );
-            m_sceneCenterDist.push_back((double(i - elemDistFromMid) + 0.5) * m_sceneWidth);
-        }
-        else
-        {
-             elemDistFromMid = (m_RoomVariables.numberOfMics / 2);
-             m_apartureList[i].setDistanceFromCenter( (double(i - elemDistFromMid)) * m_RoomVariables.distancesBetweenMics );
-             m_sceneCenterDist.push_back((double(i - elemDistFromMid)) * m_sceneWidth);
-        }
-    }
 
     for (int i = 0; i < m_RoomVariables.numberOfMics; i++)
     {

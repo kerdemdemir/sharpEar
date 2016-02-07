@@ -5,7 +5,7 @@
 #include "speakerProcess/general.h"
 #include <aubio.h>
 
-constexpr int FORMANT_COUNT = 1;
+constexpr int FORMANT_COUNT = 8;
 constexpr int MIN_FREQ = 80;
 constexpr int MAX_FREQ = 480;
 constexpr int JUMPSIZE = 8;

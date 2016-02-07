@@ -69,7 +69,9 @@ HEADERS  += mainwindow.h\
     speakerProcess/mlModel/gmmModel.h \
     speakerProcess/mlModel/modelbase.h \
     speakerProcess/mlModel/pitchgrams.h \
-    speakerProcess/mlModel/tranierlist.h
+    speakerProcess/mlModel/tranierlist.h \
+    speakerProcess/featureExtractor/f0highlevelfeatures.h \
+    utility/snrmanager.h
 
 
 
