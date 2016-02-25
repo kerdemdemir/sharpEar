@@ -5,7 +5,8 @@
 #include "environment/enviromentSetup.h"
 #include <QDockWidget>
 #include <iostream>
-
+#include "environment/roomDialogs.h"
+#include "environment/roomOracle.h"
 
 void interActionManager::createDialogPanel(QWidget* dialogPanel, QDockWidget* dialogDockWidget)
 {
@@ -31,6 +32,14 @@ interActionManager::createOutputPanel(QWidget* outputPanel, QDockWidget* dialogD
 
     dialogDockWidget->setWidget(outputPanel);
 }
+
+void interActionManager::setTrackingMode( bool trackingMode )
+{
+    getRoomSimulation()->getDialog()->
+                getOracle().setSpeakerTracking(trackingMode);
+}
+
+
 
 std::vector<double> *interActionManager::getCurrentCopyOfRawData(bool isPrevBuffer)
 {

@@ -16,8 +16,8 @@
 #include <utility/multAccessData.h>
 
 
-//#define DEBUG_TEST_MODE
-//#define POINT_ALWAYS_CENTER
+#define DEBUG_TEST_MODE
+#define POINT_ALWAYS_CENTER
 
 
 roomSimulation::roomSimulation(QRectF boudingRect, QWidget *parent) :
@@ -94,7 +94,7 @@ roomSimulation::calcRoomParameters()
      if (ENABLE_UPSAMPLING)
         _soundParameters.samplesPerSec *= UP_SAMPLE_RATE;
 
-    _soundParameters.currentOutputTime = 5000.0 / _soundParameters.samplesPerSec;
+    _soundParameters.currentOutputTime = 90000.0 / _soundParameters.samplesPerSec;
     _soundParameters.amplitude = 0;
     _soundParameters.samplePerOutput = _soundParameters.currentOutputTime * _soundParameters.samplesPerSec;
 
@@ -104,7 +104,7 @@ roomSimulation::calcRoomParameters()
     _roomParameters.pixel2RealRatio = (double)hndl_interActionManager->getBasicUserDialogValues()->listenRange
                                         / (double)_roomParameters.yPixelCount;
 
-    _roomParameters.pixel4EachAtom = 10;
+    _roomParameters.pixel4EachAtom = 3;
     _roomParameters.angleDist = 1;
     _roomParameters.numberOfAtomsIn1D = (double)hndl_interActionManager->getBasicUserDialogValues()->listenRange
                                         / hndl_interActionManager->getBasicUserDialogValues()->dx_dy;
@@ -212,9 +212,10 @@ roomSimulation::startVisulution()
     }
 }
 
-CDataType roomSimulation::getImpulseResponce(SoundInfo in , CDataType& weights)
+CDataType roomSimulation::getImpulseResponce( CDataType& weights)
 {
-    auto listAtom = getAtomInRadius( in.getRadius());
+    SoundInfo in = findAtomRadiusAngle(1000, 0)->getInfo();
+    auto listAtom = getAtomInRadius( in.getRadius(), false );
 
 
     CDataType pulseData;
@@ -224,13 +225,26 @@ CDataType roomSimulation::getImpulseResponce(SoundInfo in , CDataType& weights)
     data.setInfo().setType( STypes::PULSE);
     data.setData(pulseData.begin(), pulseData.end());
 
+    _micArr->adjustArrayFocus( in, ArrayFocusMode::NO_FOCUS);
+
     _micArr->feed( data, weights );
-    CDataType returnVal;
+    std::vector<double> temp;
     for ( auto atom : listAtom )
     {
         atom->start();
+        temp.push_back( atom->getResult().second  );
+    }
+
+    auto maxMinPair = std::minmax_element(temp.begin(), temp.end());
+    auto min = *maxMinPair.first;
+    auto max = *maxMinPair.second;
+    CDataType returnVal;
+    for ( auto atom : listAtom )
+    {
+        atom->setColor(false, min, max);
         returnVal.push_back( SingleCDataType(atom->getResult().second)  );
     }
+
     for ( int i = 0; i < 90; i++)
         returnVal[90 + i] = returnVal[90 - i];
     return returnVal;
@@ -283,7 +297,16 @@ roomSimulation::startAtomColoring()
     this->viewport()->repaint();
 }
 
+roomAtom*
+roomSimulation::findAtomRadiusAngle( double radius, double angle )
+{
+    double cosVal  = radius * cos(angle * GLOBAL_PI / 180.0);
+    double yPos = _room_scene->sceneRect().top() + (abs(cosVal) / _roomParameters.pixel2RealRatio);
+    double sinVal  = radius * sin(angle * GLOBAL_PI / 180.0);
+    double xPos = _micArr->getSceneMiddlePos().first + ( sinVal / _roomParameters.pixel2RealRatio );
 
+    return findClosePoint(xPos , yPos);
+}
 
 roomAtom*
 roomSimulation::findClosePoint(int xPos, int yPos)
@@ -306,10 +329,11 @@ roomSimulation::findClosePoint(int xPos, int yPos)
     return atom;
 }
 
+
 radAngMultAccess<roomAtom *>
 roomSimulation::getArcRadius( roomAtom* arcCenter )
 {
-    radAngMultAccess< roomAtom* > noicePoints;
+    radAngMultAccess<roomAtom *> returnVal;
     //std::vector< roomAtom* > noicePoints;
     SoundInfo soundInfo = arcCenter->getInfo();
     Point centerScenePos = _micArr->getSceneMiddlePos();
@@ -317,28 +341,32 @@ roomSimulation::getArcRadius( roomAtom* arcCenter )
     double angle = soundInfo.getAngle() ;
     double radius = soundInfo.getRadius();
     int radiusEpsilon = _roomParameters.pixel4EachAtom * _roomParameters.pixel2RealRatio;
-    int radiusElemCount = 100 / radiusEpsilon; // 100cm is 1 meter
+    int radiusElemCount = 200; // 100cm is 1 meter
 
-    for (int curRadius = (radius - radiusElemCount/2 * radiusEpsilon);
-         curRadius < (radius + radiusElemCount/2 * radiusEpsilon);
-         curRadius += radiusEpsilon)
+    for (int curRadius = (radius - radiusElemCount/2);
+        curRadius < (radius + radiusElemCount/2);
+        curRadius += radiusEpsilon)
     {
-        for (int curAngle = angle ; curAngle < angle; curAngle += 3)
-        {
-            double cosVal  = curRadius * cos(curAngle * GLOBAL_PI / 180.0);
-            double yPos = _room_scene->sceneRect().top() + (abs(cosVal) / _roomParameters.pixel2RealRatio);
-            double sinVal  = curRadius * sin(curAngle * GLOBAL_PI / 180.0);
-            double xPos = centerScenePos.first + ( sinVal / _roomParameters.pixel2RealRatio );
-            roomAtom *atom = findClosePoint(xPos, yPos);
-            if (atom == NULL)
-                continue;
+       for (int curAngle = angle - 45 ; curAngle < angle + 45; curAngle += 3)
+       {
+           double cosVal  = curRadius * cos(curAngle * GLOBAL_PI / 180.0);
+           double yPos = _room_scene->sceneRect().top() + (abs(cosVal) / _roomParameters.pixel2RealRatio);
+           double sinVal  = curRadius * sin(curAngle * GLOBAL_PI / 180.0);
+           double xPos = centerScenePos.first + ( sinVal / _roomParameters.pixel2RealRatio );
+           roomAtom *atom = findClosePoint(xPos, yPos);
+           if (atom == NULL)
+               continue;
 
-            atom->print();
-            noicePoints.insert(curRadius, curAngle, atom);
-        }
+           auto allVec = returnVal.getAllData();
+           if (std::find(allVec.begin(), allVec.end(), atom) != allVec.end())
+               continue;
+
+           atom->print();
+           returnVal.insert(curRadius, curAngle, atom);
+       }
     }
 
-    return noicePoints;
+    return returnVal;
 }
 
 void
@@ -353,7 +381,14 @@ roomSimulation::mousePressEvent(QMouseEvent *event)
     QGraphicsView::mousePressEvent(event);
 
 #ifdef POINT_ALWAYS_CENTER
-    _roomDialogs->mouseClicked( _room_scene->sceneRect().center() );
+     if (isFirst)
+     {
+        _roomDialogs->mouseClicked( _room_scene->sceneRect().center() );
+     }
+    else
+     {
+         _roomDialogs->mouseClicked(event->pos());
+     }
 #else
     _roomDialogs->mouseClicked(event->pos());
 #endif
@@ -367,14 +402,22 @@ roomSimulation::mouseReleaseEvent(QMouseEvent *event)
     QPointF clickPos = event->pos();
 
 #ifdef POINT_ALWAYS_CENTER
-    clickPos = _room_scene->sceneRect().center ();
+    if (isFirst)
+    {
+        clickPos = _room_scene->sceneRect().center ();
+    }
+
 #endif
 
     if ( _roomDialogs->mouseReleased(clickPos) )
     {
         QPointF viewCord = mapToScene(clickPos.toPoint());
         #ifdef POINT_ALWAYS_CENTER
+        if (isFirst)
+        {
+            isFirst = false;
             viewCord = clickPos;
+        }
         #endif
         int xPos = viewCord.x();
         int yPos = viewCord.y();
@@ -433,7 +476,7 @@ roomSimulation::getMiddleAtoms()
 }
 
 std::vector< roomAtom* >
-roomSimulation::getAtomInRadius( int curRadius )
+roomSimulation::getAtomInRadius(int curRadius , bool isUnique)
 {
     if ( curRadius == -999 )
     {
@@ -443,13 +486,16 @@ roomSimulation::getAtomInRadius( int curRadius )
 
 
     std::vector< roomAtom* > returnVal;
-    for (int curAngle = -90 ; curAngle < 90; curAngle += 3)
+    for (int curAngle = -90 ; curAngle < 90; curAngle += 1)
     {
         double cosVal  = curRadius * cos(curAngle * GLOBAL_PI / 180.0);
         double yPos = _room_scene->sceneRect().top() + (abs(cosVal) / _roomParameters.pixel2RealRatio);
         double sinVal  = curRadius * sin(curAngle * GLOBAL_PI / 180.0);
         double xPos = _micArr->getSceneMiddlePos().first + ( sinVal / _roomParameters.pixel2RealRatio );
         roomAtom *atom = findClosePoint(xPos, yPos);
+
+        if ( !returnVal.empty() && isUnique && returnVal.back()->isAtomRadiusCloseBy( atom, 3) )
+            continue;
         if (atom == NULL)
             continue;
         returnVal.push_back(atom);

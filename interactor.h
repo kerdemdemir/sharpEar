@@ -74,11 +74,16 @@ public:
     double getPacketSize();
     double getSampleRate();
 
-
+    void setTrackingMode( bool trackingMode );
     //multithread related
     std::vector<double>* getCurrentCopyOfRawData(bool isPrevBuffer);
     std::vector<double> _currentCopyOfProcessedData;
     std::vector<double> _currentCopyOfRawData;
+
+    roomSimulation* getRoomSimulation()
+    {
+        return hndl_roomSimulation;
+    }
 
     //***       Singleton pattern             ****/
     static interActionManager* getDataShareInstance()

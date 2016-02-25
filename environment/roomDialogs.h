@@ -123,6 +123,11 @@ public:
         m_oracle.setRoomSimulation(mainWindow);
      }
 
+    roomOracle& getOracle()
+    {
+        return m_oracle;
+    }
+
 private:
 
      bool m_mouseClick;

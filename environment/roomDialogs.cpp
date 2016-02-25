@@ -134,7 +134,7 @@ int roomDialogs::createDialog(roomAtom *ptrAtom)
     msgBox.setButtonText(QMessageBox::Yes, QString("Gauss pulse"));
     msgBox.setButtonText(QMessageBox::No, QString("Output in this point"));
     msgBox.setButtonText(QMessageBox::Ignore, QString("Noice sound"));
-    msgBox.setButtonText(QMessageBox::Discard, QString("Moving sound"));
+    msgBox.setButtonText(QMessageBox::Discard, QString("Deep Null"));
     msgBox.setButtonText(QMessageBox::Apply, QString("Arc Output"));
     int ret = msgBox.exec();
 
@@ -161,14 +161,9 @@ int roomDialogs::createDialog(roomAtom *ptrAtom)
             std::cout << "A noice sound is added ";
             return openAudio( ptrAtom,  STypes::NOICE );
         case QMessageBox::Discard:
-            std::cout << "A moving sound is added ";
-            if (isSourceExist())
-            {
-                std::cout << "Source all ready exist add noice " << std::endl;
-                sendAlertBox("Source all ready exist add noice ");
-                return -1;
-            }
-            return openAudio(ptrAtom,  STypes::MOVING_SOUND);
+            std::cout << "A null point is added ";
+            m_oracle.addNull(ptrAtom->getInfo().getAngle());
+            return 0;
         case QMessageBox::Apply:
         {
             return openAudio(ptrAtom, STypes::SOURCE_NOICE);

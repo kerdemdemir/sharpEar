@@ -162,8 +162,10 @@ void roomAtom::paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QW
             painter->fillRect( rec, QColor(Qt::black) );
             return;
         }
+        auto grayScaleVal = m_relativeVal * 255.0;
+        if ( ENABLE_LOG_COMPRESSION )
+            grayScaleVal /= logCompRatio;
 
-        auto grayScaleVal = (((m_relativeVal * 255.0)/logCompRatio));
         QColor colorBlackToWhite = QColor::fromHsv(359, 0, grayScaleVal);
         painter->fillRect(rec, colorBlackToWhite);
         return;

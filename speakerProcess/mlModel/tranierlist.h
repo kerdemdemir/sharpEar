@@ -126,17 +126,18 @@ public:
         addModel(gmmF0Model);
     }
 
-
+    void initMFCC()
+    {
+        auto mfccFeaturePtr = std::make_shared<MFCCFeatures>();
+        auto gmmModel = std::make_shared<GMMModel>("MFCC");
+        featureList.addExtractor(mfccFeaturePtr);
+        gmmModel->setFeature( mfccFeaturePtr );
+        gmmModel->isLoad = true;
+        addModel(gmmModel);
+    }
 
     void init()
     {
-//        auto mfccFeaturePtr = std::make_shared<MFCCFeatures>();
-//        auto gmmModel = std::make_shared<GMMModel>("MFCC");
-//        featureList.addExtractor(mfccFeaturePtr);
-//        gmmModel->setFeature( mfccFeaturePtr );
-//        //gmmModel->isLoad = true;
-//        addModel(gmmModel);
-
         auto F0FeaturePtr = std::make_shared<F0Features>(4);
         //auto gmmF0Model = std::make_shared<GMMModel>("Formant", 4);
         featureList.addExtractor(F0FeaturePtr);

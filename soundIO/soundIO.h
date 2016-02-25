@@ -40,9 +40,9 @@
 inline
 int createPulse( CDataType& data, size_t readSize,  double sampleRate )
 {
-    double f0 = 3500;
+    double f0 = 1500;
     double ts = 1.0 / sampleRate;
-    double vz = 100000;
+    double vz = 1000000;
     for (size_t i = 0; i < readSize; i++)
     {
         double realTime =  i  * ts;

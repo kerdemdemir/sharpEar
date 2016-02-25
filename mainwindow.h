@@ -78,9 +78,13 @@ private:
     void setPanels();
     Ui::MainWindow *ui;
 
-private Q_SLOTS:
+public slots:
+    void on_actionSpeaker_Tracking_toggled(bool arg1);
     void on_actionOpen_triggered();
     void on_actionFocusSelect_triggered();
+
+private slots:
+    void on_actionSpeaker_Tracking_triggered(bool checked);
 };
 
 #endif // MAINWINDOW_H

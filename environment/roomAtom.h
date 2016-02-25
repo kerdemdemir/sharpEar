@@ -106,7 +106,7 @@ public:
     {
         m_apartureDist.resize(m_array.getElemCount());
         for (int i = 0; i < m_array.getElemCount(); i++)
-        {
+        {            
             m_apartureDist[i] = m_array.getDistDelay(i, getDistance( m_array.getPosition(i), true ));
         }
     }

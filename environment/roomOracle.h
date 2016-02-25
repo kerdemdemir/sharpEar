@@ -61,10 +61,11 @@ public:
         std::string trainPath("D:/speakerWavs/train1");
         trainer.initPGrams(0, "F0");
         train(trainer, trainPath);
-        trainer4.initHighLevelGMM();
+        trainer4.initMFCC();
         train(trainer4, trainPath);
         soundPosition = nullptr;
         isSoundLocated = false;
+        isManualMode = true;
     }
     void feedTrainer(const DataConstIter data, int angle );
 
@@ -78,6 +79,17 @@ public:
     void setRoomSimulation( roomSimulation* mainWindow )
     {
         m_roomSimulation = mainWindow;
+    }
+
+    void addNull( double angle )
+    {
+        isManualMode = true;
+        nullAnglePositions.push_back(angle);
+    }
+
+    void setSpeakerTracking( bool in )
+    {
+        isManualMode = !in;
     }
 
 private:
@@ -100,10 +112,11 @@ private:
     roomAtom* soundPosition;
     std::vector< double > nullAnglePositions;
     bool isSoundLocated;
+    bool isManualMode;
 
     SoundDataRef feedArray(const std::vector< SoundDataRef > &input, const CDataType &weights);
     void fftWeight( );
-    void getNoice( );
+    void getNoice(roomAtom *speakerPos);
 
 };
 

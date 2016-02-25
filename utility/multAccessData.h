@@ -17,6 +17,18 @@ struct radAngData
     T data;
     int radius;
     int angle;
+
+    bool operator== ( const radAngData<T>& rhs )
+    {
+        if ( radius == rhs.radius && angle == rhs.angle)
+            return true;
+        return false;
+    }
+
+    bool isDataSame( const radAngData<T>& rhs  )
+    {
+        return data == rhs.data;
+    }
 };
 
 template < typename T >
@@ -57,6 +69,24 @@ public :
             angleData.erase(angIte);
     }
 
+    std::vector<T>
+    getByRadiusByDepth( int radius, int depth )
+    {
+        std::vector<T> returnVal;
+        int startRadius = radius - depth/2;
+        int endRadius = radius + depth/2;
+        for ( int curRadius = startRadius; curRadius < endRadius; curRadius++)
+        {
+            auto radius = findClosestRadius(curRadius);
+            auto tempList = getByRadius(radius);
+            for ( auto elem : *tempList )
+            {
+                returnVal.push_back( elem.data );
+            }
+        }
+        return returnVal;
+    }
+
     std::vector<radAngData<T>>* getByAngle( int angle )
     {
         auto ite = angleData.find(angle);
@@ -78,11 +108,15 @@ public :
     int findClosestRadius ( int radius )
     {
         int minDiff = INT_MAX;
+        int returnRadius = INT_MAX;
         for ( auto& elem : radiusData )
         {
-             auto diff = abs(elem.first - radius);
+            auto diff = abs(elem.first - radius);
             if (diff < minDiff)
-                minDiff = elem.first;
+            {
+                minDiff = diff;
+                returnRadius = elem.first;
+            }
         }
 
         return minDiff;
@@ -100,8 +134,6 @@ public :
         }
         return returnVal;
     }
-
-
 
     std::vector< radAngData<T> > getAllValue()
     {

@@ -65,19 +65,25 @@ public:
     void defaultMicPos();
     void setBoundingLines();
     void startVisulution();
-    CDataType getImpulseResponce(SoundInfo in, CDataType& weights );
+    CDataType getImpulseResponce( CDataType& weights );
     void reset(valuesBasicUserDialog& userValues);
     //**SoundFile open write**//
     int openFile(std::string fileName);
     void setFocus(double focusDistance, std::vector<double> relativeSourceDist);
     void setFileName(const std::string& input);
+    roomAtom* findAtomRadiusAngle( double radius, double angle );
+
     std::vector< roomAtom*> getMiddleAtoms();
-    std::vector< roomAtom* > getAtomInRadius( int curRadius = -999 );
+    std::vector< roomAtom* > getAtomInRadius( int curRadius = -999, bool isUnique = true);
     std::vector< roomAtom* > getAtomsInAngle( int angle, int jump = 0 );
     std::vector<roomAtom*> hndl2Atom;
 
+    roomDialogs* getDialog()
+    {
+        return _roomDialogs;
+    }
     radAngMultAccess<roomAtom *> getArcRadius(roomAtom *arcCenter);
-
+    bool isFirst = true;
 protected:
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);

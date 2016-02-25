@@ -115,3 +115,13 @@ void MainWindow::on_actionFocusSelect_triggered()
         std::cout << " Main Window error while getting focus fix it!!" << std::endl;
     }
 }
+
+void MainWindow::on_actionSpeaker_Tracking_toggled(bool arg1)
+{
+    hndl_interActionManager->setTrackingMode(arg1);
+}
+
+void MainWindow::on_actionSpeaker_Tracking_triggered(bool checked)
+{
+    hndl_interActionManager->setTrackingMode(checked);
+}

@@ -286,7 +286,7 @@ struct SoundData
 
     double calculateSNR( const std::vector<double>& compareData  )
     {
-        auto packetSize = std::distance( dataStart, dataEnd);
+        size_t packetSize = std::distance( dataStart, dataEnd);
         if ( packetSize != compareData.size() )
             std::cout << " SnrManager: Calculate SNR fails sizes are different ";
 
@@ -296,7 +296,7 @@ struct SoundData
         {
              auto curPower = std::pow ( std::abs(dataStart[i]), 2);
              val += curPower;
-             noice += std::pow( std::abs(dataStart[i]) - compareData[i], 2 );
+             noice += std::pow( dataStart[i].real() - compareData[i], 2 );
         }
 
         SNRVal = noice/val;
