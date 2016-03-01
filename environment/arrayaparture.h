@@ -6,6 +6,7 @@
 #include <utility/commons.h>
 #include <QPoint>
 #include <unordered_map>
+#include <utility/utility.h>
 
 static constexpr int FILTERSIZE = 11;
 
@@ -64,26 +65,48 @@ public:
       }
       auto tempLeap = *leapIte->second;
 
-
-
       for (size_t k = 0; k < m_apartureData.size() + delay - 1; k++)
       {
           if (k < delay )
           {
-                m_apartureData[k] += tempLeap[k] * m_weight;
+                m_apartureData[k] += tempLeap[k];
           }
           else if (k < m_apartureData.size())
           {
               SingleCDataType soundData = *beginIter++;
-              m_apartureData[k] += soundData * m_weight;
+              m_apartureData[k] += soundData;
           }
           else
           {
               SingleCDataType soundData = *beginIter++;
               leapIte->second->at(k - m_apartureData .size()) = soundData;
-              m_sumLeapData[k - m_apartureData .size()] += soundData * m_weight;
+              m_sumLeapData[k - m_apartureData .size()] += soundData;
           }
       }
+
+      convolveWithWeight(m_apartureData);
+      convolveWithWeight(m_sumLeapData);
+    }
+
+    void convolveWithWeight( CDataType& in )
+    {
+        in = sharpFFT(in, true);
+        in = swapVectorWithIn(in);
+
+        for ( auto& elem : in )
+        {
+            elem *= m_weight;
+        }
+
+        in = sharpFFT(in, false);
+
+        for ( size_t i = 0; i < in.size(); i++ )
+        {
+            if ( i % 2 )
+                in[i] /= -1.0;
+            //std::conj(in[i]);
+        }
+
     }
 
     void adjustArrayFocus( const SoundInfo& in, ArrayFocusMode mode )

@@ -37,6 +37,7 @@ IOManager::read(SoundData<CDataType> &output)
     if (readCount < 0)
         return -1;
 
+
     output.setStatus(iter->second.getReadStatus());
     std::vector<std::complex<double>>::iterator begin = iter->second.getDataIter();
     std::vector<std::complex<double>>::iterator end = iter->second.getDataEnd();

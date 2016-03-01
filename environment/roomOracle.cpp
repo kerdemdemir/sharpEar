@@ -33,7 +33,7 @@ void roomOracle::preprocess(const std::vector< SoundDataRef > &input )
 
     auto atomsInMiddle = m_roomSimulation->getAtomsInAngle( 0 );
     roomAtom* bestRadius = findSpeakerRadius( atomsInMiddle, originalSound, trainer4 );
-    auto atomInRadius = m_roomSimulation->getAtomInRadius( bestRadius->getInfo().getRadius());
+    auto atomInRadius = m_roomSimulation->getAtomInRadius( bestRadius->getInfo().getRadius(), false);
     auto soundPositionLocal = findSpeakerRadius(atomInRadius, originalSound, trainer );
     std::cout << " Speaker located in: ";
     SoundData<CDataType>& dataOriginal = originalSound;
@@ -173,7 +173,7 @@ roomOracle::fftWeight()
 {
     int N = 360;
 //    auto micGainFFT = m_roomSimulation->getImpulseResponce(m_weight);
-    std::vector< std::complex<double> > in2 (N, std::complex<double>(0, 0));
+    std::vector< std::complex<double> > in2 (N, std::complex<double>(0.0, 0));
     auto in2Middle = in2.begin() + in2.size()/2;
     std::fill( in2Middle - m_weight.size()/2,
             in2Middle + m_weight.size()/2 + 1, std::complex<double>(1, 0));
@@ -203,8 +203,6 @@ roomOracle::fftWeight()
     m_weight.assign( resMiddlePos- m_weight.size()/2,
             resMiddlePos + m_weight.size()/2 + 1 );
 
-    for ( auto& elem : m_weight)
-        elem /= m_weight.size();
 
     auto plot3 = new sharpPlot("Weights3", "Aparture3", false);
     plot3->drawBasicGraph(m_weight); plot3->update();

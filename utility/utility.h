@@ -39,13 +39,11 @@
 #include <fftw3.h>
 
 inline
-CDataType sharpFFT( CDataType in, bool isForward )
+CDataType sharpFFT( CDataType& in, bool isForward )
 {
     const int N =  in.size() ;
 
     std::vector< std::complex<double> > out (N);
-
-    CDataType returnVal;
 
     fftw_plan my_plan;
     if (!isForward)
@@ -56,6 +54,32 @@ CDataType sharpFFT( CDataType in, bool isForward )
                                                reinterpret_cast<fftw_complex*>(&out[0]), FFTW_FORWARD, FFTW_ESTIMATE);
 
     fftw_execute(my_plan);
+    if (!isForward)
+    {
+        std::transform(out.begin(), out.end(), out.begin(), [N]( std::complex<double>& elem ){
+            return elem / (double)N;
+        });
+    }
+    return out;
+}
+
+inline
+CDataType sharpFFT( CDataType::iterator in, size_t size, bool isForward )
+{
+    const int N =  size ;
+
+    std::vector< std::complex<double> > out (size);
+
+    fftw_plan my_plan;
+    if (!isForward)
+      my_plan = fftw_plan_dft_1d(N, reinterpret_cast<fftw_complex*>(&in[0]),
+                                             reinterpret_cast<fftw_complex*>(&out[0]), FFTW_BACKWARD, FFTW_ESTIMATE);
+    else
+      my_plan = fftw_plan_dft_1d(N, reinterpret_cast<fftw_complex*>(&in[0]),
+                                               reinterpret_cast<fftw_complex*>(&out[0]), FFTW_FORWARD, FFTW_ESTIMATE);
+
+    fftw_execute(my_plan);
+
 
     return out;
 }

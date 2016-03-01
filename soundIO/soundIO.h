@@ -42,7 +42,7 @@ int createPulse( CDataType& data, size_t readSize,  double sampleRate )
 {
     double f0 = 1500;
     double ts = 1.0 / sampleRate;
-    double vz = 1000000;
+    double vz = 300;
     for (size_t i = 0; i < readSize; i++)
     {
         double realTime =  i  * ts;
@@ -53,6 +53,7 @@ int createPulse( CDataType& data, size_t readSize,  double sampleRate )
         data.emplace_back(realPart, 0);
 
     }
+
     return data.size();
 
 }

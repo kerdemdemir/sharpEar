@@ -245,8 +245,8 @@ CDataType roomSimulation::getImpulseResponce( CDataType& weights)
         returnVal.push_back( SingleCDataType(atom->getResult().second)  );
     }
 
-    for ( int i = 0; i < 90; i++)
-        returnVal[90 + i] = returnVal[90 - i];
+    //for ( int i = 0; i < 90; i++)
+      //  returnVal[90 + i] = returnVal[90 - i];
     return returnVal;
 }
 
@@ -486,7 +486,7 @@ roomSimulation::getAtomInRadius(int curRadius , bool isUnique)
 
 
     std::vector< roomAtom* > returnVal;
-    for (int curAngle = -90 ; curAngle < 90; curAngle += 1)
+    for (double curAngle = -90 ; curAngle < 90; curAngle += 0.5)
     {
         double cosVal  = curRadius * cos(curAngle * GLOBAL_PI / 180.0);
         double yPos = _room_scene->sceneRect().top() + (abs(cosVal) / _roomParameters.pixel2RealRatio);
@@ -543,7 +543,7 @@ roomSimulation::drawAngleValueGraph( )
     }
     else
     {
-        for (int curAngle = -90 ; curAngle < 90; curAngle += 1)
+        for (double curAngle = -90 ; curAngle < 90; curAngle += 0.5)
         {
             double cosVal  = curRadius * cos(curAngle * GLOBAL_PI / 180.0);
             double yPos = _room_scene->sceneRect().top() + (abs(cosVal) / _roomParameters.pixel2RealRatio);
