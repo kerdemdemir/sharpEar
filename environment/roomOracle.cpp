@@ -16,7 +16,7 @@ void roomOracle::preprocess(const std::vector< SoundDataRef > &input )
         return;
     }
     m_weight.resize(m_array.getElemCount(), 1);
-
+    //feedArray(input, m_weight); return;
     if ( isManualMode )
     {
         fftWeight();
@@ -34,7 +34,7 @@ void roomOracle::preprocess(const std::vector< SoundDataRef > &input )
     auto atomsInMiddle = m_roomSimulation->getAtomsInAngle( 0 );
     roomAtom* bestRadius = findSpeakerRadius( atomsInMiddle, originalSound, trainer4 );
     auto atomInRadius = m_roomSimulation->getAtomInRadius( bestRadius->getInfo().getRadius(), false);
-    auto soundPositionLocal = findSpeakerRadius(atomInRadius, originalSound, trainer );
+    auto soundPositionLocal = findSpeakerRadius(atomInRadius, originalSound, trainer4 );
     std::cout << " Speaker located in: ";
     SoundData<CDataType>& dataOriginal = originalSound;
     auto snrVal = dataOriginal.calculateSNR(soundPositionLocal->sumWhole());

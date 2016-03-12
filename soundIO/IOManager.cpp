@@ -2,6 +2,7 @@
 #include <utility/soundData.h>
 
 std::vector<double> IOParams::bufferData;
+std::vector<double> IOParams::upStreamBufferData;
 
 int
 IOManager::init(std::string& fileName, int id, bool isPulse)

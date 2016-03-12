@@ -27,7 +27,7 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionOpen"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuAdvance">
     <property name="title">
@@ -35,7 +35,7 @@
     </property>
     <addaction name="actionFocusSelect"/>
     <addaction name="actionPulse"/>
-    <addaction name="actionSpeaker_Tracking"/>
+    <addaction name="actionSpeakerTracking"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuAdvance"/>
@@ -49,11 +49,6 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <action name="actionOpen">
-   <property name="text">
-    <string>Open</string>
-   </property>
-  </action>
   <action name="actionFocusSelect">
    <property name="text">
     <string>FocusSelect</string>
@@ -64,12 +59,12 @@
     <string>Pulse</string>
    </property>
   </action>
-  <action name="actionSpeaker_Tracking">
+  <action name="actionSpeakerTracking">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Speaker Tracking</string>
+    <string>SpeakerTracking</string>
    </property>
   </action>
  </widget>

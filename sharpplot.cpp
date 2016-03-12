@@ -88,7 +88,7 @@ sharpPlot::drawBasicGraph(std::vector<std::pair <double, double> >& data)
     QPolygonF points;
 
     if (_isLowFilter)
-        lowPassFilter(data, 10);
+        lowPassFilter(data, 5);
 
     for (auto elem : data)
     {

@@ -20,6 +20,7 @@
 #include <outputDialogs/outputdialogs.h>
 #include <QInputDialog>
 
+constexpr int  maxRecentFileSize = 5;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -27,7 +28,23 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    //this->setWindowFlags(Qt::MSWindowsFixedSizeDialogHint);
+
+    auto newAction = new QAction( "Open", this);
+    connect(newAction, &QAction::triggered, [this](){
+        openFile();
+    });
+    ui->menuFile->addAction(newAction);
+    ui->menuFile->addSeparator();
+
+    settings = new QSettings("SharpEar", "KadirErdemDemir");
+    auto tempActionList = settings->value("recentFileList").toList();
+    for ( auto fileNameStr : tempActionList )
+    {
+        addNewRecentFile( fileNameStr.toString() );
+    }
+
+
+
     showMaximized();
     setPanels();
 
@@ -68,14 +85,38 @@ void MainWindow::setPanels()
 }
 
 
-void MainWindow::on_actionOpen_triggered()
+void MainWindow::openFile()
 {
     auto wavFileName = QFileDialog::getOpenFileName(this,
         tr("Open wav file"), "",
         tr("All Files (*)"));
     if (wavFileName.isNull() || wavFileName.isEmpty())
         return;
-    hndl_interActionManager->setWavFileName(std::string(wavFileName.toLocal8Bit().constData()));
+    addNewRecentFile(wavFileName);
+    hndl_interActionManager->setWavFileName(wavFileName.toStdString());
+}
+
+void MainWindow::addNewRecentFile( QString newFileName )
+{
+   auto newAction = new QAction( newFileName, this);
+   connect(newAction, &QAction::triggered, [this, newFileName](){
+       hndl_interActionManager->setWavFileName(newFileName.toStdString());
+   });
+
+
+   recentFileAction.push_front(newAction);
+   recentFileNames.push_front(newFileName);
+   ui->menuFile->addAction(newAction);
+   if ( recentFileAction.size() > maxRecentFileSize )
+   {
+       auto qAction = recentFileAction.back();
+       recentFileAction.pop_back();
+       recentFileNames.pop_back();
+       ui->menuFile->removeAction(qAction);
+   }
+
+   QVariant recentVals(recentFileNames);
+   settings->setValue("recentFileList", recentVals);
 }
 
 void MainWindow::on_actionFocusSelect_triggered()
@@ -116,12 +157,8 @@ void MainWindow::on_actionFocusSelect_triggered()
     }
 }
 
-void MainWindow::on_actionSpeaker_Tracking_toggled(bool arg1)
-{
-    hndl_interActionManager->setTrackingMode(arg1);
-}
 
-void MainWindow::on_actionSpeaker_Tracking_triggered(bool checked)
+void MainWindow::on_actionSpeakerTracking_triggered(bool checked)
 {
-    hndl_interActionManager->setTrackingMode(checked);
+   hndl_interActionManager->setTrackingMode(checked);
 }

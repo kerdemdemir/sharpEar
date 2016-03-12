@@ -24,8 +24,9 @@ static const char* defaultFilePathRoot = "C:/Qt/Tools/QtCreator/bin/build-sharpE
 enviromentSetup::enviromentSetup(QWidget *parent) : QWidget (parent)
                 , hndl_interActionManager(hndl_interActionManager->getDataShareInstance())
 {
-    st_environmentParamaters.micNumber = 16;
-    st_environmentParamaters.distanceBetweenMic = 11.333;
+    st_environmentParamaters.micNumber = 41;
+    //st_environmentParamaters.distanceBetweenMic = 11.333;
+    st_environmentParamaters.distanceBetweenMic = 5;
     st_environmentParamaters.listenRange = 2000; //cm
     st_environmentParamaters.dx_dy       = 20;
     _rowCountSoundInput = 0;
@@ -113,19 +114,20 @@ void enviromentSetup::setTables()
     verticalOuterLayout->addWidget(sourceListText);
     sourceListText->resizeColumnsToContents();
 
-    outputTableHeadNames << "TestFileNames";
-    testFilesTable  = new QTableWidget(10, 1);
-    testFilesTable->setHorizontalHeaderLabels(outputTableHeadNames);
-    testFilesTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    testFilesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-    testFilesTable->setSelectionMode (QAbstractItemView::SingleSelection);
-    testFilesTable->setMaximumHeight(200);
-    verticalOuterLayout->addWidget(testFilesTable);
-    testFilesTable->resizeColumnsToContents();
-    addDefaultFileNames();
+    // I canceled this feature since I added recent files
+//    outputTableHeadNames << "TestFileNames";
+//    testFilesTable  = new QTableWidget(10, 1);
+//    testFilesTable->setHorizontalHeaderLabels(outputTableHeadNames);
+//    testFilesTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+//    testFilesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+//    testFilesTable->setSelectionMode (QAbstractItemView::SingleSelection);
+//    testFilesTable->setMaximumHeight(200);
+//    verticalOuterLayout->addWidget(testFilesTable);
+//    testFilesTable->resizeColumnsToContents();
+//    addDefaultFileNames();
 
     QObject::connect(sourceListText, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(sourceFilesDoubleClick(int, int)));
-    QObject::connect(testFilesTable, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(testFilesTableDoubleClicked(int, int)));
+    //QObject::connect(testFilesTable, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(testFilesTableDoubleClicked(int, int)));
     //testFilesTable->hide();
 
 }

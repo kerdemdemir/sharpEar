@@ -16,7 +16,7 @@
 #include <utility/multAccessData.h>
 
 
-#define DEBUG_TEST_MODE
+//#define DEBUG_TEST_MODE
 #define POINT_ALWAYS_CENTER
 
 
@@ -94,7 +94,7 @@ roomSimulation::calcRoomParameters()
      if (ENABLE_UPSAMPLING)
         _soundParameters.samplesPerSec *= UP_SAMPLE_RATE;
 
-    _soundParameters.currentOutputTime = 90000.0 / _soundParameters.samplesPerSec;
+    _soundParameters.currentOutputTime = 180000.0 / _soundParameters.samplesPerSec;
     _soundParameters.amplitude = 0;
     _soundParameters.samplePerOutput = _soundParameters.currentOutputTime * _soundParameters.samplesPerSec;
 
@@ -104,7 +104,7 @@ roomSimulation::calcRoomParameters()
     _roomParameters.pixel2RealRatio = (double)hndl_interActionManager->getBasicUserDialogValues()->listenRange
                                         / (double)_roomParameters.yPixelCount;
 
-    _roomParameters.pixel4EachAtom = 3;
+    _roomParameters.pixel4EachAtom = 15;
     _roomParameters.angleDist = 1;
     _roomParameters.numberOfAtomsIn1D = (double)hndl_interActionManager->getBasicUserDialogValues()->listenRange
                                         / hndl_interActionManager->getBasicUserDialogValues()->dx_dy;
@@ -486,7 +486,7 @@ roomSimulation::getAtomInRadius(int curRadius , bool isUnique)
 
 
     std::vector< roomAtom* > returnVal;
-    for (double curAngle = -90 ; curAngle < 90; curAngle += 0.5)
+    for (double curAngle = -90 ; curAngle < 90; curAngle += 3)
     {
         double cosVal  = curRadius * cos(curAngle * GLOBAL_PI / 180.0);
         double yPos = _room_scene->sceneRect().top() + (abs(cosVal) / _roomParameters.pixel2RealRatio);

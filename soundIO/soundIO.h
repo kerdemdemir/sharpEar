@@ -36,13 +36,14 @@
 #include <string>
 #include <memory>
 #include <math.h>
+#include <soxr.h>
 
 inline
 int createPulse( CDataType& data, size_t readSize,  double sampleRate )
 {
     double f0 = 1500;
     double ts = 1.0 / sampleRate;
-    double vz = 300;
+    double vz = 500;
     for (size_t i = 0; i < readSize; i++)
     {
         double realTime =  i  * ts;
@@ -58,6 +59,7 @@ int createPulse( CDataType& data, size_t readSize,  double sampleRate )
 
 }
 
+
 class IOParams
 {
 public:
@@ -70,6 +72,7 @@ public:
         totalWrite = 0;
         readSize = packetSize;
         bufferData.resize(readSize);
+        upStreamBufferData.resize( readSize );
         inputStatus = SStatus::NOT_INIT;
     }
 
@@ -84,7 +87,8 @@ public:
         totalWrite = rhs.totalWrite;
         readSize = rhs.readSize;
         inputStatus = rhs.inputStatus;
-
+        soxResampler = rhs.soxResampler;
+        soxDownsampler = rhs.soxDownsampler;
         rhs.fileIn = nullptr;
         rhs.fileOut = nullptr;
     }
@@ -131,26 +135,59 @@ public:
             return -1;
         }
         std::cout << " Sample rate: " <<  fileInfo->samplerate << " Channels: " << fileInfo->channels << std::endl;
+
+        soxr_error_t error;
+        if ( ENABLE_UPSAMPLING )
+        {
+            auto ioSpec = soxr_io_spec(SOXR_FLOAT64_I,SOXR_FLOAT64_I);
+            soxr_quality_spec_t q_spec = soxr_quality_spec(SOXR_VHQ, 0);
+            soxResampler = soxr_create( fileInfo->samplerate, fileInfo->samplerate * UP_SAMPLE_RATE, 1,
+                                        &error, &ioSpec, &q_spec, NULL);
+
+            soxDownsampler = soxr_create( fileInfo->samplerate * UP_SAMPLE_RATE, fileInfo->samplerate, 1,
+                                          &error, &ioSpec, &q_spec, NULL);
+        }
+
+
         inputStatus = SStatus::JUST_INITED;
         return 0;
     }
 
     int read( )
     {
-        int readCount = sf_read_double(fileIn, bufferData.data(), readSize);
+        size_t readSizeTemp = readSize;
+        if ( ENABLE_UPSAMPLING )
+            readSizeTemp /= (UP_SAMPLE_RATE / 2);
+
+        int readCount = sf_read_double(fileIn, bufferData.data(), readSizeTemp );
+        sf_seek(fileIn, -readSizeTemp/2, SEEK_CUR );
         if ( readCount < 0 )
         {
             std::cout << " IOParams:: <read> failed " << sf_error_number( sf_error(fileIn) ) << std::endl;
             inputStatus = SStatus::FINISHED;
             return -1;
         }
+
+        size_t actualOut;
+        if ( ENABLE_UPSAMPLING )
+            soxr_process(soxResampler, bufferData.data(), readSizeTemp, NULL, upStreamBufferData.data(), readSize, &actualOut);
+
+
         inputStatus = SStatus::ON_GOING;
-        for (size_t i = 0; i < readSize; i++)
-            data.push_back( std::complex<double> (bufferData[i], 0.0));
+        if ( ENABLE_UPSAMPLING )
+        {
+            for (size_t i = 0; i < readSize; i++)
+            {
+                data.push_back( std::complex<double> (upStreamBufferData[i], 0.0));
+            }
+        }
+        else
+        {
+            for (size_t i = 0; i < readSize; i++)
+                data.push_back( std::complex<double> (bufferData[i], 0.0));
+        }
 
-        totalRead = data.size();
-
-        if ( readCount < (int)readSize )
+        if ( readCount < (int)readSizeTemp )
         {
             std::cout << " IOParams:: <read> File comes to end " << readCount << " Total Read " << totalRead << std::endl;
             inputStatus = SStatus::FINISHED;
@@ -180,8 +217,15 @@ public:
             std::cout << "IOParams:: <write> fileOut is null please check it" << std::endl;
             return -1;
        }
-
-        sf_count_t count = sf_write_double( fileOut, data.data(), data.size()) ;
+       sf_count_t count = 0;
+       if (ENABLE_UPSAMPLING)
+       {
+            std::vector<double> copy (data.size() / UP_SAMPLE_RATE ) ;
+            soxr_process(soxDownsampler, data.data(), data.size(), NULL, copy.data(), copy.size(), NULL);
+            count = sf_write_double( fileOut, copy.data(), copy.size()) ;
+       }
+        else
+             count = sf_write_double( fileOut, data.data(), data.size()) ;
         std::cout << "IOParams:: <write> Data size written: " << count << std::endl;
 
         if (count <= 0)
@@ -217,6 +261,7 @@ public:
 private:
 
     static std::vector<double> bufferData;
+    static std::vector<double> upStreamBufferData;
     CDataType data;
     std::string filename;
     SNDFILE* fileIn ;
@@ -226,6 +271,8 @@ private:
     SStatus inputStatus;
     int totalRead;
     int totalWrite;
+    soxr_t soxResampler;
+    soxr_t soxDownsampler;
 };
 
 

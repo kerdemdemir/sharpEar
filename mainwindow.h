@@ -31,7 +31,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
+#include <deque>
+#include <QSettings>
 class QWidget;
 class QLayout;
 class QDockWidget;
@@ -78,13 +79,18 @@ private:
     void setPanels();
     Ui::MainWindow *ui;
 
+
+    void addNewRecentFile( QString newFileName );
+    QList<QString> recentFileNames;
+    QList<QAction*> recentFileAction;
+    QSettings* settings;
+
 public slots:
-    void on_actionSpeaker_Tracking_toggled(bool arg1);
-    void on_actionOpen_triggered();
+    void openFile();
     void on_actionFocusSelect_triggered();
 
 private slots:
-    void on_actionSpeaker_Tracking_triggered(bool checked);
+    void on_actionSpeakerTracking_triggered(bool checked);
 };
 
 #endif // MAINWINDOW_H
