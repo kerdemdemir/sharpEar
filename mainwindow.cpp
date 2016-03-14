@@ -20,6 +20,7 @@
 #include <outputDialogs/outputdialogs.h>
 #include <QInputDialog>
 
+
 constexpr int  maxRecentFileSize = 5;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -28,6 +29,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    console = new ScriptingConsole(this);
+    console->hide();
 
     auto newAction = new QAction( "Open", this);
     connect(newAction, &QAction::triggered, [this](){
@@ -44,9 +48,13 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
 
+    console->registerWithName( this, "MainWindow" );
+    hndl_interActionManager->setMainWindow(this);
 
     showMaximized();
     setPanels();
+
+
 
 }
 
@@ -95,6 +103,8 @@ void MainWindow::openFile()
     addNewRecentFile(wavFileName);
     hndl_interActionManager->setWavFileName(wavFileName.toStdString());
 }
+
+
 
 void MainWindow::addNewRecentFile( QString newFileName )
 {
@@ -161,4 +171,9 @@ void MainWindow::on_actionFocusSelect_triggered()
 void MainWindow::on_actionSpeakerTracking_triggered(bool checked)
 {
    hndl_interActionManager->setTrackingMode(checked);
+}
+
+void MainWindow::on_actionScripting_Console_triggered()
+{
+    console->show();
 }

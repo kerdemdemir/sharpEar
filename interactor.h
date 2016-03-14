@@ -55,7 +55,7 @@ public:
     void createDialogPanel(QWidget* dialogPanel, QDockWidget* dialogDockWidget);
     void createOutputPanel(QWidget* outputPanel, QDockWidget* dialogDockWidget, bool isRaw);
     QWidget *createRoom(QRectF boundingRect);
-    void  startVisulution(); //Triggers when maxElements button pressed
+    void  startBeamforming(); //Triggers when maxElements button pressed
     /****       Data managed by mainUI        ****/
 
     valuesBasicUserDialog *getBasicUserDialogValues() const;
@@ -92,9 +92,14 @@ public:
         return singletonInstanse;
     }
     void setSoundRef4SNRCalc(const std::vector<double>::const_iterator processedData, size_t sizeOfPacket);
+
+    void setMainWindow( MainWindow* mainWindowPtr )
+    {
+        hndl_mainWindow = mainWindowPtr;
+    }
 private:
 
-    QMainWindow*        hndl_mainWindow;
+    MainWindow*        hndl_mainWindow;
     enviromentSetup*    hndl_enviromentSetup;
     roomSimulation*     hndl_roomSimulation;
     outputDialogs*      hndl_raw_outputDialogs;
@@ -112,7 +117,7 @@ private:
     int    _currentIndexOfSoundData;
 
     //** Singleton pattern **//
-    interActionManager() {}
+    interActionManager();
     interActionManager(interActionManager const&);              // Don't Implement
     void operator=(interActionManager const&); // Don't implement
 };

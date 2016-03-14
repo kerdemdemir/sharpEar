@@ -7,6 +7,7 @@
 QT       += core gui
 
 QT       += widgets
+QT       += script
 CONFIG += c++14
 
 QMAKE_CXXFLAGS += -std=gnu++1y -pthread -lpthread
@@ -21,7 +22,8 @@ QMAKE_CXXFLAGS_RELEASE += -O0
 QMAKE_LFLAGS_RELEASE -= -O1
 QMAKE_LFLAGS_RELEASE -= -O0
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    scriptingConsole.ui
 
 SOURCES += main.cpp\
         interactor.cpp\
@@ -37,7 +39,8 @@ SOURCES += main.cpp\
         outputDialogs/signaldata.cpp \
     sharpplot.cpp \
     environment/roomDialogs.cpp \
-    environment/roomOracle.cpp
+    environment/roomOracle.cpp \
+    scriptingConsole.cpp
 
 
 
@@ -73,7 +76,8 @@ HEADERS  += mainwindow.h\
     speakerProcess/mlModel/pitchgrams.h \
     speakerProcess/mlModel/tranierlist.h \
     speakerProcess/featureExtractor/f0highlevelfeatures.h \
-    utility/snrmanager.h
+    utility/snrmanager.h \
+    scriptingConsole.h
 
 
 

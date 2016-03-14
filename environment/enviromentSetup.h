@@ -63,7 +63,7 @@ public:
 private Q_SLOTS:
     void reDrawEnvironment();
     void testFilesTableDoubleClicked(int row, int column);
-    void startVisulution();
+    void startBeamforming();
 
 
 private :

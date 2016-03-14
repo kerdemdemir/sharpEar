@@ -78,7 +78,7 @@ enviromentSetup::createDialogs()
 
 
     QObject::connect(resizeButton, SIGNAL(released()), this, SLOT(reDrawEnvironment()));
-    QObject::connect(maxElementsButton, SIGNAL(released()), this, SLOT(startVisulution()));
+    QObject::connect(maxElementsButton, SIGNAL(released()), this, SLOT(startBeamforming()));
 
 }
 
@@ -218,8 +218,8 @@ enviromentSetup::reDrawEnvironment()
 }
 
 void
-enviromentSetup::startVisulution()
+enviromentSetup::startBeamforming()
 {
-    hndl_interActionManager->startVisulution();
+    hndl_interActionManager->startBeamforming();
 }
 

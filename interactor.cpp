@@ -14,6 +14,7 @@ void interActionManager::createDialogPanel(QWidget* dialogPanel, QDockWidget* di
     _sampleSize = SAMPLINGS_FOR_OUTPUTS;
     dialogPanel = hndl_enviromentSetup;
     dialogDockWidget->setWidget(dialogPanel);
+
 }
 
 void
@@ -39,6 +40,10 @@ void interActionManager::setTrackingMode( bool trackingMode )
                 getOracle().setSpeakerTracking(trackingMode);
 }
 
+interActionManager::interActionManager()
+{
+
+}
 
 
 std::vector<double> *interActionManager::getCurrentCopyOfRawData(bool isPrevBuffer)
@@ -110,6 +115,9 @@ void interActionManager::incomingData(const std::vector< std::complex<double> >:
 QWidget * interActionManager::createRoom(QRectF boundingRectOfCentralWidget)
 {
     hndl_roomSimulation = new roomSimulation(boundingRectOfCentralWidget);
+    hndl_mainWindow->scriptRegisterWithName( hndl_roomSimulation, "Room" );
+    hndl_mainWindow->scriptRegisterWithName( hndl_roomSimulation->getDialog(), "Dialog" );
+
     return hndl_roomSimulation;
 }
 
@@ -118,9 +126,9 @@ void interActionManager::reDrawRoom(valuesBasicUserDialog& st_environmentParamat
     hndl_roomSimulation->reset(st_environmentParamaters);
 }
 
-void interActionManager::startVisulution()
+void interActionManager::startBeamforming()
 {
-    hndl_roomSimulation->startVisulution();
+    hndl_roomSimulation->startBeamforming();
 }
 
 

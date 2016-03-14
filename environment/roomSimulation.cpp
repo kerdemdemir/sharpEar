@@ -14,6 +14,9 @@
 #include "sharpplot.h"
 #include <QPen>
 #include <utility/multAccessData.h>
+#include <QScriptValue>
+#include <QScriptContext>
+#include <QScriptEngine>
 
 
 //#define DEBUG_TEST_MODE
@@ -104,7 +107,7 @@ roomSimulation::calcRoomParameters()
     _roomParameters.pixel2RealRatio = (double)hndl_interActionManager->getBasicUserDialogValues()->listenRange
                                         / (double)_roomParameters.yPixelCount;
 
-    _roomParameters.pixel4EachAtom = 15;
+    _roomParameters.pixel4EachAtom = 3;
     _roomParameters.angleDist = 1;
     _roomParameters.numberOfAtomsIn1D = (double)hndl_interActionManager->getBasicUserDialogValues()->listenRange
                                         / hndl_interActionManager->getBasicUserDialogValues()->dx_dy;
@@ -191,7 +194,7 @@ roomSimulation::setRadiusAngleAtom()
 }
 
 void
-roomSimulation::startVisulution()
+roomSimulation::startBeamforming()
 {
     for (size_t i = 0; i < hndl2Atom.size(); i++)
     {
@@ -214,7 +217,7 @@ roomSimulation::startVisulution()
 
 CDataType roomSimulation::getImpulseResponce( CDataType& weights)
 {
-    SoundInfo in = findAtomRadiusAngle(1000, 0)->getInfo();
+    SoundInfo in = findAtomPolarImpl(1000, 0)->getInfo();
     auto listAtom = getAtomInRadius( in.getRadius(), false );
 
 
@@ -298,7 +301,7 @@ roomSimulation::startAtomColoring()
 }
 
 roomAtom*
-roomSimulation::findAtomRadiusAngle( double radius, double angle )
+roomSimulation::findAtomPolarImpl( double radius, double angle )
 {
     double cosVal  = radius * cos(angle * GLOBAL_PI / 180.0);
     double yPos = _room_scene->sceneRect().top() + (abs(cosVal) / _roomParameters.pixel2RealRatio);
@@ -306,6 +309,22 @@ roomSimulation::findAtomRadiusAngle( double radius, double angle )
     double xPos = _micArr->getSceneMiddlePos().first + ( sinVal / _roomParameters.pixel2RealRatio );
 
     return findClosePoint(xPos , yPos);
+}
+
+void roomSimulation::listen(double radius, double angle)
+{
+    auto atom = findAtomPolarImpl( radius, angle );
+    _roomDialogs->listen(atom);
+    this->scene()->update();
+    this->viewport()->repaint();
+}
+
+void roomSimulation::insertSound( double radius, double angle, QString soundFileName, QString soundType )
+{
+    auto atom = findAtomPolarImpl( radius, angle );
+    _roomDialogs->insertSound(atom, soundFileName, soundType);
+    this->scene()->update();
+    this->viewport()->repaint();
 }
 
 roomAtom*

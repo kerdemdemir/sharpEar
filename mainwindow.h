@@ -33,6 +33,8 @@
 #include <QMainWindow>
 #include <deque>
 #include <QSettings>
+#include "scriptingConsole.h"
+
 class QWidget;
 class QLayout;
 class QDockWidget;
@@ -49,6 +51,10 @@ class interActionManager;
 class enviromentSetup;
 class outputDialogs;
 
+//qScriptRegisterMetaType(MainWindow);
+
+
+
 namespace Ui {
 class MainWindow;
 }
@@ -61,7 +67,11 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-
+    template< typename T >
+    void scriptRegisterWithName( T* registerPtr, QString scriptName)
+    {
+        console->registerWithName(registerPtr, scriptName);
+    }
 
 private:
 
@@ -84,6 +94,7 @@ private:
     QList<QString> recentFileNames;
     QList<QAction*> recentFileAction;
     QSettings* settings;
+    ScriptingConsole* console = nullptr;
 
 public slots:
     void openFile();
@@ -91,6 +102,7 @@ public slots:
 
 private slots:
     void on_actionSpeakerTracking_triggered(bool checked);
+    void on_actionScripting_Console_triggered();
 };
 
 #endif // MAINWINDOW_H

@@ -85,6 +85,19 @@ roomDialogs::process()
     return 0;
 }
 
+void roomDialogs::insertNull( int angle )
+{
+    m_oracle.addNull(angle);
+}
+
+void roomDialogs::listen( roomAtom* atom )
+{
+    m_cord2Listen[atom->getInfo().getRealPos()] = std::make_pair( m_id, atom );
+    atom->getInfo().setOutput(true);
+    atom->print();
+    std::cout << "A listen point is added id = " <<  m_id++ << std::endl;
+}
+
 int
 roomDialogs::openAudio(roomAtom *curAtom, STypes soundType)
 {
@@ -127,6 +140,7 @@ int roomDialogs::createDialog(roomAtom *ptrAtom)
     QMessageBox msgBox;
     msgBox.setText("You are adding a voice source.");
     msgBox.setInformativeText("Please describe if it is Source, Noise or you want to get output Listen?");
+
     msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Yes | QMessageBox::No | QMessageBox::Ignore
                           | QMessageBox::Close | QMessageBox::Discard | QMessageBox::Apply);
     msgBox.setDefaultButton(QMessageBox::Ok);

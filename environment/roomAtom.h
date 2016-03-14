@@ -46,6 +46,7 @@ class QGraphicsScene;
 ///************************************************************************************************//
 class roomAtomRoot
 {
+
 public:
 
     roomAtomRoot(packetSound &sound, roomVariables& room, const microphoneNode& array) : m_array(array)
@@ -150,8 +151,9 @@ protected:
 ///************************************************************************************************//
 
 
-class roomAtom : public roomAtomRoot, public QGraphicsItem
+class roomAtom : public QGraphicsItem, public roomAtomRoot
 {
+
 public:
 
     roomAtom(packetSound &sound, roomVariables &room, const microphoneNode &array)
@@ -205,5 +207,6 @@ private:
 
 
 };
+
 
 #endif // SPATIALNODE_H

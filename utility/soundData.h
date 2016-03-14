@@ -292,7 +292,7 @@ struct SoundData
 
         double val;
         double noice;
-        for ( int i = 0; i < packetSize; i++ )
+        for ( size_t i = 0; i < packetSize; i++ )
         {
              auto curPower = std::pow ( std::abs(dataStart[i]), 2);
              val += curPower;

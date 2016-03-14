@@ -23,7 +23,7 @@ void roomOracle::preprocess(const std::vector< SoundDataRef > &input )
         auto soundPos = feedArray(input, m_weight);
         isSoundLocated = true;
         SoundData<CDataType>& dataOriginal = soundPos;
-        auto atomInRadius = m_roomSimulation->findAtomRadiusAngle(dataOriginal.getInfo().getRadius(), dataOriginal.getInfo().getAngle());
+        auto atomInRadius = m_roomSimulation->findAtomPolarImpl(dataOriginal.getInfo().getRadius(), dataOriginal.getInfo().getAngle());
         auto snrVal = dataOriginal.calculateSNR(atomInRadius->sumWhole());
         dataOriginal.getInfo().print( QString(" SNR val : %1 ").arg(snrVal).toStdString());
         return;

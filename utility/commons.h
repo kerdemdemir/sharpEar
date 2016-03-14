@@ -75,6 +75,25 @@ const char* STypes2Str(STypes type)
         return "Undefined";
 }
 
+inline
+STypes str2SType( const char* typeStr)
+{
+    std::string str = typeStr;
+    if (str == "Source")
+        return STypes::SOURCE;
+    else if (str == "Noice")
+        return STypes::NOICE;
+    else if (str == "Pulse")
+        return STypes::PULSE;
+    else if (str == "MovingSound")
+        return STypes::MOVING_SOUND;
+    else if (str == "NoicedSound")
+        return STypes::SOURCE_NOICE;
+    else
+        return STypes::UNDEFINED;
+}
+
+
 enum class SStatus
 {
     NOT_INIT = 0,

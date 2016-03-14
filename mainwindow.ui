@@ -36,6 +36,7 @@
     <addaction name="actionFocusSelect"/>
     <addaction name="actionPulse"/>
     <addaction name="actionSpeakerTracking"/>
+    <addaction name="actionScripting_Console"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuAdvance"/>
@@ -65,6 +66,11 @@
    </property>
    <property name="text">
     <string>SpeakerTracking</string>
+   </property>
+  </action>
+  <action name="actionScripting_Console">
+   <property name="text">
+    <string>Scripting Console</string>
    </property>
   </action>
  </widget>

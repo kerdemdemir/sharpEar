@@ -46,8 +46,10 @@ class QGraphicsScene;
 class roomSimulation;
 
 
-class roomDialogs
+class roomDialogs : public QObject
 {
+    Q_OBJECT
+
 public:
 
     roomDialogs( const packetSound &sound, const roomVariables &room, microphoneNode& array):
@@ -58,6 +60,11 @@ public:
         m_mouseClick = false;
         m_packetCount = 0;
         m_id = 0;
+    }
+
+    virtual ~roomDialogs()
+    {
+
     }
 
     int process();
@@ -127,6 +134,17 @@ public:
     {
         return m_oracle;
     }
+
+public slots:
+
+    int insertSound( roomAtom* atom, QString soundFileName, QString soundType )
+    {
+        m_fileName = soundFileName.toStdString();
+        return openAudio(atom, str2SType(soundType.toStdString().c_str()));
+    }
+
+    void insertNull( int angle );
+    void listen( roomAtom* atom );
 
 private:
 

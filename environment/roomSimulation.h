@@ -38,6 +38,7 @@
 #include <utility/workerThread.h>
 #include <utility/soundData.h>
 #include "utility/multAccessData.h"
+#include <QScriptValue>
 
 class interActionManager;
 class QWidget;
@@ -46,8 +47,9 @@ class roomAtom;
 class microphoneNode;
 class sharpPlot;
 class roomDialogs;
-
-
+class QScriptValue;
+class QScriptContext;
+class QScriptEngine;
 //Will simulate the room with help of atoms and mic item
 //Most probably will have responsibility of opening the sound also
 
@@ -64,14 +66,12 @@ public:
     void setRadiusAngleAtom();
     void defaultMicPos();
     void setBoundingLines();
-    void startVisulution();
     CDataType getImpulseResponce( CDataType& weights );
     void reset(valuesBasicUserDialog& userValues);
     //**SoundFile open write**//
     int openFile(std::string fileName);
     void setFocus(double focusDistance, std::vector<double> relativeSourceDist);
     void setFileName(const std::string& input);
-    roomAtom* findAtomRadiusAngle( double radius, double angle );
 
     std::vector< roomAtom*> getMiddleAtoms();
     std::vector< roomAtom* > getAtomInRadius( int curRadius = -999, bool isUnique = true);
@@ -84,6 +84,13 @@ public:
     }
     radAngMultAccess<roomAtom *> getArcRadius(roomAtom *arcCenter);
     bool isFirst = true;
+    roomAtom* findAtomPolarImpl( double radius, double angle );
+
+public slots:
+
+    void startBeamforming();
+    void listen(double radius, double angle);
+    void insertSound( double radius, double angle, QString soundFileName, QString soundType );
 protected:
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
