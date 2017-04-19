@@ -52,7 +52,7 @@ public:
         }
     }
 
-    virtual bool load() override
+    virtual void load() override
     {
         for ( int i = 0; i < NUMBER_OF_PEOPLE; i++)
         {
@@ -64,7 +64,6 @@ public:
                 fileHolder.release();
             }
         }
-        return true;
     }
 
     virtual void predict( int personID ) override
@@ -78,7 +77,8 @@ public:
             }
             // auto scores = sortIndexes<double, NUMBER_OF_PEOPLE>(tempHolder);
             //auto distance = std::distance ( tempHolder.begin(), std::max_element(tempHolder.begin(), tempHolder.end()));
-            speakerResultList[personID].push_back(  tempHolder );
+            if ( !isAllEqual(tempHolder) )
+             speakerResultList[personID].push_back(  tempHolder );
         }
     }
 

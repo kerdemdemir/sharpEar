@@ -13,6 +13,10 @@
 #define NUMBER_OF_PEOPLE 9
 #define LOAD 0
 
+constexpr int MIN_FREQ = 80;
+constexpr int MAX_FREQ = 480;
+constexpr int JUMPSIZE = 8;
+
 using DataType2D = cv::Mat;
 
 static constexpr size_t hopSize = 256;
@@ -131,6 +135,67 @@ std::array<size_t, N> sortIndexes(const U &v) {
   return idx;
 }
 
+
+
+template < size_t N, typename U >
+inline
+std::array<double, N> sortIndexesDouble(const U &v) {
+
+  // initialize original index locations
+  std::array<double, N> idx = {0};
+  for (size_t i = 0; i != N; ++i) idx[i] = i;
+
+  // sort indexes based on comparing values in v
+  std::sort(idx.begin(), idx.end(),
+       [&v](double i1, double i2) {return v[i1] < v[i2];});
+
+  return idx;
+}
+
+template < size_t N, typename U >
+inline
+std::array<size_t, N> sortIndexesEqually(const U &v) {
+
+  auto idx = sortIndexesDouble<N, U>(v);
+  std::array<size_t, N> returnVal ={0};
+
+  for ( size_t i = 0; i < v.size(); i++)
+  {
+     auto iter = std::find(idx.begin(), idx.end(), i);
+     returnVal[*iter] = std::distance(idx.begin(), iter);
+  }
+
+  int curVal = 0;
+  for ( size_t i = 1; i < v.size(); i++)
+  {
+    auto prevElem  = v[ idx[i-1]  ];
+    auto curElem  = v[ idx[i] ];
+
+    if ( prevElem != curElem )
+        curVal++;
+
+    returnVal[idx[i]] = curVal;
+
+
+  }
+  return returnVal;
+}
+
+
+template <  typename U >
+inline
+bool isAllEqual( const U &v )
+{
+    if ( v.empty() )
+        return true;
+    int compare = v[0];
+    for ( auto elem : v )
+    {
+        if ( elem != compare )
+            return false;
+    }
+    return true;
+}
 
 #endif // GENERAL
 

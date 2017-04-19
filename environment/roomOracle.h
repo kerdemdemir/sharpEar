@@ -37,6 +37,7 @@
 #include <utility/multAccessData.h>
 #include <fftw3.h>
 #include <speakerProcess/mlModel/tranierlist.h>
+#include "utility/sortedbestpicklist.h"
 
 class roomDialogs;
 class roomSimulation;
@@ -51,34 +52,24 @@ class roomOracle
 public:
 
     roomOracle(size_t sampleRate, size_t packetSize, int speakerID,
-               int noiceID, microphoneNode& array) : m_array(array)
-    {
-        m_sampleSize = sampleRate;
-        m_packetSize = packetSize;
-        m_speakerID = speakerID;
-        m_noiceID = noiceID;
-
-        std::string trainPath("D:/speakerWavs/train1");
-        trainer.initPGrams(0, "F0");
-        train(trainer, trainPath);
-        trainer4.initMFCC();
-        train(trainer4, trainPath);
-        soundPosition = nullptr;
-        isSoundLocated = false;
-        isManualMode = true;
-    }
+               int noiceID, microphoneNode& array);
     void feedTrainer(const DataConstIter data, int angle );
 
 
-    void preprocess(const std::vector< SoundDataRef > &input);
-    void postprocess(const std::vector< SoundDataRef > &input);
+    void preprocess(const std::vector< SoundDataRef > &input, int packetCount);
+    void postprocess();
     roomAtom* findSpeakerRadius(const std::vector< roomAtom* >& atomList,
                                 SoundDataRef originalData,
-                                TrainerComposer &trainerIn);
+                                TrainerComposer &trainerIn, bool isRadius, bool isPrint = true);
 
     void setRoomSimulation( roomSimulation* mainWindow )
     {
         m_roomSimulation = mainWindow;
+    }
+
+    bool getIsSoundLocated()
+    {
+       return isSoundLocated;
     }
 
     void addNull( double angle )
@@ -92,32 +83,65 @@ public:
         isManualMode = !in;
     }
 
+    void setWeights( const CDataType& in )
+    {
+        m_weight = in;
+    }
+
+    void clear()
+    {
+        nullAnglePositions.clear();
+        isSoundLocated = false;
+        isRadiusLocated = false;
+        isAngleLocated = false;
+        soundPosition = nullptr;
+        angle = -999;
+        radius -999;
+        pastPositions.clear();
+        scorer.clear();
+    }
+
+    void setLookAngle( int angle )
+    {
+        m_lookAngle = angle;
+    }
+
 private:
 
     void getWeight();
     void parseValidation();
+    void locationingLogging(const std::vector< SoundDataRef > &input,
+                             roomAtom* bestFinal, bool isFinalized, int packetCount );
 
     int m_speakerID;
     int m_noiceID;
     int m_sampleSize;
     int m_packetSize;
+    int m_lookAngle;
     std::vector< std::pair<int, std::vector<double> > > m_angleProb;
 
     CDataType m_weight;
-    microphoneNode& m_array;
+    microphoneNode* m_array;
     roomSimulation* m_roomSimulation;
     TrainerComposer trainer;
-    TrainerComposer trainer4;
+    TrainerComposer trainerRadius;
 
     roomAtom* soundPosition;
+    SortedBestPickListScorer scorer;
     std::vector< double > nullAnglePositions;
+    std::vector< int > pastPositions;
     bool isSoundLocated;
+    bool isRadiusLocated;
+    bool isAngleLocated;
     bool isManualMode;
-
+    int  angle;
+    int  radius;
+    std::fstream m_resultFile;
     SoundDataRef feedArray(const std::vector< SoundDataRef > &input, const CDataType &weights);
     void fftWeight( );
     void getNoice(roomAtom *speakerPos);
 
+    void filterByPower(std::vector<roomAtom *> &atomList);
 };
 
 

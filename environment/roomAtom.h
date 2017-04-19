@@ -49,13 +49,23 @@ class roomAtomRoot
 
 public:
 
-    roomAtomRoot(packetSound &sound, roomVariables& room, const microphoneNode& array) : m_array(array)
+    roomAtomRoot(packetSound &sound, roomVariables& room, const microphoneNode* array) : m_array(array)
     {
         m_SoundParameters = sound;
         m_RoomVariables   = room;
         isNearField = false;
         isRadiusGuess = false;
     }
+
+    roomAtomRoot( const roomAtomRoot& rhs )
+    {
+        m_SoundParameters = rhs.m_SoundParameters;
+        m_RoomVariables = rhs.m_RoomVariables;
+        m_array = rhs.m_array;
+        isNearField = false;
+        isRadiusGuess = false;
+    }
+
 
     double getDistance(QPointF pos, bool isCm) const
     {
@@ -83,12 +93,12 @@ public:
 
     void createInfo(const Point& realPos, const Point& scenePos)
     {
-        double angle = m_array.getRelativeAngle(realPos);
-        double radius = m_array.getRelativeRadius(realPos);
+        double angle = m_array->getRelativeAngle(realPos);
+        double radius = m_array->getRelativeRadius(realPos);
         SoundInfo newInfo(scenePos, realPos, angle, radius);
         m_selfData = newInfo;
-        auto nearFieldDistCM = (2 * m_array.getMicLenghtMeter() * m_array.getMicLenghtMeter()) / WAVE_LENGHT_METER * 100;
-        if ( getDistance( m_array.getMiddlePos(), true ) < nearFieldDistCM )
+        auto nearFieldDistCM = (2 * m_array->getMicLenghtMeter() * m_array->getMicLenghtMeter()) / WAVE_LENGHT_METER * 100;
+        if ( getDistance( m_array->getMiddlePos(), true ) < nearFieldDistCM )
             isNearField = true;
         setArrayDelay();
         setApartureDist();
@@ -96,26 +106,32 @@ public:
 
     void setArrayDelay()
     {
-        m_arrayDelay.resize(m_array.getElemCount());
-        for (int i = 0; i < m_array.getElemCount(); i++)
+        m_arrayDelay.resize(m_array->getElemCount());
+        for (int i = 0; i < m_array->getElemCount(); i++)
         {
-            m_arrayDelay[i] = m_array.getDelay( i, m_selfData.getRadius(), m_selfData.getAngle());
+            m_arrayDelay[i] = m_array->getDelay( i, m_selfData.getRadius(), m_selfData.getAngle());
         }
     }
 
     void setApartureDist()
     {
-        m_apartureDist.resize(m_array.getElemCount());
-        for (int i = 0; i < m_array.getElemCount(); i++)
+        m_apartureDist.resize(m_array->getElemCount());
+        for (int i = 0; i < m_array->getElemCount(); i++)
         {            
-            m_apartureDist[i] = m_array.getDistDelay(i, getDistance( m_array.getPosition(i), true ));
+            m_apartureDist[i] = m_array->getDistDelay(i, getDistance( m_array->getPosition(i), true ));
         }
     }
+
 
 
     SoundInfo& getInfo()
     {
         return m_selfData;
+    }
+
+    double getRadius() const
+    {
+        return m_selfData.getRadius();
     }
 
     void print() const
@@ -126,6 +142,16 @@ public:
     void setType(STypes sType)
     {
         m_selfData.setType(sType);
+    }
+
+    void setRoomParams( const roomVariables& newParams )
+    {
+        m_RoomVariables = newParams;
+        auto nearFieldDistCM = (2 * m_array->getMicLenghtMeter() * m_array->getMicLenghtMeter()) / WAVE_LENGHT_METER * 100;
+        if ( getDistance( m_array->getMiddlePos(), true ) < nearFieldDistCM )
+            isNearField = true;
+        setArrayDelay();
+        setApartureDist();
     }
 
     bool isRadiusGuess;
@@ -140,7 +166,7 @@ protected:
 
     packetSound   m_SoundParameters;
     roomVariables m_RoomVariables;
-    const microphoneNode& m_array;
+    const microphoneNode* m_array;
 
 };
 
@@ -156,7 +182,7 @@ class roomAtom : public QGraphicsItem, public roomAtomRoot
 
 public:
 
-    roomAtom(packetSound &sound, roomVariables &room, const microphoneNode &array)
+    roomAtom(packetSound &sound, roomVariables &room, const microphoneNode* array)
         : roomAtomRoot(sound, room, array)
     {
 
@@ -168,6 +194,19 @@ public:
 
     }
 
+    roomAtom( const roomAtom& rhs ) : roomAtomRoot( rhs )
+    {
+        m_sumData = rhs.m_sumData;
+        m_relativeVal = rhs.m_relativeVal;
+        isDrawColor = rhs.isDrawColor;
+        m_sumOffset = rhs.m_sumOffset;
+        m_selfData = rhs.m_selfData;
+        m_arrayDelay = rhs.m_arrayDelay;
+        m_apartureDist = rhs.m_apartureDist;
+    }
+
+    void setSoundParamsAndMic( const microphoneNode* array, double packetSize );
+
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget);
 
@@ -178,7 +217,7 @@ public:
     void start2();
     void setColor(bool isDrawColor, double min, double max);
 
-    std::pair< Point , double> getResult()
+    std::pair< Point , double> getResult() const
     {
         return std::make_pair(m_selfData.getRealPos(), m_relativeVal);
     }
@@ -188,6 +227,26 @@ public:
         if ( in == nullptr )
             return false;
         if ( std::abs(in->getInfo().getRadius() - getInfo().getRadius()) < offSet )
+            return true;
+        else
+            return false;
+    }
+
+    bool isAtomAngleCloseBy ( roomAtom* in, int offSet)
+    {
+        if ( in == nullptr )
+            return false;
+        if ( std::abs(in->getInfo().getAngle() - getInfo().getAngle()) < offSet )
+            return true;
+        else
+            return false;
+    }
+
+    bool isAtomCloseBy ( roomAtom* in, int offSet)
+    {
+        if ( in == nullptr )
+            return false;
+        if ( std::abs(getDistance( getInfo().getRealPos(), true )) < offSet )
             return true;
         else
             return false;

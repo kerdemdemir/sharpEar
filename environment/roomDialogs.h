@@ -38,6 +38,8 @@
 #include <functional>
 #include <QObject>
 #include <environment/roomOracle.h>
+#include <QVariant>
+#include <QScriptValue>
 #include <utility/multAccessData.h>
 
 class microphoneNode;
@@ -60,6 +62,8 @@ public:
         m_mouseClick = false;
         m_packetCount = 0;
         m_id = 0;
+        m_NoiceAngle = -999;
+        isLookForLocationOnly = false;
     }
 
     virtual ~roomDialogs()
@@ -135,6 +139,11 @@ public:
         return m_oracle;
     }
 
+    void setRoomParams( const roomVariables& newParams )
+    {
+        m_roomVariables = newParams;
+    }
+
 public slots:
 
     int insertSound( roomAtom* atom, QString soundFileName, QString soundType )
@@ -143,8 +152,51 @@ public slots:
         return openAudio(atom, str2SType(soundType.toStdString().c_str()));
     }
 
+    void setWeight( QScriptValue realPart, QScriptValue imagePart )
+    {
+        CDataType weightList;
+        QVariantList realPartVariantList = realPart.toVariant().toList();
+        QVariantList imagePartVariantList = imagePart.toVariant().toList();
+        for ( int i = 0; i < realPartVariantList.size(); i++  )
+        {
+            if ( imagePartVariantList.empty() )
+                weightList.push_back(std::complex<double>( realPartVariantList[0].toDouble(), 0.0));
+            else
+                weightList.push_back(std::complex<double>( realPartVariantList[0].toDouble(), imagePartVariantList[0].toDouble()));
+        }
+        m_oracle.setWeights(weightList);
+    }
+
+    void setSpeakerTracking( bool in )
+    {
+        m_oracle.setSpeakerTracking(in);
+    }
+
     void insertNull( int angle );
     void listen( roomAtom* atom );
+    void setNoiceAngle( int angle )
+    {
+        m_NoiceAngle = angle;
+    }
+
+    void setLookAngle( int angle )
+    {
+        m_oracle.setLookAngle( angle );
+    }
+
+    void setForLocationOnly( bool in )
+    {
+        isLookForLocationOnly = in;
+    }
+
+    void clear()
+    {
+        m_cord2Listen.clear();
+        m_cord2Data.clear();
+        m_oracle.clear();
+        m_audioIO.clear();
+        m_packetCount = 0;
+    }
 
 private:
 
@@ -152,6 +204,8 @@ private:
      std::map< Point, SoundData<CDataType> > m_cord2Data;
      std::map< Point, std::pair<int, roomAtom* > > m_cord2Listen;
      int m_id;
+     int m_NoiceAngle;
+     bool isLookForLocationOnly;
      size_t m_packetCount;
      std::string m_fileName;
      QPointF m_lastPoint;

@@ -45,14 +45,14 @@ roomAtom::sumPart( )
     std::fill(m_sumData.begin(), m_sumData.end(), 0);
     for (int i = 0; i < m_RoomVariables.numberOfMics; i++)
     {
-        size_t startingSample = m_sumOffset + getAtomDelay(i, m_array.getMode());
+        size_t startingSample = m_sumOffset + getAtomDelay(i, m_array->getMode());
         for (size_t k  = 0; k < m_sumData.size(); k++)
         {
-            m_sumData[k] += m_array.getData(i, startingSample + k);
+            m_sumData[k] += m_array->getData(i, startingSample + k);
         }
     }
     for (auto& elem : m_sumData)
-        elem /= m_array.getElemCount();
+        elem /= m_array->getElemCount();
 }
 
 
@@ -64,8 +64,8 @@ roomAtom::sumSingle()
     for (int i = 0; i < m_RoomVariables.numberOfMics; i++)
     {
         size_t startingSample =  m_sumOffset + m_arrayDelay[i];
-        if (startingSample < m_array.getData(i).size())
-            result += std::abs(m_array.getData(i, startingSample) );
+        if (startingSample < m_array->getData(i).size())
+            result += std::abs(m_array->getData(i, startingSample) );
 
     }
 
@@ -79,13 +79,13 @@ roomAtom::sumWhole(std::vector< double > & output)
     {
         for (size_t k = 0; k <  output.size(); k++)
         {
-            output[k] += m_array.getData(i, k + getAtomDelay(i, m_array.getMode())).real();
+            output[k] += m_array->getData(i, k + getAtomDelay(i, m_array->getMode())).real();
         }
     }
 
     for (auto& elem : output)
-        elem /= m_array.weightRealSum;
-
+        //elem /= m_array->weightRealSum;
+        elem /= m_RoomVariables.numberOfMics;
 }
 
 std::vector< double >
@@ -121,6 +121,8 @@ void roomAtom::setColor(bool isDraw, double min, double max)
 
 void roomAtom::paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget)
 {
+    (void)(item);
+    (void)(widget);
     QRectF rec = boundingRect();
 
     if ( isRadiusGuess )
@@ -175,6 +177,12 @@ void roomAtom::paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QW
 }
 
 //** Graph Related Fuctions**//
+void roomAtom::setSoundParamsAndMic(const microphoneNode *array, double packetSize)
+{
+    m_array = array;
+    m_SoundParameters.samplePerOutput = packetSize;
+}
+
 QRectF roomAtom::boundingRect() const
 {
     if (!ENABLE_RADIAN_ANGLE)

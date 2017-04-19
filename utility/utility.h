@@ -30,6 +30,8 @@
 #ifndef MY_UTILITY_H
 #define MY_UTILITY_H
 
+#define _USE_MATH_DEFINES
+
 #include <vector>
 #include <string>
 #include <complex>
@@ -37,6 +39,42 @@
 #include <iostream>
 #include "utility/types.h"
 #include <fftw3.h>
+#include <math.h>
+//#include <Eigen/Core>
+//#include <unsupported/Eigen/FFT>
+
+#define M_PI           3.14159265358979323846
+
+inline
+void sharpWindow( CDataType& in )
+{
+    for (size_t i = 0; i < in.size() ; i++)
+    {
+        int j = i - in.size();
+        in[i] = (in[i] * 0.5 * (1.0 - cos(2.0 * M_PI * j / in.size())));
+    }
+}
+
+inline
+double sharpSinc(double x) {
+
+    if(x == 0.0)
+        return 1.0;
+    return std::sin(x)/x;
+}
+
+inline
+double getWaveLen(double frequencyHz )
+{
+    return 34000.0/frequencyHz;
+}
+
+inline
+void resizeInterpolate( CDataType& in, size_t newSize)
+{
+    (void)(in);(void)(newSize);
+    //if ()
+}
 
 inline
 CDataType sharpFFT( CDataType& in, bool isForward )
@@ -84,12 +122,13 @@ CDataType sharpFFT( CDataType::iterator in, size_t size, bool isForward )
     return out;
 }
 
+template< typename T >
 inline
-CDataType swapVectorWithIn( const CDataType& in )
+T swapVectorWithIn( const T& in )
 {
 
     auto middlePos = in.begin() + in.size()/2;
-    CDataType returnVal( middlePos , in.end() );
+    T returnVal( middlePos , in.end() );
     returnVal.insert( returnVal.end(), in.begin(), middlePos);
     return returnVal;
 }

@@ -18,7 +18,7 @@ public:
     virtual void feed ( const std::string& fileName ) = 0;
     virtual void train () = 0;
     virtual void save() = 0;
-    virtual bool load() = 0;
+    virtual void load() = 0;
 
     void setFeature( std::shared_ptr<FeatureExtractor> featurePtr )
     {

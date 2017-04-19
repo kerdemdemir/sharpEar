@@ -1,18 +1,19 @@
-#ifndef F0FEATURES
-#define F0FEATURES
+#ifndef __F0FeaturesMicArray
+#define __F0FeaturesMicArray
 
 #include "speakerProcess/featureExtractor/featureExtractor.h"
 #include "speakerProcess/general.h"
 #include <aubio.h>
+#include "environment/microphonenode.h"
+#include "environment/roomAtom.h"
+#include "DspFilters/Filter.h"
+#include "DspFilters/Dsp.h"
 
-constexpr int FORMANT_COUNT = 7;
-constexpr int STATE_COUNT =  ((MAX_FREQ - MIN_FREQ) / JUMPSIZE);
-
-class F0Features : public FeatureExtractor
+class F0FeaturesMicArray : public FeatureExtractor
 {
 public:
 
-    F0Features( int formant )
+    F0FeaturesMicArray( int formant )
     {
         selectedFormant = formant;
         char cStr[] = "default";
@@ -26,18 +27,23 @@ public:
         pitch = new_aubio_pitch (cStr, win_s, hopSize, sampleRate);
     }
 
-    ~F0Features()
+    ~F0FeaturesMicArray()
     {
         del_aubio_pitch (pitch);
         del_fvec (pitchOut);
     }
 
-    void getFormants( double f0, cvec_t* inputComplex )
+    double getVal( )
+    {
+        return totalValue;
+    }
+
+    double getFormants( double f0, cvec_t* inputComplex )
     {
        double freqStep = sampleRate / win_s;
        std::array< std::pair<double, double> , FORMANT_COUNT> formants;
        formants[0].first = f0;
-       for ( int curFreq = f0; curFreq < FORMANT_COUNT * 1000; curFreq += f0 )
+       for ( int curFreq = f0; curFreq < 8000; curFreq += f0 )
        {
             if ( curFreq < 1000 )
                 continue;
@@ -51,23 +57,9 @@ public:
                 formants[formant].second = curFormantVal;
             }
        }
-       if ( selectedFormant != -1 )
-       {
-           if ( selectedFormant == 0 )
-            samples.at<double>(colSize, 0) = (formants[selectedFormant].first - MIN_FREQ) / 25;
-           else
-            samples.at<double>(colSize, 0) = (formants[selectedFormant].first) / JUMPSIZE*2 ;// / (JUMPSIZE * 5);
-       }
-       else
-       {
-           for ( int i = 0; i < FORMANT_COUNT; i++)
-           {
-                if ( i ==  0)
-                    samples.at<double>(colSize, i) = (formants[i].first - MIN_FREQ) / JUMPSIZE ;
-                else
-                    samples.at<double>(colSize, i) = (formants[i].first - MIN_FREQ) / (JUMPSIZE * 2);
-           }
-       }
+
+
+       return formants[selectedFormant].second;
     }
 
     virtual DataType2D& getFeatures() override
@@ -78,16 +70,18 @@ public:
 
     virtual void doChunk( fvec_t *inputSimple, cvec_t *inputComplex ) override
     {
+        if ( colSize == 0 )
+            totalValue = 0;
         aubio_pitch_do (pitch, inputSimple, pitchOut);
         if ( pitchOut->data[0] < MIN_FREQ || pitchOut->data[0] > MAX_FREQ )
             return;
-
-        getFormants( pitchOut->data[0], inputComplex);
         colSize++;
+        totalValue += getFormants( pitchOut->data[0], inputComplex);
     }
 
 private:
 
+    double totalValue;
     int selectedFormant;
     double amplitudeOfFormant;
     aubio_pitch_t *pitch;

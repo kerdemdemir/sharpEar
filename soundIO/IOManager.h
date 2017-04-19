@@ -51,6 +51,10 @@ public:
     int read(SoundData<CDataType>& output);
     int write(const std::vector<double> &data, int id,  const std::string& fileName);
     int remove(int id);
+    void clear()
+    {
+        m_ID2Params.clear();
+    }
 
     IOManager(const packetSound &sound, const roomVariables& room)
     {

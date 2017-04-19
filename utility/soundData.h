@@ -125,6 +125,25 @@ struct SoundInfo
         std::cout << std::endl;
     }
 
+    std::string get( std::string message = std::string() ) const
+    {
+        std::stringstream stream;
+        std::string returnVal;
+        if ( message != "" )
+        {
+            stream << "Message: " << message << std::endl;
+        }
+
+        stream << "SoundInfo <print> Cordinates: " << posCm.first << "," << posCm.second
+                  << " Scene Cordinates: " << posScene.first << "," << posScene.second
+                  << " Angle,Radius: " << angle << " , " << radius <<  " Type: " << STypes2Str(soundType);
+
+        isOutput() ? (stream << " Output Point ") : (stream << " Not a output Point");
+        stream << std::endl;
+        returnVal = stream.str();
+        return returnVal;
+    }
+
     bool operator==(const SoundInfo &rhs) const
     {
         if (posCm == rhs.getRealPos())
@@ -294,7 +313,7 @@ struct SoundData
         double noice;
         for ( size_t i = 0; i < packetSize; i++ )
         {
-             auto curPower = std::pow ( std::abs(dataStart[i]), 2);
+             auto curPower = std::pow ( std::abs(compareData[i]), 2);
              val += curPower;
              noice += std::pow( dataStart[i].real() - compareData[i], 2 );
         }
@@ -325,6 +344,13 @@ struct SoundData
     {
        return info.getDistance(pos);
     }
+
+    double getDistance(Point pos) const
+    {
+       QPoint temp(pos.first, pos.second);
+       return info.getDistance(temp);
+    }
+
 
     bool operator==(const SoundData<IterType> &rhs) const {
         return info == rhs.setInfo();

@@ -91,6 +91,8 @@ interActionManager::takeCopyDataWithSampling(const std::vector< std::complex <do
 
 void interActionManager::setFocusPoint(double focusDist, std::vector <double> relativeSourceDist)
 {
+    (void)(focusDist);
+    (void)(relativeSourceDist);
     //hndl_roomSimulation->setFocus(focusDist, relativeSourceDist);
 }
 

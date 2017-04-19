@@ -17,10 +17,9 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TEMPLATE = app
 
+QMAKE_CXXFLAGS_RELEASE -= -O1
 QMAKE_CXXFLAGS_RELEASE -= -O2
-QMAKE_CXXFLAGS_RELEASE += -O0
-QMAKE_LFLAGS_RELEASE -= -O1
-QMAKE_LFLAGS_RELEASE -= -O0
+QMAKE_CXXFLAGS_RELEASE *= -O3
 
 FORMS    += mainwindow.ui \
     scriptingConsole.ui
@@ -77,7 +76,12 @@ HEADERS  += mainwindow.h\
     speakerProcess/mlModel/tranierlist.h \
     speakerProcess/featureExtractor/f0highlevelfeatures.h \
     utility/snrmanager.h \
-    scriptingConsole.h
+    scriptingConsole.h \
+    speakerProcess/featureExtractor/f0featuresWithAmplitude.h \
+    utility/sortedbestpicklist.h \
+    speakerProcess/featureExtractor/amplitudesum.h \
+    speakerProcess/featureExtractor/pyinf0feature.h \
+    speakerProcess/featureExtractor/f0featuresWithMicArray.h
 
 
 
@@ -92,8 +96,10 @@ INCLUDEPATH += "$$_PRO_FILE_PWD_/includes/"
 INCLUDEPATH += "C:/range-v3-master/include/"
 INCLUDEPATH += "D:/cvOutNoIPP/install/include"
 INCLUDEPATH += "D:\soxHeaders"
+INCLUDEPATH += "C:\Program Files (x86)\Eigen\include\eigen3"
 
-LIBS += -L"$$_PRO_FILE_PWD_/libs/" -lsoxr -lsndfile-1 -lws2_32 -lqjpeg4 -laubio-4
+
+LIBS += -L"$$_PRO_FILE_PWD_/libs/" -lsoxr -lsndfile-1 -lws2_32 -lqjpeg4 -laubio-4 -lLibPyin
 LIBS += -L"D:\cvOutNoIPP\bin" -lopencv_ml300  -lopencv_highgui300 -lopencv_features2d300 -lopencv_core300
 
 LIBS += -lfftw3-3

@@ -74,8 +74,8 @@ public:
     void setFileName(const std::string& input);
 
     std::vector< roomAtom*> getMiddleAtoms();
-    std::vector< roomAtom* > getAtomInRadius( int curRadius = -999, bool isUnique = true);
-    std::vector< roomAtom* > getAtomsInAngle( int angle, int jump = 0 );
+    std::vector< roomAtom* > getAtomInRadius( int curRadius, bool isUnique = true, int start = -90, int offSet = 180 );
+    std::vector< roomAtom* > getAtomsInAngle( int angle, int jump = 0, bool isUnique = false );
     std::vector<roomAtom*> hndl2Atom;
 
     roomDialogs* getDialog()
@@ -85,10 +85,15 @@ public:
     radAngMultAccess<roomAtom *> getArcRadius(roomAtom *arcCenter);
     bool isFirst = true;
     roomAtom* findAtomPolarImpl( double radius, double angle );
-
+    double getRoomLen();
 public slots:
 
     void startBeamforming();
+    void reset();
+    void reset( int microphoneNumber );
+    void reset( int microphoneNumber, int distance );
+    void resetAtoms(const roomVariables &_roomParameters);
+
     void listen(double radius, double angle);
     void insertSound( double radius, double angle, QString soundFileName, QString soundType );
 protected:
@@ -100,7 +105,7 @@ private:
     void calcRoomParameters();
     void assignSoundSource();
 
-    void reset();
+
     void multiThreadImageCalc();
     roomAtom* findClosePoint(int xPos, int yPos);
     Worker _workerThread;

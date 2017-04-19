@@ -27,6 +27,10 @@ void roomDialogs::writeWav()
             std::string fileName = std::to_string(elem.first.first); fileName += "_";
             fileName += std::to_string(elem.first.second); fileName += "_" ;
             fileName += STypes2Str(elem.second.second->getInfo().getType());
+            fileName += std::to_string(elem.second.first) += "_MicCount_"  ;
+            fileName += std::to_string(m_roomVariables.numberOfMics) ;
+            if ( m_NoiceAngle != -999 )
+                fileName  += std::string("_Angle_") += std::to_string(m_NoiceAngle);
             fileName += ".wav";
             m_audioIO.write( wholeData, elem.second.first, fileName);
         }
@@ -58,13 +62,11 @@ roomDialogs::process()
         {
             std::cout << "RoomDialogs <process>: One of the sound files come to end will delete it" << std::endl;
             m_audioIO.remove(elem.second.getID());
-            if (elem.second.isSource())
-            {
-                std::cout << " RoomDialogs <process>: Source File come to end was source file exit simulation" << std::endl;
-                m_cord2Data.erase(elem.first);
-                return -1;
-            }
+
+            std::cout << " RoomDialogs <process>: Source File come to end was source file exit simulation" << std::endl;
             m_cord2Data.erase(elem.first);
+            return -1;
+
         }
         else if (m_packetCount == 1 && elem.second.isPulse() && m_cord2Data.size() == 1 )
         {
@@ -78,7 +80,10 @@ roomDialogs::process()
 
     std::cout << " RoomDialogs <process>: Room dialogs readData now will trigger Overseer" << std::endl;
 
-    m_oracle.preprocess(soundDataVec);
+    m_oracle.preprocess(soundDataVec, m_packetCount);
+    if ( isLookForLocationOnly && m_oracle.getIsSoundLocated() )
+        return -1;
+    m_oracle.postprocess();
     writeWav();
     m_packetCount++;
 

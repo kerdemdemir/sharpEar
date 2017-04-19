@@ -43,7 +43,7 @@ IOManager::read(SoundData<CDataType> &output)
     std::vector<std::complex<double>>::iterator begin = iter->second.getDataIter();
     std::vector<std::complex<double>>::iterator end = iter->second.getDataEnd();
     output.setData(begin, end);
-    std::cout << " audioIO:: <read> Data Read from ID: " << output.getID() << " Count: " << readCount << std::endl;
+    //std::cout << " audioIO:: <read> Data Read from ID: " << output.getID() << " Count: " << readCount << std::endl;
     return readCount;
 }
 

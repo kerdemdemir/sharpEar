@@ -1,5 +1,5 @@
-#ifndef PITCHGRAMS_H
-#define PITCHGRAMS_H
+#ifndef POWERMODLE
+#define POWERMODLE
 
 #include <vector>
 #include <unordered_map>
@@ -8,16 +8,12 @@
 #include <fstream>
 #include "modelbase.h"
 
-
-class PitchGramModel : public ModelBase
+class PowerModel : public ModelBase
 {
 public:
-    PitchGramModel( int gramCount, std::string modelNameParam )
+    PowerModel(  )
     {
-        modelName = modelNameParam;
-        m_gramCount = gramCount;
-        ngramCounts.resize(NUMBER_OF_PEOPLE);
-        ngramProbility.resize(NUMBER_OF_PEOPLE);
+
     }
 
     virtual void feed(const std::string& fileName) override
@@ -49,10 +45,7 @@ public:
                                   [  ](  double sum ,  std::pair<size_t,size_t> rhs )
                                     { return sum + rhs.second;} );
             for ( auto& elem : ngramCounts[state] )
-            {
-                auto hashVal = (double)elem.second / (double)totalCount;
-                ngramProbility[state].insert(std::make_pair(elem.first, hashVal));
-            }
+                ngramProbility[state][elem.first] = (double)elem.second / (double)totalCount;
         }
     }
 
@@ -77,12 +70,8 @@ public:
             for (size_t k = 0; k < m_gramCount; k++)
                 curHash += pow(100,k) * inputWithAmplitude[i + k].first;
 
-            for ( int z = 0; z < NUMBER_OF_PEOPLE; z++)
-            {
-                auto iter = ngramProbility[z].find(curHash);
-                if ( iter != ngramProbility[z].end() )
-                    tempHolder[z] = iter->second * inputWithAmplitude[i].second;
-            }
+            for ( int i = 0; i < NUMBER_OF_PEOPLE; i++)
+                tempHolder[i] = ngramProbility[i][curHash] * inputWithAmplitude[i].second;
 
            // auto scores = sortIndexes<double, NUMBER_OF_PEOPLE>(tempHolder);
             //auto distance = std::distance ( tempHolder.begin(), std::max_element(tempHolder.begin(), tempHolder.end()));
@@ -132,12 +121,7 @@ public:
 
 private:
 
-    size_t m_gramCount;
-    size_t m_stateCount;
-    std::array < std::vector<size_t>, NUMBER_OF_PEOPLE > peopleF0Data;
-    std::vector< std::unordered_map < unsigned long, unsigned long > > ngramCounts;
-    std::vector< std::unordered_map < unsigned long, double > > ngramProbility;
 };
 
+#endif // POWERMODLE
 
-#endif // PITCHGRAMS_H

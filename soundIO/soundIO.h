@@ -157,10 +157,11 @@ public:
     {
         size_t readSizeTemp = readSize;
         if ( ENABLE_UPSAMPLING )
-            readSizeTemp /= (UP_SAMPLE_RATE / 2);
+           //readSizeTemp /= (UP_SAMPLE_RATE / 2);
+            readSizeTemp /= ( UP_SAMPLE_RATE );
 
         int readCount = sf_read_double(fileIn, bufferData.data(), readSizeTemp );
-        sf_seek(fileIn, -readSizeTemp/2, SEEK_CUR );
+        //sf_seek(fileIn, -readSizeTemp/2, SEEK_CUR );
         if ( readCount < 0 )
         {
             std::cout << " IOParams:: <read> failed " << sf_error_number( sf_error(fileIn) ) << std::endl;
@@ -193,7 +194,7 @@ public:
             inputStatus = SStatus::FINISHED;
             return 0;
         }
-        std::cout << " IOParams:: <read>  Read succeed count " << readCount << " Total Read " << totalRead << std::endl;
+        //std::cout << " IOParams:: <read>  Read succeed count " << readCount << " Total Read " << totalRead << std::endl;
         return readCount;
     }
 

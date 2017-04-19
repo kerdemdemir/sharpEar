@@ -44,8 +44,9 @@ class microphoneNode : public QGraphicsItem
 public:
 
     microphoneNode(const packetSound &sound, const roomVariables &room);
-
+    microphoneNode(const microphoneNode& rhs );
     void feed( const SoundData<CDataType>& input, const CDataType& weights);
+    void frequencyFeed();
 
     void
     setDistCount(double distanceBetweenMics, int numberOfElem)
@@ -93,6 +94,9 @@ public:
         }
     }
 
+    void
+    postFiltering( const CDataType& weights );
+
     void backupBuffer()
     {
         m_BackUpApartureList = m_apartureList;
@@ -101,6 +105,17 @@ public:
             aparture.clearData();
             aparture.clearLeapData();
         }
+    }
+
+    void setNearField( bool isNearField, double multiplicationVal )
+    {
+        for ( auto& aparture : m_apartureList)
+        {
+            aparture.clearData();
+            aparture.setNearFieldMode( isNearField );
+        }
+
+        multiplyDistance(multiplicationVal);
     }
 
     void resetBuffers()
@@ -159,11 +174,47 @@ public:
         return m_apartureList[apartureIndex].getFocusData( dataIndex );
     }
 
+    double getTotalWeight()
+    {
+        return std::abs(std::accumulate(m_Allweights.begin(), m_Allweights.end(), std::complex<double>(0)));
+    }
 
     int
     getElemCount() const
     {
         return m_elemCount;
+    }
+
+    double
+    getDistBetweenElems() const
+    {
+        return m_RoomVariables.distancesBetweenMics;
+    }
+
+    roomVariables getRoomVariables()
+    {
+        return m_RoomVariables;
+    }
+
+    void
+    setElemCount( int elemCount )
+    {
+       m_RoomVariables.numberOfMics = elemCount;
+       m_elemCount = elemCount;
+    }
+
+    void
+    setDistance( int distance )
+    {
+       m_RoomVariables.distancesBetweenMics = distance;
+    }
+
+    void
+    multiplyDistance( double constant )
+    {
+       m_RoomVariables.distancesBetweenMics *= constant;
+       setDistCount(m_RoomVariables.distancesBetweenMics, m_elemCount);
+
     }
 
     QRectF boundingRect() const;
@@ -189,6 +240,11 @@ public:
 
     }
 
+    double totalLength()
+    {
+        return (m_elemCount - 1) * m_RoomVariables.distancesBetweenMics;
+    }
+
     ArrayFocusMode getMode() const
     {
         return m_mode;
@@ -197,6 +253,7 @@ public:
     double getDelay(int index, double focusDist, int steeringAngle) const;
     double getDistDelay(int index, double focusDist) const;
     double weightRealSum;
+    void SetSamplePerOutput(double samplePerOutput);
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
@@ -217,6 +274,7 @@ private:
     ArrayFocusMode m_mode;
 
 
+    CDataType m_Allweights;
     std::vector< ArrayAparture > m_apartureList;
     std::vector< ArrayAparture > m_BackUpApartureList;
     std::vector<double>                      m_sceneCenterDist; // Distance of each microphone for draw

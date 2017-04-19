@@ -27,6 +27,30 @@ microphoneNode::microphoneNode(const packetSound &sound, const roomVariables &ro
 
 }
 
+microphoneNode::microphoneNode(const microphoneNode &rhs)
+{
+    m_SoundParameters = rhs.m_SoundParameters;
+    m_RoomVariables = rhs.m_RoomVariables;
+    m_elemCount = rhs.m_elemCount;
+    m_center = rhs.m_center;
+    m_sceneCenter = rhs.m_sceneCenter;
+    m_sceneWidth = rhs.m_sceneWidth;
+    m_sourceInfo = rhs.m_sourceInfo;
+    m_mode = rhs.m_mode;
+    m_Allweights = rhs.m_Allweights;
+    m_sceneCenterDist = rhs.m_sceneCenterDist;
+}
+
+void microphoneNode::SetSamplePerOutput( double samplePerOutput )
+{
+    m_SoundParameters.samplePerOutput = samplePerOutput;
+    for ( int i = 0; i < m_RoomVariables.numberOfMics; i++)
+    {
+        m_apartureList.emplace_back(m_SoundParameters, m_RoomVariables, i);
+    }
+
+}
+
 void
 microphoneNode::elemDistCenter()
 {
@@ -79,16 +103,31 @@ microphoneNode::getDistDelay(int index, double focusDist ) const
     return m_apartureList[index].getDistDelay(focusDist);
 }
 
-
 void
 microphoneNode::feed(const SoundData<CDataType>& input, const CDataType& weights)
 {
-    weightRealSum = 0;
+    m_Allweights = weights ;
+    weightRealSum = getTotalWeight();
     for ( size_t i = 0; i < m_apartureList.size(); i++ )
     {
         m_apartureList[i].setWeight(weights[i]);
         m_apartureList[i].feed(input);
-        weightRealSum += weights[i].real();
+    }
+}
+
+void
+microphoneNode::postFiltering( const CDataType& weights )
+{
+    //auto  temp = weights;
+    //temp.resize(m_SoundParameters.samplePerOutput);
+
+    //auto in = sharpFFT(temp, true);
+    //in = swapVectorWithIn(in);
+
+    for ( size_t i = 0; i < m_apartureList.size(); i++ )
+    {
+        m_apartureList[i].setWeight(weights[i]);
+        m_apartureList[i].filterSum();
     }
 }
 
@@ -101,6 +140,8 @@ QRectF microphoneNode::boundingRect() const
 
 void microphoneNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget)
 {
+    (void)(item);
+    (void)(widget);
     QRectF rec = boundingRect();
     QBrush blackBrush(Qt::black);
     painter->fillRect(rec, blackBrush);

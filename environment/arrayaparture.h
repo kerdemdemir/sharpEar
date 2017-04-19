@@ -17,6 +17,10 @@ enum class ArrayFocusMode
     POINT_FOCUS
 };
 
+using leapMap =   std::unordered_map< int, std::shared_ptr<CDataType>  >;
+using leapIter =  leapMap::iterator;
+
+
 class ArrayAparture
 {
 
@@ -27,6 +31,7 @@ public:
         m_RoomVariables = roomConfig;
         isCenter = false;
         m_index = index;
+        m_nearFieldMode = false;
 
         m_sumLeapData.resize( soundConfig.samplePerOutput );
         m_apartureData.resize( soundConfig.samplePerOutput );
@@ -52,19 +57,11 @@ public:
 
     void feed ( const SoundData<CDataType>& input  )
     {
-      using leapIter =  std::unordered_map< int, std::shared_ptr<CDataType>  >::iterator;
-
       double delay = getDistDelay( input.getDistance(m_pos) ) - m_timeDelay;
       //double delay = getDelay(input.getInfo().getDistance(), input.getInfo().getAngle(),ArrayFocusMode::NO_FOCUS );
       CDataConstIter beginIter = input.getData();
-      leapIter leapIte = m_leapData.find(input.getID());
-      if (leapIte == m_leapData.end())
-      {
-          leapIte = m_leapData.emplace( input.getID(),
-                                        std::make_shared<CDataType>( delay ) ).first;
-      }
+      auto leapIte = getLeapIter(input, delay);
       auto tempLeap = *leapIte->second;
-
       for (size_t k = 0; k < m_apartureData.size() + delay - 1; k++)
       {
           if (k < delay )
@@ -83,21 +80,39 @@ public:
               m_sumLeapData[k - m_apartureData .size()] += soundData;
           }
       }
-
-      convolveWithWeight(m_apartureData);
-      convolveWithWeight(m_sumLeapData);
     }
 
-    void convolveWithWeight( CDataType& in )
+    leapIter getLeapIter( const SoundData<CDataType>& input, double delay )
     {
-        in = sharpFFT(in, true);
-        in = swapVectorWithIn(in);
+        leapMap& data = m_nearFieldMode ? m_leapNearFieldData : m_leapData;
 
-        for ( auto& elem : in )
+        leapIter leapIte = data.find(input.getID());
+        if (leapIte == data.end())
         {
-            elem *= m_weight;
+            leapIte = data.emplace( input.getID(),
+                                          std::make_shared<CDataType>( delay ) ).first;
         }
 
+        return leapIte;
+    }
+
+    void frequencyDomainWeighting( CDataType& in  )
+    {
+        in = sharpFFT(in, true);
+
+
+        DataType temp;
+        for ( auto& elem  : in)
+            temp.push_back(std::abs(elem));
+
+        auto maxIter =  std::max_element(temp.begin(), temp.end());
+
+        auto dist = std::distance(temp.begin(), maxIter);
+        (void)(dist);
+        for ( int i = 100; i < 200; i++)
+            in[i] *= m_weight;
+
+        in = swapVectorWithIn(in);
         in = sharpFFT(in, false);
 
         for ( size_t i = 0; i < in.size(); i++ )
@@ -106,7 +121,40 @@ public:
                 in[i] /= -1.0;
             //std::conj(in[i]);
         }
+    }
 
+    void timeDomainWeighting( CDataType& in  )
+    {
+        for ( auto& elem : in )
+        {
+            elem *= m_weight;
+        }
+    }
+
+    void filterSum( CDataType& frequencyResponse )
+    {
+        (void)(frequencyResponse);
+        timeDomainWeighting(  m_apartureData );
+        timeDomainWeighting(  m_sumLeapData );
+    }
+
+    void filterSum( )
+    {
+        frequencyDomainWeighting(  m_apartureData );
+        frequencyDomainWeighting(  m_sumLeapData );
+    }
+
+    void filterSum( CDataType& frequencyResponse, CDataType& in )
+    {
+        in = sharpFFT(in, true);
+        in = swapVectorWithIn(in);
+
+        for ( size_t i = 0; i < in.size(); i++)
+        {
+            in[i] *= frequencyResponse[i].real();
+        }
+
+        in = sharpFFT(in, false);
     }
 
     void adjustArrayFocus( const SoundInfo& in, ArrayFocusMode mode )
@@ -136,6 +184,7 @@ public:
 
     void setWeight( const std::complex<double>& in )
     {
+       // m_weight = in * (double)(m_RoomVariables.numberOfMics);
         m_weight = in;
     }
 
@@ -147,9 +196,13 @@ public:
 
     void clearLeapData()
     {
-
         m_leapData.clear();
+        m_timeDelay = 0;
+    }
 
+    void setNearFieldMode( bool nearFieldMode )
+    {
+        m_nearFieldMode = nearFieldMode;
         m_timeDelay = 0;
     }
 
@@ -180,10 +233,14 @@ private:
     QPoint m_pos;
     int  m_index;
     double  m_timeDelay;
+    bool m_nearFieldMode;
     bool isCenter;
     std::complex<double> m_weight;
 
     std::unordered_map<int, std::shared_ptr<CDataType>>  m_leapData; // Leap Data for each source
+    std::unordered_map<int, std::shared_ptr<CDataType>>  m_leapNearFieldData; // Leap Data for each source
+
+
     CDataType  m_sumLeapData; // Leap Data for each source
     CDataType  m_apartureData; // Leap Data for each source
 

@@ -33,6 +33,7 @@ public:
 
     virtual void doChunk(  fvec_t *inputSimple, cvec_t *inputComplex ) override
     {
+        (void)(inputSimple);
         aubio_mfcc_do( mfcc, inputComplex, mfccout );
 
         for ( int i = 0; i < NUMBER_OF_MFCC_FEATURES; i++ )

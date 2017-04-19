@@ -4,10 +4,14 @@
 #include "modelbase.h"
 #include "speakerProcess/featureExtractor/featurelist.h"
 #include "speakerProcess/featureExtractor/f0features.h"
+#include "speakerProcess/featureExtractor/f0featuresWithAmplitude.h"
+#include "speakerProcess/featureExtractor/f0featuresWithMicArray.h"
 #include "speakerProcess/featureExtractor/MFCCFeatures.h"
+#include "speakerProcess/featureExtractor/pyinf0feature.h"
 #include "speakerProcess/mlModel/gmmModel.h"
 #include "speakerProcess/mlModel/pitchgrams.h"
 #include "speakerProcess/mlModel/tranierlist.h"
+
 #include "speakerProcess/featureExtractor/f0highlevelfeatures.h"
 #include <QElapsedTimer>
 
@@ -44,13 +48,13 @@ public:
 
     virtual void feed( const std::string& fileName )
     {
-        //if (featureList.start(fileName) == -1)
-          //  return;
+        if (featureList.start(fileName) == -1)
+            return;
 
         for ( auto model : modelList)
         {
-            //if ( !model->isLoad )
-              //  model->predict( fileName );
+            if ( !model->isLoad )
+                model->feed( fileName );
         }
     }
 
@@ -83,22 +87,95 @@ public:
             model->save();
     }
 
-    virtual bool load()
+    virtual void load()
     {
-        bool isAllLoaded = true;
         for ( auto model : modelList)
         {
             if ( model->isLoad )
                 model->load();
-            else
+        }
+    }
+
+    bool isAllLoaded()
+    {
+        bool isAllLoaded = true;
+        for ( auto model : modelList)
+        {
+            if ( !model->isLoad )
                 isAllLoaded = false;
         }
         return isAllLoaded;
     }
 
-    resultType getResults()
+    scoreList getResults( int id )
     {
-        return std::move(modelList[0]->speakerResultList);
+        speakerResultList[id].clear();
+        for ( auto model : modelList)
+        {
+            for ( size_t i = 0; i < model->speakerResultList[id].size(); i++)
+            {
+                if ( speakerResultList[id].size() <= i  )
+                    speakerResultList[id].push_back( sortIndexesDouble<NUMBER_OF_PEOPLE>(model->speakerResultList[id][i]) );
+                else
+                {
+                    auto curResult = sortIndexesEqually<NUMBER_OF_PEOPLE>(model->speakerResultList[id][i]);
+                    for ( int k = 0; k < NUMBER_OF_PEOPLE; k++)
+                    {
+                        speakerResultList[id][i][k] += curResult[k];
+                    }
+                }
+            }
+
+            model->speakerResultList[id].clear();
+        }
+        return  speakerResultList[id];
+    }
+
+
+    int getResult( int id )
+    {
+        int result = 0;
+        for ( auto model : modelList)
+        {
+            for ( size_t i = 0; i < model->speakerResultList[id].size(); i++)
+            {
+                result += sortIndexesEqually<NUMBER_OF_PEOPLE>(model->speakerResultList[id][i])[id] ;
+            }
+
+            //model->speakerResultList[id].clear();
+        }
+        return  result;
+    }
+
+    double getRawResult( int id )
+    {
+        double result = 0;
+        for ( auto model : modelList)
+        {
+            for ( size_t i = 0; i < model->speakerResultList[id].size(); i++)
+            {
+                result += model->speakerResultList[id][i][id] ;
+            }
+
+            //model->speakerResultList[id].clear();
+        }
+        return  result;
+    }
+
+    double getRatioResult( int id )
+    {
+        double result = 0;
+        for ( auto model : modelList)
+        {
+            for ( size_t i = 0; i < model->speakerResultList[id].size(); i++)
+            {
+                auto totalSum = std::accumulate( model->speakerResultList[id][i].begin(), model->speakerResultList[id][i].end(), 0.0 );
+                result += model->speakerResultList[id][i][id] / totalSum ;
+            }
+
+            model->speakerResultList[id].clear();
+        }
+        return  result;
     }
 
     void addModel( std::shared_ptr<ModelBase> model )
@@ -108,7 +185,7 @@ public:
 
     void initPGrams( int selectedGram, std::string selectedGramName )
     {
-        auto F0FeaturePtr = std::make_shared<F0Features>(selectedGram);
+        auto F0FeaturePtr = std::make_shared<F0FeaturesAmplitude>(selectedGram);
         featureList.addExtractor(F0FeaturePtr);
         auto pitchGramRunnerModel = std::make_shared<PitchGramModel>(3, selectedGramName);
         pitchGramRunnerModel->isLoad = true;
@@ -116,9 +193,41 @@ public:
         addModel(pitchGramRunnerModel);
     }
 
+    void initP0Power( int selectedGram )
+    {
+        auto F0FeaturePtr = std::make_shared<F0FeaturesMicArray>(selectedGram);
+        featureList.addExtractor(F0FeaturePtr);
+    }
+
+    void initP0Grams(  )
+    {
+        int selectedGram = 0; std::string selectedGramName = "F0";
+        auto F0FeaturePtr = std::make_shared<F0FeaturesAmplitude>(selectedGram);
+        featureList.addExtractor(F0FeaturePtr);
+        auto pitchGramRunnerModel = std::make_shared<PitchGramModel>(3, selectedGramName);
+        pitchGramRunnerModel->isLoad = true;
+        pitchGramRunnerModel->setFeature( F0FeaturePtr );
+        addModel(pitchGramRunnerModel);
+    }
+
+    void initYINPGrams( int selectedGram, std::string selectedGramName )
+    {
+        auto F0FeaturePtr = std::make_shared<PYINF0>(selectedGram);
+        featureList.addExtractor(F0FeaturePtr);
+        auto pitchGramRunnerModel = std::make_shared<PitchGramModel>(3, selectedGramName);
+        pitchGramRunnerModel->isLoad = true;
+        pitchGramRunnerModel->setFeature( F0FeaturePtr );
+        addModel(pitchGramRunnerModel);
+    }
+
+    void initAmplitudeSum( )
+    {
+
+    }
+
     void initHighLevelGMM()
     {
-        auto highLevelFeaturePtr = std::make_shared<F0HighLevelFeatures>(3,3);
+        auto highLevelFeaturePtr = std::make_shared<F0HighLevelFeatures>(4,2);
         auto gmmF0Model = std::make_shared<GMMModel>("HighLevelFormant");
         featureList.addExtractor(highLevelFeaturePtr);
         gmmF0Model->setFeature( highLevelFeaturePtr );
@@ -134,6 +243,36 @@ public:
         gmmModel->setFeature( mfccFeaturePtr );
         gmmModel->isLoad = true;
         addModel(gmmModel);
+    }
+
+    void initFusion()
+    {
+        auto mfccFeaturePtr = std::make_shared<MFCCFeatures>();
+        auto gmmModel = std::make_shared<GMMModel>("MFCC");
+        featureList.addExtractor(mfccFeaturePtr);
+        gmmModel->setFeature( mfccFeaturePtr );
+        gmmModel->isLoad = true;
+        addModel(gmmModel);
+
+        auto F0FeaturePtr = std::make_shared<F0Features>(-1);
+        auto gmmF0Model = std::make_shared<GMMModel>("Formant");
+        featureList.addExtractor(F0FeaturePtr);
+        gmmF0Model->setFeature( F0FeaturePtr );
+        gmmF0Model->isLoad = true;
+        addModel(gmmF0Model);
+
+//        auto highLevelFeaturePtr = std::make_shared<F0HighLevelFeatures>(2,2);
+//        auto gmmF0Model = std::make_shared<GMMModel>("HighLevelFormant");
+//        featureList.addExtractor(highLevelFeaturePtr);
+//        gmmF0Model->setFeature( highLevelFeaturePtr );
+//        gmmF0Model->isLoad = false;
+//        addModel(gmmF0Model);
+
+
+        auto pitchGramRunnerModel = std::make_shared<PitchGramModel>(3, "F0");
+        pitchGramRunnerModel->isLoad = true;
+        pitchGramRunnerModel->setFeature( F0FeaturePtr );
+        addModel(pitchGramRunnerModel);
     }
 
     void init()
@@ -168,7 +307,8 @@ inline
 void train( TrainerComposer& trainer, const std::string& testFilePath )
 {
 
-    if ( trainer.load() )
+    trainer.load();
+    if ( trainer.isAllLoaded() )
         return;
 
     for (auto& elem : getFileNames(testFilePath))
