@@ -14,7 +14,7 @@
 
 struct Reader
 {
-    static constexpr size_t MAX_FILE_SIZE = 4000000;
+    static constexpr size_t MAX_FILE_SIZE = 20000000;
 
 
     using ReaderIter = std::vector< double >::iterator;
@@ -99,9 +99,12 @@ public:
     int start ( const DataType& input )
     {
         auto readerChunks =  ranges::view::all(input) | ranges::view::chunk(hopSize);
+        int chunkCount = readerChunks.size();
+        if ( chunkCount <= 0 )
+            return -1;
 
         for ( auto extractor : extractors )
-            extractor->getFeatures().resize( readerChunks.size() );
+            extractor->getFeatures().resize( chunkCount );
 
         RANGES_FOR( auto chunk, readerChunks )
         {

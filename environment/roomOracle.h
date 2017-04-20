@@ -96,7 +96,7 @@ public:
         isAngleLocated = false;
         soundPosition = nullptr;
         angle = -999;
-        radius -999;
+        radius = -999;
         pastPositions.clear();
         scorer.clear();
     }

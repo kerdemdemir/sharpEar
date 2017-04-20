@@ -177,12 +177,6 @@ void roomAtom::paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QW
 }
 
 //** Graph Related Fuctions**//
-void roomAtom::setSoundParamsAndMic(const microphoneNode *array, double packetSize)
-{
-    m_array = array;
-    m_SoundParameters.samplePerOutput = packetSize;
-}
-
 QRectF roomAtom::boundingRect() const
 {
     if (!ENABLE_RADIAN_ANGLE)

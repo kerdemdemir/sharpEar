@@ -27,30 +27,6 @@ microphoneNode::microphoneNode(const packetSound &sound, const roomVariables &ro
 
 }
 
-microphoneNode::microphoneNode(const microphoneNode &rhs)
-{
-    m_SoundParameters = rhs.m_SoundParameters;
-    m_RoomVariables = rhs.m_RoomVariables;
-    m_elemCount = rhs.m_elemCount;
-    m_center = rhs.m_center;
-    m_sceneCenter = rhs.m_sceneCenter;
-    m_sceneWidth = rhs.m_sceneWidth;
-    m_sourceInfo = rhs.m_sourceInfo;
-    m_mode = rhs.m_mode;
-    m_Allweights = rhs.m_Allweights;
-    m_sceneCenterDist = rhs.m_sceneCenterDist;
-}
-
-void microphoneNode::SetSamplePerOutput( double samplePerOutput )
-{
-    m_SoundParameters.samplePerOutput = samplePerOutput;
-    for ( int i = 0; i < m_RoomVariables.numberOfMics; i++)
-    {
-        m_apartureList.emplace_back(m_SoundParameters, m_RoomVariables, i);
-    }
-
-}
-
 void
 microphoneNode::elemDistCenter()
 {

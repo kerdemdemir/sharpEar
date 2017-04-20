@@ -199,6 +199,7 @@ struct SoundData
 
     SoundData (int ID,  Point posGraph, Point posReal, int ang, int rad, STypes sType = STypes::UNDEFINED )
     {
+        SNRVal = 0;
         id = ID;
         info = SoundInfo ( posGraph, posReal, ang, rad, sType );
         dataStatus = SStatus::NOT_INIT;
@@ -207,6 +208,7 @@ struct SoundData
 
     SoundData (int ID, const SoundInfo& newInfo)
     {
+        SNRVal = 0;
         id = ID;
         info = newInfo;
     }
@@ -309,8 +311,8 @@ struct SoundData
         if ( packetSize != compareData.size() )
             std::cout << " SnrManager: Calculate SNR fails sizes are different ";
 
-        double val;
-        double noice;
+        double val = 0;
+        double noice = 0;
         for ( size_t i = 0; i < packetSize; i++ )
         {
              auto curPower = std::pow ( std::abs(compareData[i]), 2);

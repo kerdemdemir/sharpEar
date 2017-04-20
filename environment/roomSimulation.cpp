@@ -116,7 +116,7 @@ roomSimulation::calcRoomParameters()
     _roomParameters.pixel2RealRatio = (double)hndl_interActionManager->getBasicUserDialogValues()->listenRange
                                         / (double)_roomParameters.yPixelCount;
 
-    _roomParameters.pixel4EachAtom = 10;
+    _roomParameters.pixel4EachAtom = 5;
     _roomParameters.angleDist = 1;
     _roomParameters.numberOfAtomsIn1D = (double)hndl_interActionManager->getBasicUserDialogValues()->listenRange
                                         / hndl_interActionManager->getBasicUserDialogValues()->dx_dy;
@@ -207,7 +207,7 @@ roomSimulation::setAtoms()
             _room_scene->addItem(tempAtom);            
             tempAtom->setPos(x, y);
             Point atomScenePos = std::make_pair(x, y);
-            Point atomCMPos = std::make_pair((x - _room_scene->sceneRect().left()) * _roomParameters.pixel2RealRatio,
+            Point atomCMPos = std::make_pair((x - _room_scene->sceneRect().left()) * _roomParameters.pixel2RealRatio ,
                                              (y - _room_scene->sceneRect().top()) * _roomParameters.pixel2RealRatio );
             tempAtom->createInfo( atomCMPos, atomScenePos );
             hndl2Atom.push_back(tempAtom);

@@ -44,7 +44,6 @@ class microphoneNode : public QGraphicsItem
 public:
 
     microphoneNode(const packetSound &sound, const roomVariables &room);
-    microphoneNode(const microphoneNode& rhs );
     void feed( const SoundData<CDataType>& input, const CDataType& weights);
     void frequencyFeed();
 
@@ -253,7 +252,6 @@ public:
     double getDelay(int index, double focusDist, int steeringAngle) const;
     double getDistDelay(int index, double focusDist) const;
     double weightRealSum;
-    void SetSamplePerOutput(double samplePerOutput);
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);

@@ -11,7 +11,7 @@
 #include "speakerProcess/mlModel/gmmModel.h"
 #include "speakerProcess/mlModel/pitchgrams.h"
 #include "speakerProcess/mlModel/tranierlist.h"
-
+#include "speakerProcess/mlModel/simpleSummerModel.h"
 #include "speakerProcess/featureExtractor/f0highlevelfeatures.h"
 #include <QElapsedTimer>
 
@@ -131,6 +131,13 @@ public:
         return  speakerResultList[id];
     }
 
+    void clearResults( int id )
+    {
+        for ( auto model : modelList)
+        {
+            model->speakerResultList[id].clear();
+        }
+    }
 
     int getResult( int id )
     {
@@ -172,8 +179,6 @@ public:
                 auto totalSum = std::accumulate( model->speakerResultList[id][i].begin(), model->speakerResultList[id][i].end(), 0.0 );
                 result += model->speakerResultList[id][i][id] / totalSum ;
             }
-
-            model->speakerResultList[id].clear();
         }
         return  result;
     }
@@ -197,6 +202,9 @@ public:
     {
         auto F0FeaturePtr = std::make_shared<F0FeaturesMicArray>(selectedGram);
         featureList.addExtractor(F0FeaturePtr);
+        auto pitchSummer = std::make_shared<SummerModel>();
+        pitchSummer->setFeature( F0FeaturePtr );
+        addModel(pitchSummer);
     }
 
     void initP0Grams(  )

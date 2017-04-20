@@ -10,9 +10,6 @@ constexpr int IS_SIMPLE_POWER = 0;
 constexpr int IS_F0_POWER = 1;
 constexpr int THRESHOLD_POWER = 0.0002;
 
-FeatureList featureList;
-std::shared_ptr<F0FeaturesMicArray> micPower = std::make_shared<F0FeaturesMicArray>(5);
-
 roomOracle::roomOracle(size_t sampleRate, size_t packetSize, int speakerID, int noiceID, microphoneNode &array): scorer(2000, 25)
 {
     m_array = &array;
@@ -26,10 +23,10 @@ roomOracle::roomOracle(size_t sampleRate, size_t packetSize, int speakerID, int 
     //trainer.initMFCC();
     train(trainer, trainPath);
 
+    trainerRadius.initP0Power(5);
 //    trainerRadius.initPGrams(2, "F2");
 //    //trainerRadius.initHighLevelGMM();
 //    train(trainerRadius, trainPath);
-    featureList.addExtractor(micPower);
     soundPosition = nullptr;
     isSoundLocated = false;
     isRadiusLocated = false;
@@ -37,7 +34,7 @@ roomOracle::roomOracle(size_t sampleRate, size_t packetSize, int speakerID, int 
     isManualMode = true;
     m_lookAngle = 0;
     angle = -999;
-    radius -999;
+    radius = -999;
     m_resultFile.open("LocationingResultFile.txt", std::fstream::out);
 }
 
@@ -81,8 +78,7 @@ void roomOracle::preprocess(const std::vector< SoundDataRef > &input, int packet
 
 
         auto atomsInMiddle = m_roomSimulation->getAtomsInAngle( radiusAngle, 30, false );
-        //filterByPower(atomsInMiddle);
-        roomAtom* bestRadius = findSpeakerRadius( atomsInMiddle, originalSound, trainer, true );
+        roomAtom* bestRadius = findSpeakerRadius( atomsInMiddle, originalSound, trainerRadius, true );
 
 
         soundPositionLocal = bestRadius;
@@ -233,24 +229,24 @@ roomAtom* roomOracle::findSpeakerRadius( const std::vector< roomAtom* >& atomLis
             curRatio = 1;
             curIndexVal = 1;
         }
-        else if ( isRadius && IS_F0_POWER )
-        {
-            featureList.start(wholeData);
-            curCount = micPower->getVal();
-            curRatio = 1;
-            curIndexVal = 1;
-        }
         else
         {
             trainerIn.featureCalculation( wholeData  );
             trainerIn.predict( 0 );
-            curIndexVal = trainerIn.getResult(0);
             curCount = trainerIn.getRawResult(0);
-            if ( radius && curCount < THRESHOLD_POWER )
-                continue;
 
-            curRatio = trainerIn.getRatioResult(0);
+            if ( isRadius &&  IS_F0_POWER)
+            {
+                curRatio = 1;
+                curIndexVal = 1;
+            }
+            else
+            {
+                curIndexVal = trainerIn.getResult(0);
+                curRatio = trainerIn.getRatioResult(0);
+            }
         }
+        trainerIn.clearResults(0);
         auto key = isRadius ? elem->getInfo().getRadius() : elem->getInfo().getAngle();
         bestPicker.insert( key, curCount, curRatio, curIndexVal );
         curCount *= std::pow(curRatio, 1);

@@ -81,7 +81,8 @@ HEADERS  += mainwindow.h\
     utility/sortedbestpicklist.h \
     speakerProcess/featureExtractor/amplitudesum.h \
     speakerProcess/featureExtractor/pyinf0feature.h \
-    speakerProcess/featureExtractor/f0featuresWithMicArray.h
+    speakerProcess/featureExtractor/f0featuresWithMicArray.h \
+    speakerProcess/mlModel/simpleSummerModel.h
 
 
 

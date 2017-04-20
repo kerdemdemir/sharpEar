@@ -19,15 +19,13 @@
 #include <QDockWidget>
 
 
-static const char* defaultFilePathRoot = "C:/Qt/Tools/QtCreator/bin/build-sharpEar-Desktop_Qt_5_2_0_MinGW_32bit-Debug/debug/";
-
 enviromentSetup::enviromentSetup(QWidget *parent) : QWidget (parent)
                 , hndl_interActionManager(hndl_interActionManager->getDataShareInstance())
 {
     st_environmentParamaters.micNumber = 51;
     //st_environmentParamaters.distanceBetweenMic = 5;
     st_environmentParamaters.distanceBetweenMic = 10;
-    st_environmentParamaters.listenRange = 2000; //cm
+    st_environmentParamaters.listenRange = 3000; //cm
     st_environmentParamaters.dx_dy       = 20;
     _rowCountSoundInput = 0;
     createDialogs();

@@ -12,8 +12,6 @@ public:
     PYINF0( int formant )
     {
         selectedFormant = formant;
-        char cStr[] = "default";
-
         samples = cv::Mat(  1, 2 , CV_64FC1 );
         pyinc_init( 16000, win_s, hopSize );
     }

@@ -57,16 +57,6 @@ public:
         isRadiusGuess = false;
     }
 
-    roomAtomRoot( const roomAtomRoot& rhs )
-    {
-        m_SoundParameters = rhs.m_SoundParameters;
-        m_RoomVariables = rhs.m_RoomVariables;
-        m_array = rhs.m_array;
-        isNearField = false;
-        isRadiusGuess = false;
-    }
-
-
     double getDistance(QPointF pos, bool isCm) const
     {
         if (isCm == false)
@@ -193,19 +183,6 @@ public:
         setActive ( false );
 
     }
-
-    roomAtom( const roomAtom& rhs ) : roomAtomRoot( rhs )
-    {
-        m_sumData = rhs.m_sumData;
-        m_relativeVal = rhs.m_relativeVal;
-        isDrawColor = rhs.isDrawColor;
-        m_sumOffset = rhs.m_sumOffset;
-        m_selfData = rhs.m_selfData;
-        m_arrayDelay = rhs.m_arrayDelay;
-        m_apartureDist = rhs.m_apartureDist;
-    }
-
-    void setSoundParamsAndMic( const microphoneNode* array, double packetSize );
 
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget);
