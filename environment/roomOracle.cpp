@@ -10,7 +10,7 @@ constexpr int IS_SIMPLE_POWER = 0;
 constexpr int IS_F0_POWER = 1;
 constexpr int THRESHOLD_POWER = 0.0002;
 
-roomOracle::roomOracle(size_t sampleRate, size_t packetSize, int speakerID, int noiceID, microphoneNode &array): scorer(2000, 25)
+roomOracle::roomOracle(size_t sampleRate, size_t packetSize, int speakerID, int noiceID, microphoneNode &array): scorer(6000, 25)
 {
     m_array = &array;
     m_sampleSize = sampleRate;
@@ -77,7 +77,7 @@ void roomOracle::preprocess(const std::vector< SoundDataRef > &input, int packet
         }
 
 
-        auto atomsInMiddle = m_roomSimulation->getAtomsInAngle( radiusAngle, 30, false );
+        auto atomsInMiddle = m_roomSimulation->getAtomsInAngle( radiusAngle, 50, false );
         roomAtom* bestRadius = findSpeakerRadius( atomsInMiddle, originalSound, trainerRadius, true );
 
 
@@ -209,14 +209,8 @@ roomAtom* roomOracle::findSpeakerRadius( const std::vector< roomAtom* >& atomLis
     double maxScore = -10000000;
     roomAtom* bestPossibleAtom = nullptr;
     SortedBestPickList bestPicker(10, 3, true);
-    for (auto elemGraph : atomList)
+    for (auto elem : atomList)
     {
-        if ( elemGraph->data(0) != "Atom")
-            continue;
-        auto elem = dynamic_cast<roomAtom*>(elemGraph);
-        if ( !elem )
-            continue;
-
         std::fill( wholeData.begin(), wholeData.end(), 0);
         elem->sumWhole(wholeData);
         double curCount = 0;

@@ -33,6 +33,14 @@ public:
        formants[0].first = f0;
        int formantIndex = formants[0].first / freqStep;
        formants[0].second = inputComplex->norm[formantIndex];
+
+       if ( selectedFormant == 0 )
+       {
+           samples.at<double>(colSize, 0) = (f0 - MIN_FREQ) / 20;
+           samples.at<double>(colSize, 1) = formants[0].second;
+           return;
+       }
+
        for ( int curFreq = f0; curFreq < FORMANT_COUNT * 1000; curFreq += f0 )
        {
             if ( curFreq < 1000 )
@@ -50,10 +58,7 @@ public:
        }
        if ( selectedFormant != -1 )
        {
-           if ( selectedFormant == 0 )
-            samples.at<double>(colSize, 0) = (formants[selectedFormant].first - MIN_FREQ) / 20;
-           else
-            samples.at<double>(colSize, 0) = (formants[selectedFormant].first) / 40;//JUMPSIZE*2 ;// / (JUMPSIZE * 5);
+           samples.at<double>(colSize, 0) = (formants[selectedFormant].first) / 40;//JUMPSIZE*2 ;// / (JUMPSIZE * 5);
            samples.at<double>(colSize, 1) = formants[selectedFormant].second;
        }
     }
@@ -66,14 +71,7 @@ public:
 
     virtual void doChunk( fvec_t *inputSimple, cvec_t *inputComplex ) override
     {
-        try
-        {
-            aubio_pitch_do (pitch, inputSimple, pitchOut);
-        }
-        catch ( ... )
-        {
-            return;
-        }
+        aubio_pitch_do (pitch, inputSimple, pitchOut);
 
         if ( pitchOut->data[0] < MIN_FREQ || pitchOut->data[0] > MAX_FREQ )
             return;

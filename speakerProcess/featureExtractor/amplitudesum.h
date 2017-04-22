@@ -33,7 +33,7 @@ public:
         for ( auto i = 0; i < inputSimple->length; i++)
             result += inputSimple->data[i];
 
-        samples.at<double>(colSize, 1) = result;
+        samples.at<double>(colSize, 0) = result;
         colSize++;
     }
 

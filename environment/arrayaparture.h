@@ -214,10 +214,18 @@ public:
     std::complex<double> getData( size_t index ) const
     {
         if ( m_apartureData.size() > index )
-            return m_apartureData[index + 1] ;
+        {
+            if ( index + 1 >= m_apartureData.size() )
+            {
+                return m_apartureData[index];
+            }
+            return m_apartureData[index + 1];
+        }
         else
         {
             auto leapIndex = index - m_apartureData.size() + 1;
+            if ( leapIndex >= m_sumLeapData.size() )
+                std::cout << "assert2d" << std::endl;
             return m_sumLeapData[leapIndex];
         }
     }

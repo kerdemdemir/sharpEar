@@ -24,7 +24,7 @@ public:
     {
         int state = fileName2State( fileName );
         auto& featureMat = features->getFeatures();
-        for ( int i = 0; i < featureMat.rows; i++ )
+        for ( size_t i = 0; i < features->colSize; i++ )
             peopleF0Data[state].push_back( featureMat.at<double>(i, 0));
     }
 
@@ -62,7 +62,7 @@ public:
         //std::vector< size_t > input;
         std::vector< std::pair<size_t, double> > inputWithAmplitude;
         auto& featureMat = features->getFeatures();
-        for ( int i = 0; i < featureMat.rows; i++ )
+        for ( size_t i = 0; i < features->colSize; i++ )
             inputWithAmplitude.push_back( std::make_pair (featureMat.at<double>(i, 0),
                                               featureMat.at<double>(i, 1)));
 

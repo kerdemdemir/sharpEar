@@ -93,7 +93,7 @@ void roomSimulation::defaultMicPos()
 {
     QPoint sceneCenterQ( _room_scene->sceneRect().center().x(), _room_scene->sceneRect().top());
     Point sceneCenter = std::make_pair(_room_scene->sceneRect().center().x(), _room_scene->sceneRect().top());
-    Point centerCM = std::make_pair((double)hndl_interActionManager->getBasicUserDialogValues()->listenRange/2, 0);
+    Point centerCM = std::make_pair((double)hndl_interActionManager->getBasicUserDialogValues()->listenRange, 0);
     _micArr->setPos(sceneCenterQ);
     _micArr->setNewPos(sceneCenter, centerCM);
 }
@@ -112,7 +112,7 @@ roomSimulation::calcRoomParameters()
 
     _roomParameters.numberOfMics = hndl_interActionManager->getBasicUserDialogValues()->micNumber;
     _roomParameters.distancesBetweenMics = hndl_interActionManager->getBasicUserDialogValues()->distanceBetweenMic;
-    _roomParameters.yPixelCount = _room_scene->sceneRect().right() - _room_scene->sceneRect().left();
+    _roomParameters.yPixelCount = _room_scene->sceneRect().bottom() - _room_scene->sceneRect().top();
     _roomParameters.pixel2RealRatio = (double)hndl_interActionManager->getBasicUserDialogValues()->listenRange
                                         / (double)_roomParameters.yPixelCount;
 
@@ -131,7 +131,7 @@ roomSimulation::calcRoomParameters()
          _soundParameters.sumSize = 40;
     else if (_soundParameters.sumSize < 30)
         _soundParameters.sumSize = 30;
-    _soundParameters.sumSize = 10;
+    _soundParameters.sumSize = 30;
     _roomParameters.angleOfTheMicrophone = 0;
 
 }
@@ -252,15 +252,15 @@ roomSimulation::setRadiusAngleAtom()
 void
 roomSimulation::startBeamforming()
 {
-    for (size_t i = 0; i < hndl2Atom.size(); i++)
-    {
-        auto& atomPointer = hndl2Atom[i];
-        std::shared_ptr< std::packaged_task< void() > > tempTask (new std::packaged_task<void()>([&atomPointer]()
-        {
-            atomPointer->start();
-        }));
-        _workerThread.post(tempTask);
-    }
+//    for (size_t i = 0; i < hndl2Atom.size(); i++)
+//    {
+//        auto& atomPointer = hndl2Atom[i];
+//        std::shared_ptr< std::packaged_task< void() > > tempTask (new std::packaged_task<void()>([&atomPointer]()
+//        {
+//            atomPointer->start();
+//        }));
+//        _workerThread.post(tempTask);
+//    }
     while (true)
     {
         if (_roomDialogs->process() == -1)
@@ -276,7 +276,7 @@ roomSimulation::startBeamforming()
 
 CDataType roomSimulation::getImpulseResponce( CDataType& weights)
 {
-    SoundInfo in = findAtomPolarImpl(1000, 0)->getInfo();
+    SoundInfo in = findAtomPolarImpl(getRoomLen()/2, 0)->getInfo();
     auto listAtom = getAtomInRadius( in.getRadius(), false );
 
 
@@ -415,9 +415,7 @@ radAngMultAccess<roomAtom *>
 roomSimulation::getArcRadius( roomAtom* arcCenter )
 {
     radAngMultAccess<roomAtom *> returnVal;
-    //std::vector< roomAtom* > noicePoints;
     SoundInfo soundInfo = arcCenter->getInfo();
-    Point centerScenePos = _micArr->getSceneMiddlePos();
     //std::cout << " Room Simulation <getAllNoicesArc> A noiced sound is add so candidate noice points will be set " << std::endl;
     double angle = soundInfo.getAngle() ;
     double radius = soundInfo.getRadius();
@@ -430,11 +428,7 @@ roomSimulation::getArcRadius( roomAtom* arcCenter )
     {
        for (int curAngle = angle - 45 ; curAngle < angle + 45; curAngle += 3)
        {
-           double cosVal  = curRadius * cos(curAngle * GLOBAL_PI / 180.0);
-           double yPos = _room_scene->sceneRect().top() + (abs(cosVal) / _roomParameters.pixel2RealRatio);
-           double sinVal  = curRadius * sin(curAngle * GLOBAL_PI / 180.0);
-           double xPos = centerScenePos.first + ( sinVal / _roomParameters.pixel2RealRatio );
-           roomAtom *atom = qgraphicsitem_cast<roomAtom*>(_room_scene->itemAt( xPos, yPos, QTransform()));
+           roomAtom *atom = findAtomPolarImpl( curRadius, curAngle );
            if (atom == NULL)
                continue;
 
@@ -584,12 +578,8 @@ roomSimulation::getAtomInRadius(int curRadius , bool isUnique, int start, int of
     std::vector< roomAtom* > returnVal;
     for (double curAngle = start ; curAngle < start + offSet; curAngle += 1)
     {
-        double cosVal  = curRadius * cos(curAngle * GLOBAL_PI / 180.0);
-        double yPos = _room_scene->sceneRect().top() + (abs(cosVal) / _roomParameters.pixel2RealRatio);
-        double sinVal  = curRadius * sin(curAngle * GLOBAL_PI / 180.0);
-        double xPos = _micArr->getSceneMiddlePos().first + ( sinVal / _roomParameters.pixel2RealRatio );
-        roomAtom *atom = qgraphicsitem_cast<roomAtom*>(_room_scene->itemAt( xPos, yPos, QTransform()));
-        if ( !atom )
+       roomAtom *atom = findAtomPolarImpl( curRadius, curAngle );
+       if ( !atom )
             continue;
         auto isRoomAtom = dynamic_cast<roomAtom*>(atom);
         if ( !returnVal.empty() && isUnique && returnVal.back()->isAtomRadiusCloseBy( atom, 3) )
@@ -643,11 +633,7 @@ roomSimulation::drawAngleValueGraph( )
     {
         for (double curAngle = -90 ; curAngle < 90; curAngle += 0.5)
         {
-            double cosVal  = curRadius * cos(curAngle * GLOBAL_PI / 180.0);
-            double yPos = _room_scene->sceneRect().top() + (abs(cosVal) / _roomParameters.pixel2RealRatio);
-            double sinVal  = curRadius * sin(curAngle * GLOBAL_PI / 180.0);
-            double xPos = _micArr->getSceneMiddlePos().first + ( sinVal / _roomParameters.pixel2RealRatio );
-            roomAtom *atom = findClosePoint(xPos, yPos);
+            roomAtom *atom = findAtomPolarImpl( curRadius, curAngle );
             if (atom == NULL)
                 continue;
             amplitudes.emplace_back(curAngle, atom->getResult().second);

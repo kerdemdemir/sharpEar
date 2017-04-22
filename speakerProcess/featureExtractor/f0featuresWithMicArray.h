@@ -4,8 +4,6 @@
 #include "speakerProcess/featureExtractor/featureExtractor.h"
 #include "speakerProcess/general.h"
 #include <aubio.h>
-#include "environment/microphonenode.h"
-#include "environment/roomAtom.h"
 
 class F0FeaturesMicArray : public FeatureExtractor
 {
@@ -31,7 +29,8 @@ public:
        double freqStep = sampleRate / win_s;
        std::array< std::pair<double, double> , FORMANT_COUNT> formants;
        formants[0].first = f0;
-       for ( int curFreq = f0; curFreq < 8000; curFreq += f0 )
+
+       for ( int curFreq = f0; curFreq < 7000; curFreq += f0 )
        {
             if ( curFreq < 1000 )
                 continue;
@@ -45,7 +44,6 @@ public:
                 formants[formant].second = curFormantVal;
             }
        }
-
        samples.at<double>(colSize, 0) = formants[selectedFormant].second;
     }
 
@@ -60,6 +58,7 @@ public:
         aubio_pitch_do (pitch, inputSimple, pitchOut);
         if ( pitchOut->data[0] < MIN_FREQ || pitchOut->data[0] > MAX_FREQ )
             return;
+
         getFormants( pitchOut->data[0], inputComplex);
         colSize++;
     }

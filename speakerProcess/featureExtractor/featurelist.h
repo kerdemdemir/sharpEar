@@ -14,7 +14,7 @@
 
 struct Reader
 {
-    static constexpr size_t MAX_FILE_SIZE = 20000000;
+    static constexpr size_t MAX_FILE_SIZE = 1000;
 
 
     using ReaderIter = std::vector< double >::iterator;
@@ -100,22 +100,28 @@ public:
     {
         auto readerChunks =  ranges::view::all(input) | ranges::view::chunk(hopSize);
         int chunkCount = readerChunks.size();
-        if ( chunkCount <= 0 )
-            return -1;
 
         for ( auto extractor : extractors )
-            extractor->getFeatures().resize( chunkCount );
+        {
+            if ( (int)extractor->getFeatures().rows != chunkCount )
+            {
+                extractor->getFeatures().resize( chunkCount );
+            }
+        }
 
         RANGES_FOR( auto chunk, readerChunks )
         {
             copyRangeToArray( chunk, inputSimple->data );
             aubio_pvoc_do( phaseVocedor, inputSimple, inputComplex );
             for ( auto extractor : extractors )
+            {
                 extractor->doChunk( inputSimple, inputComplex );
+            }
         }
 
-        for ( auto extractor : extractors )
-            extractor->filefinished();
+
+        //for ( auto extractor : extractors )
+          //  extractor->filefinished();
 
         return 0;
    }
@@ -149,6 +155,12 @@ public:
     void addExtractor( std::shared_ptr<FeatureExtractor> extractor )
     {
         extractors.push_back( extractor );
+    }
+
+    void clear()
+    {
+        for ( auto extractor : extractors )
+            extractor->filefinished();
     }
 
 private:

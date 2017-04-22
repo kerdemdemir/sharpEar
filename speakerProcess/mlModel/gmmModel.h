@@ -69,7 +69,7 @@ public:
     virtual void predict( int personID ) override
     {
         std::array<double,NUMBER_OF_PEOPLE> tempHolder{0};
-        for ( int k = 0; k < features->getFeatures().rows; k++ )
+        for ( size_t k = 0; k < features->colSize; k++ )
         {
             for ( int i = 0; i < NUMBER_OF_PEOPLE; i++)
             {

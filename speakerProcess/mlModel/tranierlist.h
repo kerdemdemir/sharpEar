@@ -137,6 +137,7 @@ public:
         {
             model->speakerResultList[id].clear();
         }
+        featureList.clear();
     }
 
     int getResult( int id )

@@ -19,7 +19,6 @@ public:
 
     void filefinished()
     {
-        samples.resize(colSize);
         colSize = 0;
     }
 
