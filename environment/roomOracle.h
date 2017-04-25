@@ -59,7 +59,7 @@ public:
     void preprocess(const std::vector< SoundDataRef > &input, int packetCount);
     void postprocess();
     roomAtom* findSpeakerRadius(const std::vector< roomAtom* >& atomList,
-                                SoundDataRef originalData,
+                                SoundData<CDataType>& originalData,
                                 TrainerComposer &trainerIn, bool isRadius, bool isPrint = true);
 
     void setRoomSimulation( roomSimulation* mainWindow )

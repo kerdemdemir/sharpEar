@@ -55,13 +55,6 @@ roomSimulation::roomSimulation(QRectF boudingRect, QWidget *parent) :
     else
         setAtoms();
 
-//    CDataType temp;
-
-//    for ( int i = 0; i < 8; i++)
-//        temp.push_back(std::complex<double>(i, 0));
-//    temp = sharpFFT(temp, true);
-//    temp = swapVectorWithIn(temp);
-
     _sharpPlot1 = NULL;
     _sharpPlot2 = NULL;
 }
@@ -106,7 +99,7 @@ roomSimulation::calcRoomParameters()
      if (ENABLE_UPSAMPLING)
         _soundParameters.samplesPerSec *= UP_SAMPLE_RATE;
 
-    _soundParameters.currentOutputTime = 2;
+    _soundParameters.currentOutputTime = 2 ;
      _soundParameters.amplitude = 0;
     _soundParameters.samplePerOutput = _soundParameters.currentOutputTime * _soundParameters.samplesPerSec;
 
@@ -523,12 +516,15 @@ std::vector< roomAtom* >
 roomSimulation::getAtomsInAngle( int angle, int jump, bool isUnique  )
 {
     std::vector< roomAtom* > returnVal;
-    std::vector< bool > uniqueSet( _roomParameters.pixel2RealRatio* _roomParameters.yPixelCount / jump, false );
+    double maxRad = (getRoomLen() / sin( angle * GLOBAL_PI / 180 ));
+    std::vector< bool > uniqueSet(  maxRad / jump, false );
     std::vector< roomAtom* > allAtoms;
     for ( auto elem : hndl2Atom )
     {
        double angleTemp = elem->getInfo().getAngle();
-       if ( angleTemp >= angle - 5 && angleTemp <= angle + 5 )
+       if ( isUnique && angle == std::floor((double)angleTemp + 0.5)  )
+           allAtoms.push_back(elem);
+       else if ( angleTemp >= angle - 1 && angleTemp <= angle + 1 )
            allAtoms.push_back(elem);
     }
 
@@ -537,7 +533,7 @@ roomSimulation::getAtomsInAngle( int angle, int jump, bool isUnique  )
     {
         int rad = atomStruct->getInfo().getRadius();
         int key = rad / jump;
-        if ( rad < 200 || rad > _roomParameters.pixel2RealRatio* _roomParameters.yPixelCount )
+        if ( rad < 200 || rad > maxRad )
             continue;
 
         if ( !isUnique )
@@ -574,19 +570,24 @@ roomSimulation::getAtomInRadius(int curRadius , bool isUnique, int start, int of
 {
     if ( start < -90)
         start = -90;
+    std::set< int > uniqueSet;
 
     std::vector< roomAtom* > returnVal;
-    for (double curAngle = start ; curAngle < start + offSet; curAngle += 1)
+    for (double curAngle = start ; curAngle < start + offSet; curAngle += 0.5)
     {
        roomAtom *atom = findAtomPolarImpl( curRadius, curAngle );
        if ( !atom )
             continue;
         auto isRoomAtom = dynamic_cast<roomAtom*>(atom);
-        if ( !returnVal.empty() && isUnique && returnVal.back()->isAtomRadiusCloseBy( atom, 3) )
-            continue;
+        if ( isUnique )
+        {
+            if ( uniqueSet.find(atom->getInfo().getAngle()) != uniqueSet.end())
+                continue;
+        }
         if (isRoomAtom == NULL)
             continue;
         returnVal.push_back(isRoomAtom);
+        uniqueSet.insert(atom->getInfo().getAngle()) ;
     }
 
     return returnVal;

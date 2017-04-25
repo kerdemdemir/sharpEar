@@ -1,5 +1,6 @@
 #include <soundIO/IOManager.h>
 #include <utility/soundData.h>
+#include <speakerProcess/general.h>
 
 std::vector<double> IOParams::bufferData;
 std::vector<double> IOParams::upStreamBufferData;
@@ -18,6 +19,7 @@ IOManager::init(std::string& fileName, int id, bool isPulse)
     {
         return -1;
     }
+    newIO.setSpeakerID( fileName2State(fileName) );
     m_ID2Params.emplace(std::make_pair(id, std::move(newIO)));
     std::cout << " audioIO:: <init> A new file initiliazed ID: " << id << std::endl;
     return 0;
@@ -38,7 +40,7 @@ IOManager::read(SoundData<CDataType> &output)
     if (readCount < 0)
         return -1;
 
-
+    output.setSpeakerID( iter->second.getSpeakerID());
     output.setStatus(iter->second.getReadStatus());
     std::vector<std::complex<double>>::iterator begin = iter->second.getDataIter();
     std::vector<std::complex<double>>::iterator end = iter->second.getDataEnd();

@@ -73,6 +73,7 @@ public:
         readSize = packetSize;
         bufferData.resize(readSize);
         upStreamBufferData.resize( readSize );
+        speakerID = -1;
         inputStatus = SStatus::NOT_INIT;
     }
 
@@ -89,6 +90,7 @@ public:
         inputStatus = rhs.inputStatus;
         soxResampler = rhs.soxResampler;
         soxDownsampler = rhs.soxDownsampler;
+        speakerID = rhs.speakerID;
         rhs.fileIn = nullptr;
         rhs.fileOut = nullptr;
     }
@@ -259,6 +261,16 @@ public:
     }
 
 
+    size_t getSpeakerID() const
+    {
+    return speakerID;
+    }
+
+    void setSpeakerID(const size_t &value)
+    {
+    speakerID = value;
+    }
+
 private:
 
     static std::vector<double> bufferData;
@@ -274,7 +286,10 @@ private:
     int totalWrite;
     soxr_t soxResampler;
     soxr_t soxDownsampler;
+    size_t speakerID;
 };
 
 
 #endif // SOUNDIO_H
+
+

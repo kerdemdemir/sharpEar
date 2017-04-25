@@ -14,7 +14,7 @@
 
 struct Reader
 {
-    static constexpr size_t MAX_FILE_SIZE = 1000;
+    static constexpr size_t MAX_FILE_SIZE = 20000000;
 
 
     using ReaderIter = std::vector< double >::iterator;

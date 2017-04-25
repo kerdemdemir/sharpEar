@@ -204,6 +204,7 @@ struct SoundData
         info = SoundInfo ( posGraph, posReal, ang, rad, sType );
         dataStatus = SStatus::NOT_INIT;
         dataStart = dataEnd;
+        speakerID = -1;
     }
 
     SoundData (int ID, const SoundInfo& newInfo)
@@ -211,6 +212,7 @@ struct SoundData
         SNRVal = 0;
         id = ID;
         info = newInfo;
+        speakerID = -1;
     }
 
     SoundData() = default;
@@ -326,9 +328,17 @@ struct SoundData
 
     void print(const std::string& message) const
     {
-        std::cout << "Sounddata <print> ID: " << id << " Message: " << message << "SoundInfo: ";
+        std::cout << "Sounddata <print> ID: " << id << " Speaker ID: " << speakerID << " Message: " << message << "SoundInfo: ";
         info.print();
         std::cout << " SNR: " <<  SNRVal << std::endl;
+    }
+
+    std::string getString() const
+    {
+        std::string returnVal = "Speaker ID: ";
+        returnVal += std::to_string(speakerID);
+        returnVal.append(getInfo().get());
+        return returnVal;
     }
 
     void setStatus(SStatus status)
@@ -372,6 +382,17 @@ struct SoundData
         return dataEnd;
     }
 
+
+public:
+    int getSpeakerID() const
+    {
+        return speakerID;
+    }
+
+    void setSpeakerID(int value)
+    {
+        speakerID = value;
+    }
 private:
 
     double   SNRVal;
@@ -379,6 +400,7 @@ private:
     IterType dataStart;
     IterType dataEnd;
     int id;
+    int speakerID;
     SoundInfo info;
 
 };
@@ -386,3 +408,5 @@ private:
 
 
 #endif // SOUNDDATA_H
+
+

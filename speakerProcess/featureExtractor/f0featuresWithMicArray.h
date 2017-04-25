@@ -4,6 +4,9 @@
 #include "speakerProcess/featureExtractor/featureExtractor.h"
 #include "speakerProcess/general.h"
 #include <aubio.h>
+#include "dywapitchtrack.h"
+
+#define IS_WAVELET 0
 
 class F0FeaturesMicArray : public FeatureExtractor
 {
@@ -16,6 +19,9 @@ public:
         samples = cv::Mat(  1, 1 , CV_64FC1 );
         pitchOut = new_fvec (1); // output candidate
         pitch = new_aubio_pitch (cStr, win_s, hopSize, sampleRate);
+
+        dywapitch_inittracking(&pitchtracker);
+
     }
 
     ~F0FeaturesMicArray()
@@ -29,6 +35,8 @@ public:
        double freqStep = sampleRate / win_s;
        std::array< std::pair<double, double> , FORMANT_COUNT> formants;
        formants[0].first = f0;
+       int formantIndex = formants[0].first / freqStep;
+       formants[0].second = inputComplex->norm[formantIndex];
 
        for ( int curFreq = f0; curFreq < 7000; curFreq += f0 )
        {
@@ -44,7 +52,7 @@ public:
                 formants[formant].second = curFormantVal;
             }
        }
-       samples.at<double>(colSize, 0) = formants[selectedFormant].second;
+       samples.at<double>(colSize, 0) = formants[selectedFormant].second * aubio_pitch_get_confidence(pitch);;
     }
 
     virtual DataType2D& getFeatures() override
@@ -55,11 +63,22 @@ public:
 
     virtual void doChunk( fvec_t *inputSimple, cvec_t *inputComplex ) override
     {
-        aubio_pitch_do (pitch, inputSimple, pitchOut);
-        if ( pitchOut->data[0] < MIN_FREQ || pitchOut->data[0] > MAX_FREQ )
-            return;
+        if ( IS_WAVELET )
+        {
+            double thepitch = dywapitch_computepitch(&pitchtracker, (double*)inputSimple->data, 0, inputSimple->length);
+            thepitch *= ((double)sampleRate / 44100.0);
+            if ( thepitch < MIN_FREQ || thepitch > MAX_FREQ )
+                return;
+            getFormants( thepitch, inputComplex);
+        }
+        else
+        {
+            aubio_pitch_do (pitch, inputSimple, pitchOut);
+            if ( pitchOut->data[0] < MIN_FREQ || pitchOut->data[0] > MAX_FREQ )
+                return;
+            getFormants( pitchOut->data[0], inputComplex);
 
-        getFormants( pitchOut->data[0], inputComplex);
+        }
         colSize++;
     }
 
@@ -68,6 +87,8 @@ private:
     int selectedFormant;
     aubio_pitch_t *pitch;
     fvec_t *pitchOut;
+    dywapitchtracker pitchtracker;
+
 };
 
 #endif // F0FEATURES

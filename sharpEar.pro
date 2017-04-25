@@ -39,7 +39,8 @@ SOURCES += main.cpp\
     sharpplot.cpp \
     environment/roomDialogs.cpp \
     environment/roomOracle.cpp \
-    scriptingConsole.cpp
+    scriptingConsole.cpp \
+    speakerProcess/featureExtractor/dywapitchtrack.c
 
 
 
@@ -82,7 +83,9 @@ HEADERS  += mainwindow.h\
     speakerProcess/featureExtractor/amplitudesum.h \
     speakerProcess/featureExtractor/pyinf0feature.h \
     speakerProcess/featureExtractor/f0featuresWithMicArray.h \
-    speakerProcess/mlModel/simpleSummerModel.h
+    speakerProcess/mlModel/simpleSummerModel.h \
+    speakerProcess/featureExtractor/dywapitchtrack.h \
+    speakerProcess/featureExtractor/wavef0withamplitude.h
 
 
 

@@ -24,7 +24,7 @@ public:
     {
         int state = fileName2State( fileName );
         auto& featureMat = features->getFeatures();
-        for ( size_t i = 0; i < features->colSize; i++ )
+        for ( int i = 0; i < featureMat.rows; i++ )
             peopleF0Data[state].push_back( featureMat.at<double>(i, 0));
     }
 

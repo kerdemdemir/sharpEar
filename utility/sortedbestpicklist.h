@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <unordered_map>
 
 template <typename T>
 std::vector<size_t> sort_indexes(const std::vector<T> &v) {
@@ -25,6 +26,9 @@ struct SortedValue
     double ratio;
     double index;
 
+    double bestval;
+
+
     bool operator > ( const SortedValue& rhs )
     {
         return val > rhs.val;
@@ -38,6 +42,14 @@ struct SortedValue
     double multipleAll()
     {
         return val*ratio*index;
+    }
+
+    void operator +=( const SortedValue& rhs )
+    {
+        bestval = std::max(bestval, rhs.bestval);
+        val += rhs.val;
+        ratio += rhs.ratio;
+        index +=rhs.index;
     }
 
     std::string toString()
@@ -60,21 +72,27 @@ public:
 
     void insert( int in, double val, double ratio, double indexVal )
     {
-        auto newVal = SortedValue{val, ratio, indexVal};
+        auto newVal = SortedValue{val, ratio, indexVal,val};
         auto pair = std::make_pair(in, newVal );
         auto index = findByOffSet(in);
         if ( index != -1)
         {
-            if (  pairList[index].second < newVal )
-                pairList[index] = pair;
+            if ( val > pairList[index].second.bestval )
+                pairList[index].first = in;
+            pairList[index].second += newVal;
 
+            sortList();
             return;
         }
 
         if ( pairList.size() < maxSize )
+        {
             pairList.push_back( pair );
+        }
         else if ( pairList.back().second < newVal )
+        {
             pairList.back() = pair;
+        }
 
         sortList();
 
@@ -97,6 +115,21 @@ public:
         return pairList;
     }
 
+
+    void sortListByIndex( int newSize )
+    {
+        pairList.resize(newSize);
+        std::sort( pairList.begin(), pairList.end(), []( pairType lhs, pairType rhs)
+        {
+            return (lhs.second.index * lhs.second.ratio)  > (rhs.second.index * rhs.second.ratio);
+        });
+    }
+
+    double getBestRealKeyValue()
+    {
+        return pairList.front().first;
+    }
+
 private:
 
     int findByOffSet( int value )
@@ -117,6 +150,7 @@ private:
             return lhs.second > rhs.second;
         });
     }
+
 
     bool isPrint;
     int offSet = 0;
