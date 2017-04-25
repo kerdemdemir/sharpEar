@@ -63,11 +63,19 @@ class SortedBestPickList
 public:
     using pairType = std::pair< int, SortedValue >;
 
+    SortedBestPickList() = default;
     SortedBestPickList( size_t size, int offSet, bool isPrint )
     {
         maxSize = size;
         this->offSet = offSet;
         this->isPrint = isPrint;
+    }
+    SortedBestPickList( const SortedBestPickList& rhs )
+    {
+        this->maxSize = rhs.maxSize;
+        this->offSet = rhs.offSet;
+        this->isPrint = rhs.isPrint;
+        this->pairList = rhs.pairList;
     }
 
     void insert( int in, double val, double ratio, double indexVal )
@@ -115,6 +123,10 @@ public:
         return pairList;
     }
 
+    void resize( int size )
+    {
+      pairList.resize(size);
+    }
 
     void sortListByIndex( int newSize )
     {
@@ -129,6 +141,17 @@ public:
     {
         return pairList.front().first;
     }
+
+    std::vector<double> getBestRealKeyValuesInList()
+    {
+        std::vector<double>  returnVal;
+        for ( size_t i= 0; i < pairList.size(); i++ )
+        {
+            returnVal.push_back( pairList[i].first);
+        }
+        return returnVal;
+    }
+
 
 private:
 
