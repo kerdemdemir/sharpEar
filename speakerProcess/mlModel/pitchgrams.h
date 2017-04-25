@@ -120,8 +120,8 @@ public:
             {
                 auto strs = splitString(line);
                 strs[1].pop_back();
-                size_t key = std::stoi(strs[0]);
-                double value = std::stod(strs[1]);
+                size_t key = std::stoi(strs[0]) ;
+                double value = std::stod(strs[1]) ;
                 ngramProbility[i][key] = value;
                 counter++;
             }

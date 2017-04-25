@@ -13,7 +13,7 @@ public:
     F0FeaturesAmplitude( int formant )
     {
         selectedFormant = formant;
-        char cStr[] = "default";
+        char cStr[] = "yin";
         samples = cv::Mat(  1, 2 , CV_64FC1 );
 
         pitchOut = new_fvec (1); // output candidate

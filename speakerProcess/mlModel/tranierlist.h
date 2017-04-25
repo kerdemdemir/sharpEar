@@ -195,7 +195,7 @@ public:
         auto F0FeaturePtr = std::make_shared<F0FeaturesAmplitude>(selectedGram);
         featureList.addExtractor(F0FeaturePtr);
         auto pitchGramRunnerModel = std::make_shared<PitchGramModel>(3, selectedGramName);
-        pitchGramRunnerModel->isLoad = false;
+        pitchGramRunnerModel->isLoad = true;
         pitchGramRunnerModel->setFeature( F0FeaturePtr );
         addModel(pitchGramRunnerModel);
     }
@@ -225,8 +225,8 @@ public:
         int selectedGram = 0; std::string selectedGramName = "F0";
         auto F0FeaturePtr = std::make_shared<F0FeaturesAmplitude>(selectedGram);
         featureList.addExtractor(F0FeaturePtr);
-        auto pitchGramRunnerModel = std::make_shared<PitchGramModel>(2, selectedGramName);
-        pitchGramRunnerModel->isLoad =  true;
+        auto pitchGramRunnerModel = std::make_shared<PitchGramModel>(1, selectedGramName);
+        pitchGramRunnerModel->isLoad =  false;
         pitchGramRunnerModel->setFeature( F0FeaturePtr );
         addModel(pitchGramRunnerModel);
     }

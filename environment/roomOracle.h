@@ -60,7 +60,7 @@ public:
     void postprocess();
     roomAtom* findSpeakerRadius(const std::vector< roomAtom* >& atomList,
                                 SoundData<CDataType>& originalData,
-                                TrainerComposer &trainerIn, bool isRadius, bool isPrint = true);
+                                TrainerComposer &trainerIn, double& val, bool isRadius, bool isPrint = true);
 
     void setRoomSimulation( roomSimulation* mainWindow )
     {

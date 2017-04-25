@@ -516,7 +516,7 @@ std::vector< roomAtom* >
 roomSimulation::getAtomsInAngle( int angle, int jump, bool isUnique  )
 {
     std::vector< roomAtom* > returnVal;
-    double maxRad = (getRoomLen() / sin( angle * GLOBAL_PI / 180 ));
+    double maxRad = (getRoomLen() / cos( angle * GLOBAL_PI / 180 ));
     std::vector< bool > uniqueSet(  maxRad / jump, false );
     std::vector< roomAtom* > allAtoms;
     for ( auto elem : hndl2Atom )
@@ -524,7 +524,7 @@ roomSimulation::getAtomsInAngle( int angle, int jump, bool isUnique  )
        double angleTemp = elem->getInfo().getAngle();
        if ( isUnique && angle == std::floor((double)angleTemp + 0.5)  )
            allAtoms.push_back(elem);
-       else if ( angleTemp >= angle - 1 && angleTemp <= angle + 1 )
+       else if ( angleTemp >= angle - 2 && angleTemp <= angle + 2 )
            allAtoms.push_back(elem);
     }
 
@@ -579,13 +579,14 @@ roomSimulation::getAtomInRadius(int curRadius , bool isUnique, int start, int of
        if ( !atom )
             continue;
         auto isRoomAtom = dynamic_cast<roomAtom*>(atom);
+        if (isRoomAtom == NULL)
+            continue;
         if ( isUnique )
         {
             if ( uniqueSet.find(atom->getInfo().getAngle()) != uniqueSet.end())
                 continue;
         }
-        if (isRoomAtom == NULL)
-            continue;
+
         returnVal.push_back(isRoomAtom);
         uniqueSet.insert(atom->getInfo().getAngle()) ;
     }
