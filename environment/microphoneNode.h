@@ -106,17 +106,6 @@ public:
         }
     }
 
-    void setNearField( bool isNearField, double multiplicationVal )
-    {
-        for ( auto& aparture : m_apartureList)
-        {
-            aparture.clearData();
-            aparture.setNearFieldMode( isNearField );
-        }
-
-        multiplyDistance(multiplicationVal);
-    }
-
     void resetBuffers()
     {
         for ( auto& aparture : m_apartureList)

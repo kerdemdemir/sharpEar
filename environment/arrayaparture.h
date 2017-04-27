@@ -31,7 +31,6 @@ public:
         m_RoomVariables = roomConfig;
         isCenter = false;
         m_index = index;
-        m_nearFieldMode = false;
 
         m_sumLeapData.resize( soundConfig.samplePerOutput );
         m_apartureData.resize( soundConfig.samplePerOutput );
@@ -57,12 +56,12 @@ public:
 
     void feed ( const SoundData<CDataType>& input  )
     {
-      double delay = getDistDelay( input.getDistance(m_pos) ) - m_timeDelay;
+      size_t delay = getDistDelay( input.getDistance(m_pos) ) - m_timeDelay ;
       //double delay = getDelay(input.getInfo().getDistance(), input.getInfo().getAngle(),ArrayFocusMode::NO_FOCUS );
       CDataConstIter beginIter = input.getData();
-      auto leapIte = getLeapIter(input, delay);
+      leapIter leapIte = getLeapIter(input, delay);
       auto tempLeap = *leapIte->second;
-      for (size_t k = 0; k < m_apartureData.size() + delay - 1; k++)
+      for (size_t k = 0; k < m_apartureData.size() + delay; k++)
       {
           if (k < delay )
           {
@@ -84,12 +83,10 @@ public:
 
     leapIter getLeapIter( const SoundData<CDataType>& input, double delay )
     {
-        leapMap& data = m_nearFieldMode ? m_leapNearFieldData : m_leapData;
-
-        leapIter leapIte = data.find(input.getID());
-        if (leapIte == data.end())
+        leapIter leapIte = m_leapData.find(input.getID());
+        if (leapIte == m_leapData.end())
         {
-            leapIte = data.emplace( input.getID(),
+            leapIte = m_leapData.emplace( input.getID(),
                                           std::make_shared<CDataType>( delay ) ).first;
         }
 
@@ -200,12 +197,6 @@ public:
         m_timeDelay = 0;
     }
 
-    void setNearFieldMode( bool nearFieldMode )
-    {
-        m_nearFieldMode = nearFieldMode;
-        m_timeDelay = 0;
-    }
-
     const CDataType& getData() const
     {
         return m_apartureData;
@@ -219,11 +210,11 @@ public:
             {
                 return m_apartureData[index];
             }
-            return m_apartureData[index + 1];
+            return m_apartureData[index];
         }
         else
         {
-            auto leapIndex = index - m_apartureData.size() + 1;
+            auto leapIndex = index - m_apartureData.size();
             if ( leapIndex >= m_sumLeapData.size() )
                 std::cout << "assert2d" << std::endl;
             return m_sumLeapData[leapIndex];
@@ -241,12 +232,10 @@ private:
     QPoint m_pos;
     int  m_index;
     double  m_timeDelay;
-    bool m_nearFieldMode;
     bool isCenter;
     std::complex<double> m_weight;
 
     std::unordered_map<int, std::shared_ptr<CDataType>>  m_leapData; // Leap Data for each source
-    std::unordered_map<int, std::shared_ptr<CDataType>>  m_leapNearFieldData; // Leap Data for each source
 
 
     CDataType  m_sumLeapData; // Leap Data for each source

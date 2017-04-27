@@ -522,37 +522,37 @@ roomSimulation::getAtomsInAngle( int angle, int jump, bool isUnique  )
     for ( auto elem : hndl2Atom )
     {
         if ( !elem )
-             continue;
-         auto atomStruct = dynamic_cast<roomAtom*>(elem);
-         if (atomStruct == NULL)
-             continue;
-
-       double angleTemp = elem->getInfo().getAngle();
-       if ( isUnique && angle == std::floor((double)angleTemp + 0.5)  )
-           allAtoms.push_back(elem);
-       else if ( angleTemp >= angle - 2 && angleTemp <= angle + 2 )
-           allAtoms.push_back(elem);
+            continue;
+        auto atomStruct = dynamic_cast<roomAtom*>(elem);
+        if (atomStruct == NULL)
+            continue;
+        int rad = atomStruct->getInfo().getRadius();
+        if ( rad < 200 || rad > maxRad )
+            continue;
+        double angleTemp = elem->getInfo().getAngle();
+        if ( isUnique && angle == std::floor((double)angleTemp + 0.5)  )
+            allAtoms.push_back(elem);
+        else if ( angleTemp >= angle - 1 && angleTemp <= angle + 1 )
+            allAtoms.push_back(elem);
     }
 
-    //auto elemRad = _roomParameters.pixel2RealRatio * _roomParameters.pixel4EachAtom;
+    std::sort(allAtoms.begin(), allAtoms.end(), []( const roomAtom* lhs,  const roomAtom* rhs){
+        return lhs->getRadius() < rhs->getRadius();
+    });
+
     for ( auto& atomStruct : allAtoms )
     {
         int rad = atomStruct->getInfo().getRadius();
         int key = rad / jump;
-        if ( rad < 200 || rad > maxRad )
-            continue;
-
-        if ( !isUnique )
-            returnVal.push_back(atomStruct);
-        else if ( !uniqueSet[key] )
+        if ( isUnique && !uniqueSet[key] )
         {
             returnVal.push_back(atomStruct);
             uniqueSet[key] = true;
         }
+        else
+            returnVal.push_back(atomStruct);
     }
-    std::sort(returnVal.begin(), returnVal.end(), []( const roomAtom* lhs,  const roomAtom* rhs){
-        return lhs->getRadius() < rhs->getRadius();
-    });
+
     return returnVal;
 }
 

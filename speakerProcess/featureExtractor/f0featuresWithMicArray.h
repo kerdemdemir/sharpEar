@@ -22,7 +22,7 @@ public:
 
         dywapitch_inittracking(&pitchtracker);
 
-        //aubio_pitch_set_tolerance (pitch, 0.95);
+        aubio_pitch_set_tolerance (pitch, 0.95);
         aubio_pitch_set_silence (pitch, -30);
     }
 
@@ -35,26 +35,26 @@ public:
     void getFormants( double f0, cvec_t* inputComplex )
     {
        double freqStep = sampleRate / win_s;
-       std::array< std::pair<double, double> , FORMANT_COUNT> formants;
+       std::array< std::pair<double, double> , FORMANT_COUNT> formants{ std::make_pair(0.0, 0.0 ) };
+
        formants[0].first = f0;
        int formantIndex = formants[0].first / freqStep;
        formants[0].second = inputComplex->norm[formantIndex];
 
-       for ( int curFreq = f0; curFreq < 7000; curFreq += f0 )
+       for ( int curFreq = f0; curFreq < 8000; curFreq += f0 )
        {
-            if ( curFreq < 1000 )
+            if ( curFreq < 1000 && curFreq >= 8000  )
                 continue;
 
             int formant = curFreq / 1000;
             formantIndex = curFreq / freqStep;
             float curFormantVal = inputComplex->norm[formantIndex];
-            if ( formants[formant].second < curFormantVal )
-            {
-                formants[formant].first = curFreq % 1000;
-                formants[formant].second = curFormantVal;
-            }
+            formants[formant].first++;
+            formants[formant].second += curFormantVal;
        }
-       auto result = formants[selectedFormant].second * (IS_WAVELET ? 1.0 : aubio_pitch_get_confidence(pitch));
+
+       double meanVal = formants[selectedFormant].second / formants[selectedFormant].first;
+       auto result =  meanVal * (IS_WAVELET ? 1.0 : aubio_pitch_get_confidence(pitch));
        samples.at<double>(colSize, 0) = result;
 
     }

@@ -5,9 +5,9 @@
 #include "environment/roomAtom.h"
 #include "utility/utility.h"
 #include "utility/sortedbestpicklist.h"
+
 constexpr int IS_DRAW = 0;
 constexpr int IS_SIMPLE_POWER = 0;
-constexpr int IS_F0_POWER = 1;
 constexpr int THRESHOLD_POWER = 0.0002;
 
 SortedBestPickList curBestPicker;
