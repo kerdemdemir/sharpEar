@@ -13,11 +13,13 @@ public:
     F0FeaturesAmplitude( int formant )
     {
         selectedFormant = formant;
-        char cStr[] = "yin";
+        char cStr[] = "default";
         samples = cv::Mat(  1, 2 , CV_64FC1 );
 
         pitchOut = new_fvec (1); // output candidate
         pitch = new_aubio_pitch (cStr, win_s, hopSize, sampleRate);
+        aubio_pitch_set_tolerance (pitch, 0.95);
+        aubio_pitch_set_silence (pitch, -30);
     }
 
     ~F0FeaturesAmplitude()

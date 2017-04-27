@@ -16,10 +16,14 @@ public:
 
     virtual void doChunk( fvec_t *inputSimple, cvec_t *inputComplex ) = 0;
     virtual DataType2D& getFeatures() = 0;
+    virtual void clear()
+    {
+    }
 
     void filefinished()
     {
         colSize = 0;
+        clear();
     }
 
 

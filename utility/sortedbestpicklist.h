@@ -85,9 +85,8 @@ public:
         auto index = findByOffSet(in);
         if ( index != -1)
         {
-            if ( val > pairList[index].second.bestval )
-                pairList[index].first = in;
-            pairList[index].second += newVal;
+            if ( val > pairList[index].second.val )
+                pairList[index] = pair;
 
             sortList();
             return;
@@ -110,7 +109,6 @@ public:
     {
         if ( isPrint == false )
             return;
-
         for ( auto elem : pairList)
         {
             std::cout <<  elem.first << " and its value " << elem.second.toString() << std::endl;
@@ -130,11 +128,11 @@ public:
 
     void sortListByIndex( int newSize )
     {
-        pairList.resize(newSize);
         std::sort( pairList.begin(), pairList.end(), []( pairType lhs, pairType rhs)
         {
             return (lhs.second.index * lhs.second.ratio)  > (rhs.second.index * rhs.second.ratio);
         });
+        pairList.resize(newSize);
     }
 
     double getBestRealKeyValue()

@@ -22,6 +22,8 @@ public:
 
         dywapitch_inittracking(&pitchtracker);
 
+        //aubio_pitch_set_tolerance (pitch, 0.95);
+        aubio_pitch_set_silence (pitch, -30);
     }
 
     ~F0FeaturesMicArray()
@@ -44,7 +46,7 @@ public:
                 continue;
 
             int formant = curFreq / 1000;
-            int formantIndex = curFreq / freqStep;
+            formantIndex = curFreq / freqStep;
             float curFormantVal = inputComplex->norm[formantIndex];
             if ( formants[formant].second < curFormantVal )
             {
@@ -52,7 +54,9 @@ public:
                 formants[formant].second = curFormantVal;
             }
        }
-       samples.at<double>(colSize, 0) = formants[selectedFormant].second * aubio_pitch_get_confidence(pitch);;
+       auto result = formants[selectedFormant].second * (IS_WAVELET ? 1.0 : aubio_pitch_get_confidence(pitch));
+       samples.at<double>(colSize, 0) = result;
+
     }
 
     virtual DataType2D& getFeatures() override

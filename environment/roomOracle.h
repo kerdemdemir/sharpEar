@@ -58,9 +58,9 @@ public:
 
     void preprocess(const std::vector< SoundDataRef > &input, int packetCount);
     void postprocess();
-    roomAtom* findSpeakerRadius(const std::vector< roomAtom* >& atomList,
+    roomAtom* findBestSpeaker(const std::vector< roomAtom* >& atomList,
                                 SoundData<CDataType>& originalData,
-                                TrainerComposer &trainerIn, double& val, bool isRadius, bool isPrint = true);
+                                TrainerComposer &trainerIn, bool isRadius, bool isPrint = true);
 
     void setRoomSimulation( roomSimulation* mainWindow )
     {
@@ -142,6 +142,8 @@ private:
     void getNoice(roomAtom *speakerPos);
 
     void filterByPower(std::vector<roomAtom *> &atomList);
+    std::vector<roomAtom *> findSpeakers(const std::vector<roomAtom *> &atomList, SoundData<CDataType> &originalData, TrainerComposer &trainerIn, bool isRadius);
+    roomAtom *findSpeaker(const std::vector<roomAtom *> &atomList, SoundData<CDataType> &originalData, TrainerComposer &trainerIn, bool isRadius, bool isPrint);
 };
 
 

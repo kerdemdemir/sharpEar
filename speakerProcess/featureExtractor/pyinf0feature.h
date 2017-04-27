@@ -13,7 +13,8 @@ public:
     {
         selectedFormant = formant;
         samples = cv::Mat(  1, 2 , CV_64FC1 );
-        pyinc_init( 16000, win_s, hopSize );
+        pyinc_init( sampleRate, win_s, hopSize );
+        pyinc_set_cut_off(1);
     }
 
     ~PYINF0()
@@ -21,6 +22,10 @@ public:
         pyinc_clear();
     }
 
+    virtual void clear()
+    {
+        pyinc_clear();
+    }
 
     virtual DataType2D& getFeatures() override
     {

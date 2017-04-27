@@ -85,7 +85,9 @@ HEADERS  += mainwindow.h\
     speakerProcess/featureExtractor/f0featuresWithMicArray.h \
     speakerProcess/mlModel/simpleSummerModel.h \
     speakerProcess/featureExtractor/dywapitchtrack.h \
-    speakerProcess/featureExtractor/wavef0withamplitude.h
+    speakerProcess/featureExtractor/wavef0withamplitude.h \
+    speakerProcess/mlModel/multiPitchModel.h \
+    speakerProcess/featureExtractor/PYINFeatureMicArray.h
 
 
 

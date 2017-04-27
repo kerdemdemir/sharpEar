@@ -8,6 +8,7 @@
 #include "speakerProcess/featureExtractor/f0featuresWithMicArray.h"
 #include "speakerProcess/featureExtractor/MFCCFeatures.h"
 #include "speakerProcess/featureExtractor/pyinf0feature.h"
+#include "speakerProcess/featureExtractor/PYINFeatureMicArray.h"
 #include "speakerProcess/mlModel/gmmModel.h"
 #include "speakerProcess/mlModel/pitchgrams.h"
 #include "speakerProcess/mlModel/tranierlist.h"
@@ -156,6 +157,22 @@ public:
         return  result;
     }
 
+    double getNormalizedRawResult( int id )
+    {
+        double result = 0;
+        for ( auto model : modelList)
+        {
+            double curChunkSize = model->speakerResultList[id].size();
+            for ( size_t i = 0; i < model->speakerResultList[id].size(); i++)
+            {
+                result += model->speakerResultList[id][i][id] / curChunkSize ;
+            }
+            //model->speakerResultList[id].clear();
+        }
+        return  result / modelList.size();
+    }
+
+
     double getRawResult( int id )
     {
         double result = 0;
@@ -165,7 +182,6 @@ public:
             {
                 result += model->speakerResultList[id][i][id] ;
             }
-
             //model->speakerResultList[id].clear();
         }
         return  result;
@@ -176,13 +192,14 @@ public:
         double result = 0;
         for ( auto model : modelList)
         {
+            double curChunkSize = model->speakerResultList[id].size();
             for ( size_t i = 0; i < model->speakerResultList[id].size(); i++)
             {
                 auto totalSum = std::accumulate( model->speakerResultList[id][i].begin(), model->speakerResultList[id][i].end(), 0.0 );
-                result += model->speakerResultList[id][i][id] / totalSum ;
+                result += ((model->speakerResultList[id][i][id] / totalSum) / curChunkSize) ;
             }
         }
-        return  result;
+        return  result / modelList.size();
     }
 
     void addModel( std::shared_ptr<ModelBase> model )
@@ -194,7 +211,7 @@ public:
     {
         auto F0FeaturePtr = std::make_shared<F0FeaturesAmplitude>(selectedGram);
         featureList.addExtractor(F0FeaturePtr);
-        auto pitchGramRunnerModel = std::make_shared<PitchGramModel>(3, selectedGramName);
+        auto pitchGramRunnerModel = std::make_shared<PitchGramModel>(2, selectedGramName);
         pitchGramRunnerModel->isLoad = true;
         pitchGramRunnerModel->setFeature( F0FeaturePtr );
         addModel(pitchGramRunnerModel);
@@ -226,7 +243,7 @@ public:
         auto F0FeaturePtr = std::make_shared<F0FeaturesAmplitude>(selectedGram);
         featureList.addExtractor(F0FeaturePtr);
         auto pitchGramRunnerModel = std::make_shared<PitchGramModel>(1, selectedGramName);
-        pitchGramRunnerModel->isLoad =  false;
+        pitchGramRunnerModel->isLoad =  true;
         pitchGramRunnerModel->setFeature( F0FeaturePtr );
         addModel(pitchGramRunnerModel);
     }
@@ -235,7 +252,7 @@ public:
     {
         auto F0FeaturePtr = std::make_shared<PYINF0>(selectedGram);
         featureList.addExtractor(F0FeaturePtr);
-        auto pitchGramRunnerModel = std::make_shared<PitchGramModel>(3, selectedGramName);
+        auto pitchGramRunnerModel = std::make_shared<PitchGramModel>(2, selectedGramName);
         pitchGramRunnerModel->isLoad = true;
         pitchGramRunnerModel->setFeature( F0FeaturePtr );
         addModel(pitchGramRunnerModel);

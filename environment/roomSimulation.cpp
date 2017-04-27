@@ -521,6 +521,12 @@ roomSimulation::getAtomsInAngle( int angle, int jump, bool isUnique  )
     std::vector< roomAtom* > allAtoms;
     for ( auto elem : hndl2Atom )
     {
+        if ( !elem )
+             continue;
+         auto atomStruct = dynamic_cast<roomAtom*>(elem);
+         if (atomStruct == NULL)
+             continue;
+
        double angleTemp = elem->getInfo().getAngle();
        if ( isUnique && angle == std::floor((double)angleTemp + 0.5)  )
            allAtoms.push_back(elem);
