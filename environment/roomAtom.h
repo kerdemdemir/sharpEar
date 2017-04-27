@@ -124,6 +124,11 @@ public:
         return m_selfData.getRadius();
     }
 
+    int getAngle() const
+    {
+        return m_selfData.getAngle();
+    }
+
     void print() const
     {
         m_selfData.print();
@@ -251,7 +256,10 @@ class AtomList
 {
 public :
 
+    using radAndPair = std::pair <int, std::vector< roomAtom* > >;
     using radAngMap = std::unordered_map < int, std::vector< roomAtom* > >;
+    using radAngList = std::vector < radAndPair >;
+    using radAngListIte = std::vector < radAndPair >::iterator;
     using radAngMapIte = typename radAngMap::iterator;
 
     void insert( int rad, int ang, roomAtom* input )
@@ -273,46 +281,86 @@ public :
         }
     }
 
-    void remove( int rad, int ang )
+    void sort()
     {
-        auto radIte = radiusData.find(rad);
-        if (radIte != radiusData.end())
-            radiusData.erase(radIte);
+        for ( auto& angleListLocal : radiusData )
+        {
+            std::sort(angleListLocal.second.begin(), angleListLocal.second.end(), []( const roomAtom* lhs,  const roomAtom* rhs){
+                return lhs->getAngle() < rhs->getAngle();
+            });
+            radiusList.push_back(angleListLocal);
+        }
 
-        auto angIte = angleData.find(ang);
-        if (angIte != angleData.end())
-            angleData.erase(angIte);
+        std::sort(radiusList.begin(), radiusList.end(), []( const radAndPair& lhs,  const radAndPair& rhs){
+            return lhs.first < rhs.first;
+        });
+
+        for ( auto& radiusListLocal : angleData )
+        {
+            std::sort(radiusListLocal.second.begin(), radiusListLocal.second.end(), []( const roomAtom* lhs,  const roomAtom* rhs){
+                return lhs->getRadius() < rhs->getRadius();
+            });
+            angleList.push_back(radiusListLocal);
+        }
+        std::sort(angleList.begin(), angleList.end(), []( const radAndPair& lhs,  const radAndPair& rhs){
+            return lhs.first < rhs.first;
+        });
     }
 
     std::vector<roomAtom*>& getByAngle( int angle )
     {
         auto ite = angleData.find(angle);
         if (ite == angleData.end())
-            return emptyVec;
+        {
+            auto const itLower = std::lower_bound(angleList.begin(), angleList.end(), angle,
+                                                  [](const radAndPair& lhs, int rhs)
+            {
+                    return lhs.first < rhs;
+            });
+            if ( itLower != angleList.end() )
+                return itLower->second;
+            else
+                return emptyVec;
+        }
         else
+        {
             return ite->second;
+        }
     }
 
     roomAtom* getByAngleRadius( int angle, int radius )
     {
-        auto angleList = getByAngle(angle);
-        for ( roomAtom* elem : angleList )
+        auto angleListTemp = getByAngle(angle);
+        auto const itLower = std::lower_bound(angleListTemp.begin(), angleListTemp.end(), radius,
+                                              [](const roomAtom* lhs, const int rhs)
         {
-            if( elem->getInfo().getRadius() == radius )
-            {
-                return elem;
-            }
-        }
+            return lhs->getRadius() < rhs;
+        });
+
+        if ( itLower != angleListTemp.end() )
+            return *itLower;
+         return nullptr;
     }
 
     std::vector<roomAtom*>& getByRadius( int radius )
     {
         auto ite = radiusData.find(radius);
         if (ite == radiusData.end())
-            return emptyVec;
+        {
+            auto const itLower = std::lower_bound(radiusList.begin(), radiusList.end(), radius,
+                                                  [](const radAndPair& lhs, const int rhs)
+            {
+                    return lhs.first < rhs;
+            });
+            if ( itLower != radiusList.end() )
+                return itLower->second;
+            else
+                return emptyVec;
+        }
         else
             return ite->second;
     }
+
 
 
     bool empty()
@@ -324,7 +372,9 @@ protected:
 
     std::vector<roomAtom*> emptyVec;
     radAngMap radiusData;
+    radAngList radiusList;
     radAngMap angleData;
+    radAngList angleList;
 };
 
 

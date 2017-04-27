@@ -88,6 +88,8 @@ public:
     roomAtom* findAtomPolarImpl( double radius, double angle );
     double getRoomLen();
     roomAtom *findAtomPolarFromDataBase(double radius, double angle);
+    std::vector<roomAtom *> getAtomsInAngleDataBase(int angle, int jump);
+    std::vector<roomAtom *> getAtomsInRadiusDataBase(int curRadius);
 public slots:
 
     void startBeamforming();

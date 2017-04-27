@@ -208,6 +208,7 @@ roomSimulation::setAtoms()
             tempAtom->setData(0, "Atom");
          }
     }
+    atomDatabase->sort();
 }
 
 void
@@ -240,6 +241,7 @@ roomSimulation::setRadiusAngleAtom()
             tempAtom->setData(0, "Atom");
         }
     }
+    atomDatabase->sort();
 }
 
 void
@@ -366,7 +368,7 @@ roomSimulation::findAtomPolarImpl( double radius, double angle )
 roomAtom*
 roomSimulation::findAtomPolarFromDataBase( double radius, double angle )
 {
-    atomDatabase->getByAngleRadius( angle, radius);
+   return atomDatabase->getByAngleRadius( angle, radius);
 }
 
 double roomSimulation::getRoomLen()
@@ -519,6 +521,24 @@ roomSimulation::drawMiddleAxisGraph()
 
 
 std::vector< roomAtom* >
+roomSimulation::getAtomsInAngleDataBase( int angle, int jump  )
+{
+    std::vector< roomAtom* > returnVal = atomDatabase->getByAngle(angle);
+    if ( !jump )
+        return returnVal;
+
+    std::vector< roomAtom* > tempList = returnVal;
+    for ( auto elem : tempList)
+    {
+        int rad = elem->getRadius();
+        size_t key = rad / jump;
+        if ( rad > 200 && tempList.size() > key )
+            returnVal.push_back( tempList[key]);
+    }
+    return returnVal;
+}
+
+std::vector< roomAtom* >
 roomSimulation::getAtomsInAngle( int angle, int jump, bool isUnique  )
 {
     std::vector< roomAtom* > returnVal;
@@ -575,6 +595,12 @@ roomSimulation::getMiddleAtoms()
         returnVal.push_back(atom);
     }
     return returnVal;
+}
+
+std::vector< roomAtom* >
+roomSimulation::getAtomsInRadiusDataBase( int curRadius  )
+{
+    return atomDatabase->getByRadius(curRadius);
 }
 
 std::vector< roomAtom* >

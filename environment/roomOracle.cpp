@@ -79,8 +79,8 @@ void roomOracle::preprocess(const std::vector< SoundDataRef > &input, int packet
         double radiusAngle = angle;
         if ( angle == -999 )
         {
-            auto atomsInMiddleRadius = m_roomSimulation->getAtomInRadius( m_roomSimulation->getRoomLen()/3  , true,  -88, 176);
-            auto atomsInMiddleRadius3 = m_roomSimulation->getAtomInRadius( m_roomSimulation->getRoomLen()*2/3  , true, -90, 180);
+            auto atomsInMiddleRadius = m_roomSimulation->getAtomsInRadiusDataBase( m_roomSimulation->getRoomLen()/3 );
+            auto atomsInMiddleRadius3 = m_roomSimulation->getAtomsInRadiusDataBase( m_roomSimulation->getRoomLen()*2/3);
             atomsInMiddleRadius.insert( atomsInMiddleRadius.end(), atomsInMiddleRadius3.begin(), atomsInMiddleRadius3.end());
 
             soundPositionLocal = findSpeaker( atomsInMiddleRadius, originalSound, trainer, false, true );
@@ -89,7 +89,7 @@ void roomOracle::preprocess(const std::vector< SoundDataRef > &input, int packet
         }
 
 
-        auto atomsInMiddle = m_roomSimulation->getAtomsInAngle( radiusAngle, 20, true );
+        auto atomsInMiddle = m_roomSimulation->getAtomsInAngleDataBase( radiusAngle, 20 );
         soundPositionLocal = findSpeaker( atomsInMiddle, originalSound, trainer, true,true );
         if ( soundPositionLocal )
             radius = soundPositionLocal->getInfo().getRadius();
@@ -99,7 +99,7 @@ void roomOracle::preprocess(const std::vector< SoundDataRef > &input, int packet
 
     if ( !isAngleLocated )
     {
-        auto atomInRadius = m_roomSimulation->getAtomInRadius( radius, true, -88, 176);
+        auto atomInRadius = m_roomSimulation->getAtomsInRadiusDataBase( radius );
         soundPositionLocal = findSpeaker(atomInRadius, originalSound, trainer, false, true );
         if ( soundPositionLocal )
            angle = soundPositionLocal->getInfo().getAngle();
