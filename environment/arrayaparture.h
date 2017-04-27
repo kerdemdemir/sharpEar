@@ -206,17 +206,11 @@ public:
     {
         if ( m_apartureData.size() > index )
         {
-            if ( index + 1 >= m_apartureData.size() )
-            {
-                return m_apartureData[index];
-            }
             return m_apartureData[index];
         }
         else
         {
             auto leapIndex = index - m_apartureData.size();
-            if ( leapIndex >= m_sumLeapData.size() )
-                std::cout << "assert2d" << std::endl;
             return m_sumLeapData[leapIndex];
         }
     }

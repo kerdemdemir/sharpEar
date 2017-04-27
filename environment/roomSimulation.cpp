@@ -42,7 +42,7 @@ roomSimulation::roomSimulation(QRectF boudingRect, QWidget *parent) :
     calcRoomParameters();
     _micArr  = new microphoneNode(_soundParameters, _roomParameters);
     _roomDialogs = new roomDialogs(_soundParameters, _roomParameters, *_micArr);
-
+    atomDatabase = std::make_shared<AtomList>();
 
     _roomDialogs->setRoomSimulation(this);
     _room_scene->addItem(_micArr);
@@ -204,7 +204,7 @@ roomSimulation::setAtoms()
                                              (y - _room_scene->sceneRect().top()) * _roomParameters.pixel2RealRatio );
             tempAtom->createInfo( atomCMPos, atomScenePos );
             hndl2Atom.push_back(tempAtom);
-            atomDatabase.insert(tempAtom->getInfo().getRadius(), tempAtom->getInfo().getAngle(), tempAtom);
+            atomDatabase->insert(tempAtom->getInfo().getRadius(), tempAtom->getInfo().getAngle(), tempAtom);
             tempAtom->setData(0, "Atom");
          }
     }
@@ -236,7 +236,7 @@ roomSimulation::setRadiusAngleAtom()
                                              (curPoint.y() - _room_scene->sceneRect().top()) * _roomParameters.pixel2RealRatio );
             tempAtom->createInfo( atomCMPos, atomScenePos );
             hndl2Atom.push_back(tempAtom);
-            atomDatabase.insert(tempAtom->getInfo().getRadius(), tempAtom->getInfo().getAngle(), tempAtom);
+            atomDatabase->insert(tempAtom->getInfo().getRadius(), tempAtom->getInfo().getAngle(), tempAtom);
             tempAtom->setData(0, "Atom");
         }
     }
@@ -361,6 +361,12 @@ roomSimulation::findAtomPolarImpl( double radius, double angle )
     double xPos = _micArr->getSceneMiddlePos().first + ( sinVal / _roomParameters.pixel2RealRatio );
 
     return qgraphicsitem_cast<roomAtom*>(_room_scene->itemAt( xPos, yPos, QTransform()));
+}
+
+roomAtom*
+roomSimulation::findAtomPolarFromDataBase( double radius, double angle )
+{
+    atomDatabase->getByAngleRadius( angle, radius);
 }
 
 double roomSimulation::getRoomLen()

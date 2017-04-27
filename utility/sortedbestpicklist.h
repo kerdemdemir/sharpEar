@@ -126,13 +126,21 @@ public:
       pairList.resize(size);
     }
 
-    void sortListByIndex( int newSize )
+    void sortListByRatioIndex( int newSize )
     {
         std::sort( pairList.begin(), pairList.end(), []( pairType lhs, pairType rhs)
         {
             return (lhs.second.index * lhs.second.ratio)  > (rhs.second.index * rhs.second.ratio);
         });
         pairList.resize(newSize);
+    }
+
+    void sortListByIndex()
+    {
+        std::sort( pairList.begin(), pairList.end(), []( pairType lhs, pairType rhs)
+        {
+            return (lhs.second.index)  > (rhs.second.index);
+        });
     }
 
     double getBestRealKeyValue()

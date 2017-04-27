@@ -8,7 +8,7 @@
 
 constexpr int IS_DRAW = 0;
 constexpr int IS_SIMPLE_POWER = 0;
-constexpr int THRESHOLD_POWER = 0.0002;
+constexpr double THRESHOLD_POWER = 0.0002;
 
 SortedBestPickList curBestPicker;
 
@@ -232,7 +232,7 @@ roomOracle::findSpeakers(const std::vector< roomAtom* >& atomList,
 
     std::vector<roomAtom*> returnVal;
     std::vector<double> wholeData(m_packetSize);
-    SortedBestPickList bestPicker(5, 8, true);
+    SortedBestPickList bestPicker( 5, isRadius ? 50 : 5, true);
 
     for (auto elem : atomList)
     {
@@ -248,6 +248,8 @@ roomOracle::findSpeakers(const std::vector< roomAtom* >& atomList,
         curCount = trainerIn.getRawResult(originalData.getSpeakerID());
         trainerIn.clearResults(originalData.getSpeakerID());
         auto key = isRadius ? elem->getInfo().getRadius() : elem->getInfo().getAngle();
+        if ( curCount < THRESHOLD_POWER )
+            continue;
         bestPicker.insert( key, curCount, 1, 1 );
     }
     std::cout <<  " Eliminating step is complete: " << std::endl;
@@ -262,11 +264,11 @@ roomOracle::findSpeakers(const std::vector< roomAtom* >& atomList,
             auto offsetedConstantVal = constantVal - (isRadius ? i * 10 : i) ;
             if ( isRadius )
             {
-                curAtom = m_roomSimulation->findAtomPolarImpl(elem.first, offsetedConstantVal);
+                curAtom = m_roomSimulation->findAtomPolarFromDataBase(elem.first, offsetedConstantVal);
             }
             else
             {
-                curAtom = m_roomSimulation->findAtomPolarImpl(offsetedConstantVal, elem.first);
+                curAtom = m_roomSimulation->findAtomPolarFromDataBase(offsetedConstantVal, elem.first);
             }
             returnVal.push_back( curAtom );
         }
@@ -301,7 +303,7 @@ roomOracle::findBestSpeaker(const std::vector< roomAtom* >& atomList,
         double curVal = trainerIn.getNormalizedRawResult(originalData.getSpeakerID());
         trainerIn.clearResults(originalData.getSpeakerID());
         auto key = isRadius ? elem->getInfo().getRadius() : elem->getInfo().getAngle();
-        auto lastVal = ((curVal * curRatio * curRatio ) / sqrt(sqrt(counter)) ) ;
+        auto lastVal = ((sqrt(curVal) * pow(curRatio,4)  ) / sqrt(sqrt(counter)) ) ;
         bestPicker.insert( key, curVal, curRatio, lastVal );
 
         if ( lastVal >= maxScore )
@@ -312,7 +314,7 @@ roomOracle::findBestSpeaker(const std::vector< roomAtom* >& atomList,
 
     }
     std::cout <<  " Speaker selection step is complete: " << std::endl;
-
+    bestPicker.sortListByIndex();
     if (isPrint)
         bestPicker.print();
     return bestPossibleAtom;

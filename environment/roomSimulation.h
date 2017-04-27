@@ -44,6 +44,7 @@ class interActionManager;
 class QWidget;
 class QGraphicsScene;
 class roomAtom;
+class AtomList;
 class microphoneNode;
 class sharpPlot;
 class roomDialogs;
@@ -86,6 +87,7 @@ public:
     bool isFirst = true;
     roomAtom* findAtomPolarImpl( double radius, double angle );
     double getRoomLen();
+    roomAtom *findAtomPolarFromDataBase(double radius, double angle);
 public slots:
 
     void startBeamforming();
@@ -124,7 +126,7 @@ private:
 
     roomVariables _roomParameters;
     packetSound   _soundParameters;
-    radAngMultAccess< roomAtom* > atomDatabase;
+    std::shared_ptr<AtomList>    atomDatabase;
 
 
     void drawAngleValueGraph();

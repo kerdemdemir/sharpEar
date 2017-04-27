@@ -245,4 +245,87 @@ private:
 };
 
 
+
+
+class AtomList
+{
+public :
+
+    using radAngMap = std::unordered_map < int, std::vector< roomAtom* > >;
+    using radAngMapIte = typename radAngMap::iterator;
+
+    void insert( int rad, int ang, roomAtom* input )
+    {
+        auto radIte = radiusData.find(rad);
+        if (radIte == radiusData.end())
+            radiusData[rad].emplace_back(input);
+        else
+        {
+            radIte->second.emplace_back(input);
+        }
+
+        auto angIte = angleData.find(ang);
+        if (angIte == angleData.end())
+            angleData[ang].emplace_back(input);
+        else
+        {
+            angIte->second.emplace_back(input);
+        }
+    }
+
+    void remove( int rad, int ang )
+    {
+        auto radIte = radiusData.find(rad);
+        if (radIte != radiusData.end())
+            radiusData.erase(radIte);
+
+        auto angIte = angleData.find(ang);
+        if (angIte != angleData.end())
+            angleData.erase(angIte);
+    }
+
+    std::vector<roomAtom*>& getByAngle( int angle )
+    {
+        auto ite = angleData.find(angle);
+        if (ite == angleData.end())
+            return emptyVec;
+        else
+            return ite->second;
+    }
+
+    roomAtom* getByAngleRadius( int angle, int radius )
+    {
+        auto angleList = getByAngle(angle);
+        for ( roomAtom* elem : angleList )
+        {
+            if( elem->getInfo().getRadius() == radius )
+            {
+                return elem;
+            }
+        }
+    }
+
+    std::vector<roomAtom*>& getByRadius( int radius )
+    {
+        auto ite = radiusData.find(radius);
+        if (ite == radiusData.end())
+            return emptyVec;
+        else
+            return ite->second;
+    }
+
+
+    bool empty()
+    {
+         return radiusData.empty();
+    }
+
+protected:
+
+    std::vector<roomAtom*> emptyVec;
+    radAngMap radiusData;
+    radAngMap angleData;
+};
+
+
 #endif // SPATIALNODE_H
