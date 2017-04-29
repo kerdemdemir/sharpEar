@@ -144,11 +144,11 @@ private:
 
     void filterByPower(std::vector<roomAtom *> &atomList);
     std::vector<roomAtom *> findSpeakers(const std::vector<roomAtom *> &atomList, SoundData<CDataType> &originalData, TrainerComposer &trainerIn, bool isRadius, bool isPrint);
-    roomAtom *findSpeaker(const std::vector<roomAtom *> &atomList, SoundData<CDataType> &originalData, TrainerComposer &trainerIn, double& ratio, bool isRadius, bool isPrint);
+    roomAtom *findSpeaker(const std::vector<roomAtom *> &atomList, SoundData<CDataType> &originalData, TrainerComposer &trainerIn, double& ratio, std::string debugMessage, bool isRadius, bool isPrint);
     roomAtom* findBestSpeaker(const std::vector< roomAtom* >& atomList,
                                 SoundData<CDataType>& originalData,
                               TrainerComposer &trainerIn, double& ratio, bool isRadius, bool isPrint = true);
-    roomAtom *iterativeProcess(SoundData<CDataType> &originalData, bool isPrint, double startRatio);
+    roomAtom *iterativeProcess(SoundData<CDataType> &originalData, bool isPrint, double startRatio, double startAngRadio);
 };
 
 

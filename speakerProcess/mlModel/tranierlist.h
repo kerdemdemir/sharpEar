@@ -9,6 +9,7 @@
 #include "speakerProcess/featureExtractor/MFCCFeatures.h"
 #include "speakerProcess/featureExtractor/pyinf0feature.h"
 #include "speakerProcess/featureExtractor/PYINFeatureMicArray.h"
+#include "speakerProcess/featureExtractor/amplitudesum.h"
 #include "speakerProcess/mlModel/gmmModel.h"
 #include "speakerProcess/mlModel/pitchgrams.h"
 #include "speakerProcess/mlModel/tranierlist.h"
@@ -219,7 +220,7 @@ public:
 
     void initP0Power( int selectedGram )
     {
-        auto F0FeaturePtr = std::make_shared<F0FeaturesMicArray>(selectedGram);
+        auto F0FeaturePtr = std::make_shared<AmplitudeSum>(selectedGram);
         featureList.addExtractor(F0FeaturePtr);
         auto pitchSummer = std::make_shared<SummerModel>();
         pitchSummer->setFeature( F0FeaturePtr );

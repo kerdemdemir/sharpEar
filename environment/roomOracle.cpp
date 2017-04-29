@@ -76,8 +76,8 @@ void roomOracle::preprocess(const std::vector< SoundDataRef > &input, int packet
     std::cout << " Is Radius Located " << isRadiusLocated << "Is Angle Located " << isAngleLocated << std::endl;
     if ( packetCount == 0  )
          return;
-    double curRatio = 0;
-    double prevRatio = curRatio;
+    double curRatioRad = 0;
+    double curRatioAng = 0;
     if ( !isRadiusLocated )
     {
         if ( angle == -999 )
@@ -86,51 +86,25 @@ void roomOracle::preprocess(const std::vector< SoundDataRef > &input, int packet
             auto atomsInMiddleRadius3 = m_roomSimulation->getAtomInRadius( m_roomSimulation->getRoomLen()*2/3  , true, -89, 178);
             atomsInMiddleRadius.insert( atomsInMiddleRadius.end(), atomsInMiddleRadius3.begin(), atomsInMiddleRadius3.end());
 
-            soundPositionLocal = findSpeaker( atomsInMiddleRadius, originalSound, trainer, curRatio, false, true );
-            if ( soundPositionLocal )
-            {
-                angle = soundPositionLocal->getInfo().getAngle();
-                radius =   soundPositionLocal->getRadius();
-            }
+            soundPositionLocal = findSpeaker( atomsInMiddleRadius, originalSound, trainer, curRatioAng, " initial angle ", false, true );
         }
 
 
         auto atomsInMiddle = m_roomSimulation->getAtomsInAngle( angle, 20, true );
-        prevRatio = curRatio;
-        soundPositionLocal = findSpeaker( atomsInMiddle, originalSound, trainer, curRatio, true,true );
-        if ( curRatio > prevRatio )
-        {
-            if ( soundPositionLocal )
-                radius = soundPositionLocal->getInfo().getRadius();
-            else
-                radius = m_roomSimulation->getRoomLen()/2;
-        }
-        else
-        {
-            goto done;
-        }
+        soundPositionLocal = findSpeaker( atomsInMiddle, originalSound, trainer, curRatioRad, " radius ", true,true );
     }
 
     if ( !isAngleLocated )
     {
         auto atomInRadius = m_roomSimulation->getAtomInRadius( radius, true, -89, 178);
-        prevRatio = curRatio;
 
-        soundPositionLocal = findSpeaker(atomInRadius, originalSound, trainer, curRatio, false, true );
-        if ( curRatio > prevRatio )
-        {
-            if ( soundPositionLocal )
-               angle = soundPositionLocal->getInfo().getAngle();
-            else
-               angle = 0;
-            iterativeProcess( originalSound,  true, curRatio );
-        }
+        soundPositionLocal = findSpeaker(atomInRadius, originalSound, trainer, curRatioAng, " angle ", false, true );
+        iterativeProcess( originalSound,  true, curRatioRad, curRatioAng );
     }
-    done :
 
-    if ( curRatio > maxRatio)
+    if ( curRatioRad > maxRatio)
     {
-       maxRatio = curRatio;
+       maxRatio = curRatioRad;
        maxValRadAngle = std::make_pair(radius, angle);
     }
 
@@ -243,31 +217,31 @@ void roomOracle::postprocess()
 }
 
 roomAtom*
-roomOracle::iterativeProcess(  SoundData<CDataType>& originalData,  bool isPrint, double startRatio )
+roomOracle::iterativeProcess(  SoundData<CDataType>& originalData,  bool isPrint, double startRatio, double startAngRadio )
 {
-    double curRatio  = startRatio;
-    double prevRatio = curRatio;
     while( true )
     {
         auto beforeIteration = m_roomSimulation->findAtomPolarImpl(radius, angle);
         if (!beforeIteration)
             return beforeIteration;
 
+        auto beforeDist = originalData.getDistance( beforeIteration->getInfo().getRealPos() );
+
         auto atomsInMiddle = m_roomSimulation->getAtomsInAngle( angle, 20, true );
-        auto curRadAtom = findSpeaker( atomsInMiddle, originalData, trainer, curRatio, true,isPrint );
-        if ( !curRadAtom || prevRatio >= curRatio )
+        auto curRadAtom = findSpeaker( atomsInMiddle, originalData, trainer, startRatio , " iterative radius ", true,isPrint );
+        if ( !curRadAtom )
             return beforeIteration;
-        prevRatio = curRatio;
-        radius = curRadAtom->getRadius();
+
+        if ( beforeIteration->getDistance( curRadAtom ) < 50 )
+            return curRadAtom;
 
         auto atomInRadius = m_roomSimulation->getAtomInRadius( radius, true, -89, 178);
-        auto curAngAtom = findSpeaker( atomInRadius, originalData, trainer, curRatio, false,isPrint );
-        if ( !curAngAtom || prevRatio >= curRatio )
+        auto curAngAtom = findSpeaker( atomInRadius, originalData, trainer, startAngRadio, " iterative angle ", false,isPrint );
+        if ( !curAngAtom )
             return beforeIteration;
-        prevRatio = curRatio;
-        angle = curAngAtom->getAngle();
-        std::cout  << " Iteration is going good " << std::endl;
-        if ( beforeIteration->getDistance( curAngAtom ) < 20 )
+        auto afterDist = originalData.getDistance( curAngAtom->getInfo().getRealPos() );
+        std::cout  << " Iteration is going good distance changed: " << (beforeDist - afterDist) << std::endl;
+        if ( beforeIteration->getDistance( curAngAtom ) < 50 )
             return curAngAtom;
 
     }
@@ -279,12 +253,34 @@ roomOracle::findSpeaker(const std::vector< roomAtom* >& atomList,
                                          SoundData<CDataType>& originalData,
                                          TrainerComposer& trainerIn,
                                          double &ratio,
+                                         std::string debugMessage,
                                          bool isRadius,
                                          bool isPrint )
 {
-    auto speakers = findSpeakers(atomList, originalData, trainerRadius, isRadius, isPrint );
-    return findBestSpeaker(speakers, originalData, trainerIn, ratio, isRadius, isPrint );
+    std::string keyString = debugMessage;
+    std::cout  << "Will search for "  << keyString  << " before this search values were " << "Radius: " << radius << " Angle: " << angle << " Ratio: " << ratio << std::endl;
+    std::cout <<  "Originally Atom: " << originalData.getString() << std::endl ;
+    roomAtom* returnVal = nullptr ;
+    double prevRatio = ratio;
 
+    auto speakers = findSpeakers(atomList, originalData, trainerRadius, isRadius, isPrint );
+    returnVal = findBestSpeaker(speakers, originalData, trainerIn, ratio, isRadius, isPrint );
+
+    if ( ratio > prevRatio )
+    {
+        if ( !isAngleLocated )
+            angle = returnVal->getAngle();
+
+        if ( !isRadiusLocated )
+            radius = returnVal->getRadius();
+    }
+    else
+    {
+        ratio = prevRatio;
+    }
+    returnVal = m_roomSimulation->findAtomPolarImpl(radius, angle);
+    std::cout  << "Searched for "  << keyString  << " finished after this search values were " << " Radius: " << radius << " Angle: " << angle << " Ratio: " << ratio << std::endl;
+    return returnVal;
 }
 
 std::vector<roomAtom*>
@@ -336,25 +332,17 @@ roomOracle::findSpeakers(const std::vector< roomAtom* >& atomList,
     roomAtom* curAtom = nullptr;
     for ( auto elem : bestPicker.getPairList() )
     {
-        auto constantVal = isRadius ? atomList.front()->getInfo().getAngle() : atomList.front()->getInfo().getRadius();
-        for ( int i = -2; i < 3; i++ )
+        auto constantVal = isRadius ? atomList.back()->getAngle() : atomList.back()->getRadius();
+        if ( isRadius )
         {
-            auto offsetedConstantVal = constantVal - (isRadius ? i * 10 : i) ;
-            if ( isRadius )
-            {
-                curAtom = m_roomSimulation->findAtomPolarImpl(elem.first, offsetedConstantVal);
-            }
-            else
-            {
-                curAtom = m_roomSimulation->findAtomPolarImpl(offsetedConstantVal, elem.first);
-            }
-            auto atomStruct = dynamic_cast<roomAtom*>(curAtom);
-            if (atomStruct == NULL)
-                continue;
-
-            returnVal.push_back( curAtom );
+            curAtom = m_roomSimulation->findAtomPolarImpl(elem.first, constantVal);
+        }
+        else
+        {
+            curAtom = m_roomSimulation->findAtomPolarImpl(constantVal, elem.first);
         }
 
+        returnVal.push_back( curAtom );
     }
 
     return returnVal;
@@ -371,7 +359,7 @@ roomOracle::findBestSpeaker(const std::vector< roomAtom* >& atomList,
     std::vector<double> wholeData(m_packetSize);
     double maxScore = -10000000;
     roomAtom* bestPossibleAtom = nullptr;
-    SortedBestPickList bestPicker(10, 0, true);
+    SortedBestPickList bestPicker(25, 0, true);
     int counter = 0;
     for (auto elem : atomList)
     {
@@ -395,7 +383,7 @@ roomOracle::findBestSpeaker(const std::vector< roomAtom* >& atomList,
         double curVal = trainerIn.getNormalizedRawResult(originalData.getSpeakerID());
         trainerIn.clearResults(originalData.getSpeakerID());
         auto key = isRadius ? elem->getInfo().getRadius() : elem->getInfo().getAngle();
-        auto lastVal = ((sqrt(curVal) * pow(curRatio,4)  ) / sqrt(sqrt(counter)) ) ;
+        double lastVal = ((sqrt(curVal) * pow(curRatio,4)  ) / sqrt(sqrt(counter)) ) ;
         bestPicker.insert( key, curVal, curRatio, lastVal );
 
         if ( lastVal >= maxScore )

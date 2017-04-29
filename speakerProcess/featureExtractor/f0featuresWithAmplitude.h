@@ -18,7 +18,6 @@ public:
 
         pitchOut = new_fvec (1); // output candidate
         pitch = new_aubio_pitch (cStr, win_s, hopSize, sampleRate);
-        aubio_pitch_set_tolerance (pitch, 0.45);
         aubio_pitch_set_silence (pitch, -30);
     }
 

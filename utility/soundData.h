@@ -337,7 +337,7 @@ struct SoundData
     {
         std::string returnVal = "Speaker ID: ";
         returnVal += std::to_string(speakerID);
-        returnVal.append(getInfo().get());
+        returnVal.append(" ").append(getInfo().get());
         return returnVal;
     }
 
