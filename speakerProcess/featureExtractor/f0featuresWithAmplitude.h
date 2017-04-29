@@ -18,7 +18,7 @@ public:
 
         pitchOut = new_fvec (1); // output candidate
         pitch = new_aubio_pitch (cStr, win_s, hopSize, sampleRate);
-        aubio_pitch_set_tolerance (pitch, 0.95);
+        aubio_pitch_set_tolerance (pitch, 0.45);
         aubio_pitch_set_silence (pitch, -30);
     }
 
@@ -39,7 +39,7 @@ public:
        if ( selectedFormant == 0 )
        {
            samples.at<double>(colSize, 0) = (f0 - MIN_FREQ) / 10;
-           samples.at<double>(colSize, 1) = aubio_pitch_get_confidence(pitch);
+           samples.at<double>(colSize, 1) = 1;//aubio_pitch_get_confidence(pitch);
            return;
        }
 
@@ -61,7 +61,7 @@ public:
        if ( selectedFormant != -1 )
        {
            samples.at<double>(colSize, 0) = (formants[selectedFormant].first) / 40;//JUMPSIZE*2 ;// / (JUMPSIZE * 5);
-           samples.at<double>(colSize, 1) =  aubio_pitch_get_confidence(pitch);
+           samples.at<double>(colSize, 1) =  1;//aubio_pitch_get_confidence(pitch);
        }
     }
 

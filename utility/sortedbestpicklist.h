@@ -143,6 +143,14 @@ public:
         });
     }
 
+    double getFirstRatio()
+    {
+        if (pairList.empty())
+            return 0;
+        return pairList.front().second.ratio;
+    }
+
+
     double getBestRealKeyValue()
     {
         return pairList.front().first;

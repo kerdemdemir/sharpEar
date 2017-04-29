@@ -109,7 +109,7 @@ roomSimulation::calcRoomParameters()
     _roomParameters.pixel2RealRatio = (double)hndl_interActionManager->getBasicUserDialogValues()->listenRange
                                         / (double)_roomParameters.yPixelCount;
 
-    _roomParameters.pixel4EachAtom = 5;
+    _roomParameters.pixel4EachAtom = 3;
     _roomParameters.angleDist = 1;
     _roomParameters.numberOfAtomsIn1D = (double)hndl_interActionManager->getBasicUserDialogValues()->listenRange
                                         / hndl_interActionManager->getBasicUserDialogValues()->dx_dy;
@@ -553,7 +553,7 @@ roomSimulation::getAtomsInAngle( int angle, int jump, bool isUnique  )
         if (atomStruct == NULL)
             continue;
         int rad = atomStruct->getInfo().getRadius();
-        if ( rad < 200 || rad > maxRad )
+        if ( rad < 200 || rad > (maxRad - 100) )
             continue;
         double angleTemp = elem->getInfo().getAngle();
         if ( isUnique && angle == std::floor((double)angleTemp + 0.5)  )

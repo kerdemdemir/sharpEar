@@ -20,7 +20,7 @@ constexpr int JUMPSIZE = 8;
 using DataType2D = cv::Mat;
 
 static constexpr size_t hopSize = 256;
-static constexpr size_t win_s = 1024;
+static constexpr size_t win_s = 512;
 static constexpr size_t sampleRate = 16000;
 
 

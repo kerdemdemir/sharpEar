@@ -35,26 +35,33 @@ public:
     void getFormants( double f0, cvec_t* inputComplex )
     {
        double freqStep = sampleRate / win_s;
-       std::array< std::pair<double, double> , FORMANT_COUNT> formants{ std::make_pair(0.0, 0.0 ) };
+       std::array< std::pair<size_t, double> , FORMANT_COUNT> formants{ std::make_pair(0.0, 0.0 ) };
 
-       formants[0].first = f0;
-       int formantIndex = formants[0].first / freqStep;
+       size_t formantIndex = f0 / freqStep;
        formants[0].second = inputComplex->norm[formantIndex];
 
-       for ( int curFreq = f0; curFreq < 8000; curFreq += f0 )
+       for ( int curFreq = f0; curFreq < 7000; curFreq += f0 )
        {
             if ( curFreq < 1000 && curFreq >= 8000  )
                 continue;
 
             int formant = curFreq / 1000;
             formantIndex = curFreq / freqStep;
+            if ( formantIndex >= inputComplex->length )
+                continue;
             float curFormantVal = inputComplex->norm[formantIndex];
             formants[formant].first++;
             formants[formant].second += curFormantVal;
        }
 
+       if ( !formants[selectedFormant].first )
+       {
+            samples.at<double>(colSize, 0) = 0;
+            return;
+       }
+
        double meanVal = formants[selectedFormant].second / formants[selectedFormant].first;
-       auto result =  meanVal * (IS_WAVELET ? 1.0 : aubio_pitch_get_confidence(pitch));
+       auto result =  meanVal; // * (IS_WAVELET ? 1.0 : aubio_pitch_get_confidence(pitch));
        samples.at<double>(colSize, 0) = result;
 
     }

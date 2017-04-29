@@ -25,7 +25,7 @@ enviromentSetup::enviromentSetup(QWidget *parent) : QWidget (parent)
     st_environmentParamaters.micNumber = 51;
     //st_environmentParamaters.distanceBetweenMic = 5;
     st_environmentParamaters.distanceBetweenMic = 10;
-    st_environmentParamaters.listenRange = 3000; //cm
+    st_environmentParamaters.listenRange = 2500; //cm
     st_environmentParamaters.dx_dy       = 20;
     _rowCountSoundInput = 0;
     createDialogs();

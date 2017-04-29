@@ -58,9 +58,7 @@ public:
 
     void preprocess(const std::vector< SoundDataRef > &input, int packetCount);
     void postprocess();
-    roomAtom* findBestSpeaker(const std::vector< roomAtom* >& atomList,
-                                SoundData<CDataType>& originalData,
-                                TrainerComposer &trainerIn, bool isRadius, bool isPrint = true);
+
 
     void setRoomSimulation( roomSimulation* mainWindow )
     {
@@ -99,6 +97,8 @@ public:
         radius = -999;
         pastPositions.clear();
         scorer.clear();
+        maxRatio = 0;
+        maxValRadAngle = std::make_pair(1000, 0);
     }
 
     void setLookAngle( int angle )
@@ -110,8 +110,7 @@ private:
 
     void getWeight();
     void parseValidation();
-    void locationingLogging(const std::vector< SoundDataRef > &input,
-                             roomAtom* bestFinal, bool isFinalized, int packetCount );
+    void locationingLogging(const std::vector< SoundDataRef > &input, bool isFinalized, int packetCount );
 
     int m_speakerID;
     int m_noiceID;
@@ -136,14 +135,20 @@ private:
     bool isManualMode;
     int  angle;
     int  radius;
+    double maxRatio;
+    std::pair< int, int > maxValRadAngle;
     std::fstream m_resultFile;
     SoundDataRef feedArray(const std::vector< SoundDataRef > &input, const CDataType &weights);
     void fftWeight( );
     void getNoice(roomAtom *speakerPos);
 
     void filterByPower(std::vector<roomAtom *> &atomList);
-    std::vector<roomAtom *> findSpeakers(const std::vector<roomAtom *> &atomList, SoundData<CDataType> &originalData, TrainerComposer &trainerIn, bool isRadius);
-    roomAtom *findSpeaker(const std::vector<roomAtom *> &atomList, SoundData<CDataType> &originalData, TrainerComposer &trainerIn, bool isRadius, bool isPrint);
+    std::vector<roomAtom *> findSpeakers(const std::vector<roomAtom *> &atomList, SoundData<CDataType> &originalData, TrainerComposer &trainerIn, bool isRadius, bool isPrint);
+    roomAtom *findSpeaker(const std::vector<roomAtom *> &atomList, SoundData<CDataType> &originalData, TrainerComposer &trainerIn, double& ratio, bool isRadius, bool isPrint);
+    roomAtom* findBestSpeaker(const std::vector< roomAtom* >& atomList,
+                                SoundData<CDataType>& originalData,
+                              TrainerComposer &trainerIn, double& ratio, bool isRadius, bool isPrint = true);
+    roomAtom *iterativeProcess(SoundData<CDataType> &originalData, bool isPrint, double startRatio);
 };
 
 

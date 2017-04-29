@@ -69,6 +69,12 @@ public:
        return getDistance(QPointF(pos.first, pos.second), isCm);
     }
 
+    double getDistance( roomAtomRoot* atom ) const
+    {
+       auto atomPos =  atom->getInfo().getRealPos();
+       return getDistance(atomPos, true);
+    }
+
     double getRelativeAngle(Point pos, bool isCm) const
     {
         if (isCm == false)
