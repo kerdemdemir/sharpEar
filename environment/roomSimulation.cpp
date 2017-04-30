@@ -110,7 +110,7 @@ roomSimulation::calcRoomParameters()
     _roomParameters.pixel2RealRatio = (double)hndl_interActionManager->getBasicUserDialogValues()->listenRange
                                         / (double)_roomParameters.yPixelCount;
 
-    _roomParameters.pixel4EachAtom = 4;
+    _roomParameters.pixel4EachAtom = 3;
     _roomParameters.angleDist = 1;
     _roomParameters.numberOfAtomsIn1D = (double)hndl_interActionManager->getBasicUserDialogValues()->listenRange
                                         / hndl_interActionManager->getBasicUserDialogValues()->dx_dy;

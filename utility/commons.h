@@ -40,7 +40,7 @@
 #define UP_SAMPLE_RATE 8.0
 
 constexpr double  WAVE_LENGHT_METER = GLOBAL_SOUND_SPEED_METER/MAX_FREQUENCY_KHZ;
-constexpr int ENABLE_UPSAMPLING = 1  ;
+constexpr int ENABLE_UPSAMPLING = 0  ;
 constexpr int ENABLE_LOG_COMPRESSION = 0;
 constexpr int ENABLE_RADIAN_ANGLE = 0;
 constexpr double EPSILON = 0.00000000001;
