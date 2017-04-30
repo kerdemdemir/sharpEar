@@ -22,7 +22,9 @@
 
 //#define DEBUG_TEST_MODE
 #define POINT_ALWAYS_CENTER
-
+size_t hopSize = 0;
+size_t win_s = 0 ;
+size_t sampleRate = 0;
 
 roomSimulation::roomSimulation(QRectF boudingRect, QWidget *parent) :
     QGraphicsView(parent)
@@ -96,9 +98,12 @@ void
 roomSimulation::calcRoomParameters()
 {
 
-    _soundParameters.samplesPerSec = 16000; //* UP_SAMPLE_RATE;
+    _soundParameters.samplesPerSec = 96000; //* UP_SAMPLE_RATE;
      if (ENABLE_UPSAMPLING)
         _soundParameters.samplesPerSec *= UP_SAMPLE_RATE;
+    sampleRate = _soundParameters.samplesPerSec;
+    hopSize = 1024;
+    win_s = 2048;
 
     _soundParameters.currentOutputTime = 2 ;
      _soundParameters.amplitude = 0;
@@ -110,7 +115,7 @@ roomSimulation::calcRoomParameters()
     _roomParameters.pixel2RealRatio = (double)hndl_interActionManager->getBasicUserDialogValues()->listenRange
                                         / (double)_roomParameters.yPixelCount;
 
-    _roomParameters.pixel4EachAtom = 2;
+    _roomParameters.pixel4EachAtom = 5;
     _roomParameters.angleDist = 1;
     _roomParameters.numberOfAtomsIn1D = (double)hndl_interActionManager->getBasicUserDialogValues()->listenRange
                                         / hndl_interActionManager->getBasicUserDialogValues()->dx_dy;

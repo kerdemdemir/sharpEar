@@ -63,7 +63,7 @@ struct SoundInfo
         boolOutput = val;
     }
 
-    int getAngle() const
+    double getAngle() const
     {
         return angle;
     }
@@ -98,7 +98,7 @@ struct SoundInfo
        return sqrt(pow(getRealPos().first - pos.x(), 2.0) + pow(getRealPos().second - pos.y(), 2.0));
     }
 
-    SoundInfo (Point posGraph, Point posReal, int ang, int rad, STypes sType = STypes::UNDEFINED )
+    SoundInfo (Point posGraph, Point posReal, double ang, double rad, STypes sType = STypes::UNDEFINED )
     {
         posScene = posGraph;
         posCm = posReal;
@@ -168,7 +168,7 @@ private:
 
     Point posScene;
     Point posCm;
-    int angle;
+    double angle;
     double radius;
     STypes soundType;
     bool boolOutput;
@@ -247,7 +247,7 @@ struct SoundData
         return info.getRealPos();
     }
 
-    int getAngle() const
+    double getAngle() const
     {
         return info.getAngle();
     }

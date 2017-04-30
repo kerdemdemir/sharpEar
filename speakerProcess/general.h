@@ -19,9 +19,9 @@ constexpr int JUMPSIZE = 8;
 
 using DataType2D = cv::Mat;
 
-static constexpr size_t hopSize = 256;
-static constexpr size_t win_s = 512;
-static constexpr size_t sampleRate = 16000;
+extern size_t hopSize;
+extern size_t win_s ;
+extern size_t sampleRate;
 
 
 template < typename T, typename U>

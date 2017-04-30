@@ -21,11 +21,11 @@ roomOracle::roomOracle(size_t sampleRate, size_t packetSize, int speakerID, int 
     m_speakerID = speakerID;
     m_noiceID = noiceID;
 
-    std::string trainPath("D:/speakerWavs/train1");
-    trainer.initPGrams(0, "SilenceRemove2GramDefaultAubio");
+    std::string trainPath("D:/speakerWavs/train1/upSampled");
+    trainer.initPGrams(0, "SilenceRemove2GramDefaultAubioUpsampled");
     //trainer.initPWave(0, "WaveF0");
 
-    //trainer.initYINPGrams(0, "F0YinFFT2Gram");
+    //trainer.initYINPGrams(0, "F0YinFFT2GramNormal");
     //trainer.initYINPGrams(0, "F0MultiYinFFT2Gram");
     //3Gramtrainer.initPGrams(0, "F0YinFFT");
     //trainer.initPGrams(0, "F0YinFFT2Gram");
@@ -100,7 +100,7 @@ void roomOracle::preprocess(const std::vector< SoundDataRef > &input, int packet
         auto atomInRadius = m_roomSimulation->getAtomInRadius( radius, true, -89, 178);
 
         soundPositionLocal = findSpeaker(atomInRadius, originalSound, trainer, curRatioAng, " angle ", false, true );
-        //iterativeProcess( originalSound,  true, curRatioRad, curRatioAng );
+        //soundPositionLocal = iterativeProcess( originalSound,  true, curRatioRad, curRatioAng );
     }
 
     if ( curRatioRad > maxRatio)
@@ -300,7 +300,7 @@ roomOracle::findSpeakers(const std::vector< roomAtom* >& atomList,
 
     std::vector<roomAtom*> returnVal;
     std::vector<double> wholeData(m_packetSize);
-    SortedBestPickList bestPicker( 5, isRadius ? 50 : 5, true);
+    SortedBestPickList bestPicker( 7, isRadius ? 100 : 5, true);
 
     for (auto elem : atomList)
     {
@@ -340,7 +340,7 @@ roomOracle::findSpeakers(const std::vector< roomAtom* >& atomList,
         auto constantVal = isRadius ? atomList.back()->getAngle() : atomList.back()->getRadius();
         std::unordered_set< roomAtom* > atomMap;
 
-        for ( int i = -1; i < 2; i++ )
+        for ( int i = -2; i < 3; i++ )
         {
 
             if ( isRadius )

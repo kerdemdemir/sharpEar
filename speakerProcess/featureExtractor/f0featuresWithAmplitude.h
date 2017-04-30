@@ -38,7 +38,7 @@ public:
        if ( selectedFormant == 0 )
        {
            samples.at<double>(colSize, 0) = (f0 - MIN_FREQ) / 10;
-           samples.at<double>(colSize, 1) = formants[0].second;//aubio_pitch_get_confidence(pitch);
+           samples.at<double>(colSize, 1) = formants[0].second * formants[0].second * formants[0].second  ;//aubio_pitch_get_confidence(pitch);
            return;
        }
 
