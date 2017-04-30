@@ -18,6 +18,7 @@
 #include <QScriptContext>
 #include <QScriptEngine>
 #include <set>
+#include <unordered_set>
 
 //#define DEBUG_TEST_MODE
 #define POINT_ALWAYS_CENTER
@@ -109,7 +110,7 @@ roomSimulation::calcRoomParameters()
     _roomParameters.pixel2RealRatio = (double)hndl_interActionManager->getBasicUserDialogValues()->listenRange
                                         / (double)_roomParameters.yPixelCount;
 
-    _roomParameters.pixel4EachAtom = 3;
+    _roomParameters.pixel4EachAtom = 4;
     _roomParameters.angleDist = 1;
     _roomParameters.numberOfAtomsIn1D = (double)hndl_interActionManager->getBasicUserDialogValues()->listenRange
                                         / hndl_interActionManager->getBasicUserDialogValues()->dx_dy;
@@ -204,11 +205,11 @@ roomSimulation::setAtoms()
                                              (y - _room_scene->sceneRect().top()) * _roomParameters.pixel2RealRatio );
             tempAtom->createInfo( atomCMPos, atomScenePos );
             hndl2Atom.push_back(tempAtom);
-            atomDatabase->insert(tempAtom->getInfo().getRadius(), tempAtom->getInfo().getAngle(), tempAtom);
+            //atomDatabase->insert(tempAtom->getInfo().getRadius(), tempAtom->getInfo().getAngle(), tempAtom);
             tempAtom->setData(0, "Atom");
          }
     }
-    atomDatabase->sort();
+    //atomDatabase->sort();
 }
 
 void
@@ -364,6 +365,37 @@ roomSimulation::findAtomPolarImpl( double radius, double angle )
 
     return qgraphicsitem_cast<roomAtom*>(_room_scene->itemAt( xPos, yPos, QTransform()));
 }
+
+roomAtom*
+roomSimulation::findAtomPolarImpl( double radius, double angle, std::unordered_set<roomAtom*>& uniqueMap )
+{
+    auto returnVal = findAtomPolarImpl(radius, angle );
+
+    if ( uniqueMap.find( returnVal ) != uniqueMap.end() )
+    {
+        for ( int i = -40; i < 41; i += 20  )
+        {
+            returnVal = findAtomPolarImpl( radius + i , angle );
+            if ( !returnVal || uniqueMap.find( returnVal ) != uniqueMap.end() )
+                continue;
+            else
+                break;
+        }
+    }
+    uniqueMap.insert( returnVal );
+    return returnVal;
+}
+
+
+roomAtom*
+roomSimulation::findAtomeWithXY( double x, double y )
+{
+    double yPos = _room_scene->sceneRect().top() + y / _roomParameters.pixel2RealRatio;
+    double xPos =  _room_scene->sceneRect().left() + x / _roomParameters.pixel2RealRatio;
+
+    return qgraphicsitem_cast<roomAtom*>(_room_scene->itemAt( xPos, yPos, QTransform()));
+}
+
 
 roomAtom*
 roomSimulation::findAtomPolarFromDataBase( double radius, double angle )
@@ -555,8 +587,8 @@ roomSimulation::getAtomsInAngle( int angle, int jump, bool isUnique  )
         int rad = atomStruct->getInfo().getRadius();
         if ( rad < 200 || rad > (maxRad - 100) )
             continue;
-        double angleTemp = elem->getInfo().getAngle();
-        if ( isUnique && angle == std::floor((double)angleTemp + 0.5)  )
+        int angleTemp = elem->getAngle();
+        if ( isUnique && angle == angleTemp  )
             allAtoms.push_back(elem);
         else if ( angleTemp >= angle - 1 && angleTemp <= angle + 1 )
             allAtoms.push_back(elem);

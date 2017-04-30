@@ -9,7 +9,7 @@
 #include <memory>
 #include <QFileInfo>
 #include <QDir>
-
+#include "utility/commons.h"
 #define NUMBER_OF_PEOPLE 9
 #define LOAD 0
 

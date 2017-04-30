@@ -157,6 +157,7 @@ public:
 
     bool isRadiusGuess;
     bool isNearField;
+
 protected:
 
     SoundInfo m_selfData;
@@ -240,6 +241,7 @@ public:
             return false;
     }
 
+    std::vector< roomAtom* > closeAtomList;
 private:
 
     void sumPart();

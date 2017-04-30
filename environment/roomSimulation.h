@@ -39,6 +39,7 @@
 #include <utility/soundData.h>
 #include "utility/multAccessData.h"
 #include <QScriptValue>
+#include <unordered_set>
 
 class interActionManager;
 class QWidget;
@@ -90,6 +91,8 @@ public:
     roomAtom *findAtomPolarFromDataBase(double radius, double angle);
     std::vector<roomAtom *> getAtomsInAngleDataBase(int angle, int jump);
     std::vector<roomAtom *> getAtomsInRadiusDataBase(int curRadius);
+    roomAtom *findAtomeWithXY(double x, double y);
+    roomAtom *findAtomPolarImpl(double radius, double angle, std::unordered_set<roomAtom *> &uniqueMap);
 public slots:
 
     void startBeamforming();

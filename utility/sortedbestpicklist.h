@@ -150,6 +150,20 @@ public:
         return pairList.front().second.ratio;
     }
 
+    double getFirstVal()
+    {
+        if (pairList.empty())
+            return 0;
+        return pairList.front().second.val;
+    }
+
+    double getFirstIndex()
+    {
+        if (pairList.empty())
+            return 0;
+        return pairList.front().second.index;
+    }
+
 
     double getBestRealKeyValue()
     {

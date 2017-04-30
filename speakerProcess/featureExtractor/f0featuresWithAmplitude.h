@@ -38,7 +38,7 @@ public:
        if ( selectedFormant == 0 )
        {
            samples.at<double>(colSize, 0) = (f0 - MIN_FREQ) / 10;
-           samples.at<double>(colSize, 1) = 1;//aubio_pitch_get_confidence(pitch);
+           samples.at<double>(colSize, 1) = formants[0].second;//aubio_pitch_get_confidence(pitch);
            return;
        }
 
@@ -60,7 +60,7 @@ public:
        if ( selectedFormant != -1 )
        {
            samples.at<double>(colSize, 0) = (formants[selectedFormant].first) / 40;//JUMPSIZE*2 ;// / (JUMPSIZE * 5);
-           samples.at<double>(colSize, 1) =  1;//aubio_pitch_get_confidence(pitch);
+           samples.at<double>(colSize, 1) =  formants[selectedFormant].second;//aubio_pitch_get_confidence(pitch);
        }
     }
 

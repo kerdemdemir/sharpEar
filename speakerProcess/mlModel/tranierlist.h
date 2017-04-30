@@ -212,7 +212,7 @@ public:
     {
         auto F0FeaturePtr = std::make_shared<F0FeaturesAmplitude>(selectedGram);
         featureList.addExtractor(F0FeaturePtr);
-        auto pitchGramRunnerModel = std::make_shared<PitchGramModel>(2, selectedGramName);
+        auto pitchGramRunnerModel = std::make_shared<PitchGramModel>(3, selectedGramName);
         pitchGramRunnerModel->isLoad = true;
         pitchGramRunnerModel->setFeature( F0FeaturePtr );
         addModel(pitchGramRunnerModel);
