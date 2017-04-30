@@ -264,15 +264,18 @@ roomOracle::findSpeaker(const std::vector< roomAtom* >& atomList,
     roomAtom* returnVal = nullptr ;
     double prevRatio = ratio;
 
-    auto speakers = findSpeakers(atomList, originalData, trainerRadius, isRadius, isPrint );
-    returnVal = findBestSpeaker(speakers, originalData, trainerIn, ratio, isRadius, isPrint );
+    if ( isRadius || !isAngleLocated )
+    {
+        auto speakers = findSpeakers(atomList, originalData, trainerRadius, isRadius, isPrint );
+        returnVal = findBestSpeaker(speakers, originalData, trainerIn, ratio, isRadius, isPrint );
+    }
 
     if ( ratio > prevRatio )
     {
         if ( !isRadius && !isAngleLocated )
             angle = returnVal->getAngle();
 
-        if ( isRadius && !isRadiusLocated )
+        if ( !isRadiusLocated )
             radius = returnVal->getRadius();
     }
     std::cout  << "Searched for "  << keyString  << " finished after this search values were " << " Radius: " << radius << " Angle: " << angle << " Ratio: " << ratio << " Prev Ratio: " << prevRatio << std::endl;
@@ -337,7 +340,7 @@ roomOracle::findSpeakers(const std::vector< roomAtom* >& atomList,
         auto constantVal = isRadius ? atomList.back()->getAngle() : atomList.back()->getRadius();
         std::unordered_set< roomAtom* > atomMap;
 
-        for ( int i = -5; i < 6; i++ )
+        for ( int i = -1; i < 2; i++ )
         {
 
             if ( isRadius )
