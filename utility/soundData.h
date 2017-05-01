@@ -117,8 +117,8 @@ struct SoundInfo
             std::cout << "Message: " << message << std::endl;
         }
 
-        std::cout << "SoundInfo <print> Cordinates: " << posCm.first << "," << posCm.second
-                  << " Scene Cordinates: " << posScene.first << "," << posScene.second
+        std::cout //<< "SoundInfo <print> Cordinates: " << posCm.first << "," << posCm.second
+                  //<< " Scene Cordinates: " << posScene.first << "," << posScene.second
                   << " Radius: " << radius << " Angle: " << angle << " Type: " << STypes2Str(soundType);
 
         isOutput() ? (std::cout << " Output Point ") : (std::cout << " Not a output Point");

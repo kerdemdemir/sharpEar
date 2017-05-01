@@ -83,21 +83,21 @@ void roomOracle::preprocess(const std::vector< SoundDataRef > &input, int packet
     {
         if ( angle == -999 )
         {
-            auto atomsInMiddleRadius = m_roomSimulation->getAtomInRadius( m_roomSimulation->getRoomLen()/3  , true,  -89, 178);
-            auto atomsInMiddleRadius3 = m_roomSimulation->getAtomInRadius( m_roomSimulation->getRoomLen()*2/3  , true, -89, 178);
+            auto atomsInMiddleRadius = m_roomSimulation->getAtomInRadius( m_roomSimulation->getRoomLen()/3 ,  -89, 178);
+            auto atomsInMiddleRadius3 = m_roomSimulation->getAtomInRadius( m_roomSimulation->getRoomLen()*2/3, -89, 178);
             atomsInMiddleRadius.insert( atomsInMiddleRadius.end(), atomsInMiddleRadius3.begin(), atomsInMiddleRadius3.end());
 
             soundPositionLocal = findSpeaker( atomsInMiddleRadius, originalSound, trainer, curRatioAng, " initial angle ", false, true );
         }
 
 
-        auto atomsInMiddle = m_roomSimulation->getAtomsInAngle( angle, 30, true );
+        auto atomsInMiddle = m_roomSimulation->getAtomsInAngle( angle, 20 );
         soundPositionLocal = findSpeaker( atomsInMiddle, originalSound, trainer, curRatioRad, " radius ", true,true );
     }
 
     if ( !isAngleLocated )
     {
-        auto atomInRadius = m_roomSimulation->getAtomInRadius( radius, true, -89, 178);
+        auto atomInRadius = m_roomSimulation->getAtomInRadius( radius, -89, 178);
 
         soundPositionLocal = findSpeaker(atomInRadius, originalSound, trainer, curRatioAng, " angle ", false, true );
         //soundPositionLocal = iterativeProcess( originalSound,  true, curRatioRad, curRatioAng );
@@ -228,7 +228,7 @@ roomOracle::iterativeProcess(  SoundData<CDataType>& originalData,  bool isPrint
 
         auto beforeDist = originalData.getDistance( beforeIteration->getInfo().getRealPos() );
 
-        auto atomsInMiddle = m_roomSimulation->getAtomsInAngle( angle, 20, true );
+        auto atomsInMiddle = m_roomSimulation->getAtomsInAngle( angle, 20 );
         auto curRadAtom = findSpeaker( atomsInMiddle, originalData, trainer, startRatio , " iterative radius ", true,isPrint );
         if ( !curRadAtom )
             return beforeIteration;
@@ -236,7 +236,7 @@ roomOracle::iterativeProcess(  SoundData<CDataType>& originalData,  bool isPrint
         if ( beforeIteration->getDistance( curRadAtom ) < 50 )
             return curRadAtom;
 
-        auto atomInRadius = m_roomSimulation->getAtomInRadius( radius, true, -89, 178);
+        auto atomInRadius = m_roomSimulation->getAtomInRadius( radius, -89, 178);
         auto curAngAtom = findSpeaker( atomInRadius, originalData, trainer, startAngRadio, " iterative angle ", false,isPrint );
         if ( !curAngAtom )
             return beforeIteration;
@@ -300,7 +300,7 @@ roomOracle::findSpeakers(const std::vector< roomAtom* >& atomList,
 
     std::vector<roomAtom*> returnVal;
     std::vector<double> wholeData(m_packetSize);
-    SortedBestPickList bestPicker( 7, isRadius ? 100 : 5, true);
+    SortedBestPickList bestPicker( 3000, isRadius ? 1 : 1, true);
 
     for (auto elem : atomList)
     {
@@ -319,8 +319,8 @@ roomOracle::findSpeakers(const std::vector< roomAtom* >& atomList,
         std::fill( wholeData.begin(), wholeData.end(), 0);
         elem->sumWhole(wholeData);
         double curCount = 0;
-//        for ( auto elem : wholeData )
-//            curCount += std::abs(elem);
+        for ( auto elem : wholeData )
+            curCount += std::abs(elem);
         trainerIn.featureCalculation( wholeData  );
         trainerIn.predict( originalData.getSpeakerID() );
         curCount = trainerIn.getRawResult(originalData.getSpeakerID());
@@ -328,31 +328,15 @@ roomOracle::findSpeakers(const std::vector< roomAtom* >& atomList,
         auto key = isRadius ? elem->getInfo().getRadius() : elem->getInfo().getAngle();
         if ( curCount < THRESHOLD_POWER )
             continue;
-        bestPicker.insert( key, curCount, 1, 1 );
+        bestPicker.insert( key, curCount, 1, 1, elem );
     }
     std::cout <<  " Eliminating step is complete: " << std::endl;
     if (isPrint)
         bestPicker.print();
 
-    roomAtom* curAtom = nullptr;
-    for ( auto elem : bestPicker.getPairList() )
+    for ( SortedBestPickList::pairType& elem : bestPicker.getPairList() )
     {
-        auto constantVal = isRadius ? atomList.back()->getAngle() : atomList.back()->getRadius();
-        std::unordered_set< roomAtom* > atomMap;
-
-        for ( int i = -2; i < 3; i++ )
-        {
-
-            if ( isRadius )
-            {
-                curAtom = m_roomSimulation->findAtomPolarImpl(elem.first, constantVal + i, atomMap );
-            }
-            else
-            {
-                curAtom = m_roomSimulation->findAtomPolarImpl(constantVal, elem.first + i, atomMap );
-            }
-            returnVal.push_back( curAtom );
-        }
+        returnVal.push_back(elem.second.atom);
     }
     return returnVal;
 }
@@ -368,7 +352,7 @@ roomOracle::findBestSpeaker(const std::vector< roomAtom* >& atomList,
     std::vector<double> wholeData(m_packetSize);
     double maxScore = -10000000;
     roomAtom* bestPossibleAtom = nullptr;
-    SortedBestPickList bestPicker(10, 0, true);
+    SortedBestPickList bestPicker(10, 1, true);
     int counter = 0;
     for (auto elem : atomList)
     {
@@ -393,7 +377,7 @@ roomOracle::findBestSpeaker(const std::vector< roomAtom* >& atomList,
         trainerIn.clearResults(originalData.getSpeakerID());
         auto key = isRadius ? elem->getInfo().getRadius() : elem->getInfo().getAngle();
         double lastVal = ((sqrt(curVal) * pow(curRatio,4)  ) ) ;
-        bestPicker.insert( key, curVal, curRatio, lastVal );
+        bestPicker.insert( key, curVal, curRatio, lastVal, elem );
 
         if ( lastVal >= maxScore )
         {
@@ -404,12 +388,6 @@ roomOracle::findBestSpeaker(const std::vector< roomAtom* >& atomList,
     }
     std::cout <<  " Speaker selection step is complete: " << std::endl;
     bestPicker.sortListByIndex();
-    auto keyVal = bestPicker.getBestRealKeyValue();
-    if ( isRadius )
-        bestPossibleAtom =  m_roomSimulation->findAtomPolarImpl(keyVal, bestPossibleAtom->getInfo().getAngle());
-    else
-        bestPossibleAtom =  m_roomSimulation->findAtomPolarImpl(bestPossibleAtom->getInfo().getRadius(), keyVal);
-
     ratio = bestPicker.getFirstIndex();
     if (isPrint)
         bestPicker.print();

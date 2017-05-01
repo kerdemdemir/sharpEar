@@ -76,8 +76,8 @@ public:
     void setFileName(const std::string& input);
 
     std::vector< roomAtom*> getMiddleAtoms();
-    std::vector< roomAtom* > getAtomInRadius( int curRadius, bool isUnique = true, int start = -90, int offSet = 180 );
-    std::vector< roomAtom* > getAtomsInAngle( int angle, int jump = 0, bool isUnique = false );
+    std::vector< roomAtom* > getAtomInRadius(double curRadius, int start = -90, int offSet = 180 );
+    std::vector< roomAtom* > getAtomsInAngle(double angle, double jump);
     std::vector<roomAtom*> hndl2Atom;
 
     roomDialogs* getDialog()

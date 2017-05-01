@@ -32,6 +32,11 @@ public:
         featureList.start(input);
     }
 
+    void featureBasicFFTCalculation ( const DataType& input )
+    {
+        featureList.start(input);
+    }
+
     virtual void predict( int personID )
     {
         QElapsedTimer timer;

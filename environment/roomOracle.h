@@ -133,8 +133,8 @@ private:
     bool isRadiusLocated;
     bool isAngleLocated;
     bool isManualMode;
-    int  angle;
-    int  radius;
+    double  angle;
+    double  radius;
     double maxRatio;
     std::pair< int, int > maxValRadAngle;
     std::fstream m_resultFile;

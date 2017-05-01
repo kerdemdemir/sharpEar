@@ -130,7 +130,7 @@ public:
         return m_selfData.getRadius();
     }
 
-    int getAngle() const
+    double getAngle() const
     {
         return m_selfData.getAngle();
     }

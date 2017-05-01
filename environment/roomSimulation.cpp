@@ -105,7 +105,7 @@ roomSimulation::calcRoomParameters()
     hopSize = 1024;
     win_s = 2048;
 
-    _soundParameters.currentOutputTime = 2 ;
+    _soundParameters.currentOutputTime = 1 ;
      _soundParameters.amplitude = 0;
     _soundParameters.samplePerOutput = _soundParameters.currentOutputTime * _soundParameters.samplesPerSec;
 
@@ -115,7 +115,7 @@ roomSimulation::calcRoomParameters()
     _roomParameters.pixel2RealRatio = (double)hndl_interActionManager->getBasicUserDialogValues()->listenRange
                                         / (double)_roomParameters.yPixelCount;
 
-    _roomParameters.pixel4EachAtom = 5;
+    _roomParameters.pixel4EachAtom = 4;
     _roomParameters.angleDist = 1;
     _roomParameters.numberOfAtomsIn1D = (double)hndl_interActionManager->getBasicUserDialogValues()->listenRange
                                         / hndl_interActionManager->getBasicUserDialogValues()->dx_dy;
@@ -243,11 +243,9 @@ roomSimulation::setRadiusAngleAtom()
                                              (curPoint.y() - _room_scene->sceneRect().top()) * _roomParameters.pixel2RealRatio );
             tempAtom->createInfo( atomCMPos, atomScenePos );
             hndl2Atom.push_back(tempAtom);
-            atomDatabase->insert(tempAtom->getInfo().getRadius(), tempAtom->getInfo().getAngle(), tempAtom);
             tempAtom->setData(0, "Atom");
         }
     }
-    atomDatabase->sort();
 }
 
 void
@@ -278,7 +276,7 @@ roomSimulation::startBeamforming()
 CDataType roomSimulation::getImpulseResponce( CDataType& weights)
 {
     SoundInfo in = findAtomPolarImpl(getRoomLen()/2, 0)->getInfo();
-    auto listAtom = getAtomInRadius( in.getRadius(), false );
+    auto listAtom = getAtomInRadius( in.getRadius() );
 
 
     CDataType pulseData;
@@ -576,47 +574,29 @@ roomSimulation::getAtomsInAngleDataBase( int angle, int jump  )
 }
 
 std::vector< roomAtom* >
-roomSimulation::getAtomsInAngle( int angle, int jump, bool isUnique  )
+roomSimulation::getAtomsInAngle( double angle, double jump  )
 {
-    std::vector< roomAtom* > returnVal;
-    double maxRad = (getRoomLen() / cos( angle * GLOBAL_PI / 180 ));
-    std::vector< bool > uniqueSet(  maxRad / jump, false );
-    std::vector< roomAtom* > allAtoms;
-    for ( auto elem : hndl2Atom )
-    {
-        if ( !elem )
-            continue;
-        auto atomStruct = dynamic_cast<roomAtom*>(elem);
-        if (atomStruct == NULL)
-            continue;
-        int rad = atomStruct->getInfo().getRadius();
-        if ( rad < 200 || rad > (maxRad - 100) )
-            continue;
-        int angleTemp = elem->getAngle();
-        if ( isUnique && angle == angleTemp  )
-            allAtoms.push_back(elem);
-        else if ( angleTemp >= angle - 1 && angleTemp <= angle + 1 )
-            allAtoms.push_back(elem);
-    }
+     double maxRad = (getRoomLen() / cos( angle * GLOBAL_PI / 180 ));
+     std::unordered_set< roomAtom* > uniqueSet;
+     std::vector< roomAtom* > returnVal;
 
-    std::sort(allAtoms.begin(), allAtoms.end(), []( const roomAtom* lhs,  const roomAtom* rhs){
-        return lhs->getRadius() < rhs->getRadius();
-    });
+     for (double curRadius = 200 ; curRadius < maxRad; curRadius += jump)
+     {
+        roomAtom *atom = findAtomPolarImpl( curRadius, angle );
+        if ( !atom )
+             continue;
+         auto isRoomAtom = dynamic_cast<roomAtom*>(atom);
+         if (isRoomAtom == NULL)
+             continue;
 
-    for ( auto& atomStruct : allAtoms )
-    {
-        int rad = atomStruct->getInfo().getRadius();
-        int key = rad / jump;
-        if ( isUnique && !uniqueSet[key] )
-        {
-            returnVal.push_back(atomStruct);
-            uniqueSet[key] = true;
-        }
-        else
-            returnVal.push_back(atomStruct);
-    }
+         if ( uniqueSet.find(atom) != uniqueSet.end())
+             continue;
 
-    return returnVal;
+         returnVal.push_back(isRoomAtom);
+         uniqueSet.insert(atom) ;
+     }
+
+     return returnVal;
 }
 
 std::vector< roomAtom* >
@@ -641,14 +621,14 @@ roomSimulation::getAtomsInRadiusDataBase( int curRadius  )
 }
 
 std::vector< roomAtom* >
-roomSimulation::getAtomInRadius(int curRadius , bool isUnique, int start, int offSet )
+roomSimulation::getAtomInRadius( double curRadius, int start, int offSet )
 {
     if ( start < -90)
         start = -90;
-    std::set< int > uniqueSet;
+    std::unordered_set< roomAtom* > uniqueSet;
 
     std::vector< roomAtom* > returnVal;
-    for (double curAngle = start ; curAngle < start + offSet; curAngle += 0.5)
+    for (double curAngle = start ; curAngle < start + offSet; curAngle += 0.3)
     {
        roomAtom *atom = findAtomPolarImpl( curRadius, curAngle );
        if ( !atom )
@@ -656,14 +636,12 @@ roomSimulation::getAtomInRadius(int curRadius , bool isUnique, int start, int of
         auto isRoomAtom = dynamic_cast<roomAtom*>(atom);
         if (isRoomAtom == NULL)
             continue;
-        if ( isUnique )
-        {
-            if ( uniqueSet.find(atom->getInfo().getAngle()) != uniqueSet.end())
-                continue;
-        }
+        if ( uniqueSet.find(atom) != uniqueSet.end())
+            continue;
+
 
         returnVal.push_back(isRoomAtom);
-        uniqueSet.insert(atom->getInfo().getAngle()) ;
+        uniqueSet.insert(atom) ;
     }
 
     return returnVal;

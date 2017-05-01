@@ -5,6 +5,9 @@
 #include <string>
 #include <algorithm>
 #include <unordered_map>
+#include "environment/roomAtom.h"
+
+class roomAtom;
 
 template <typename T>
 std::vector<size_t> sort_indexes(const std::vector<T> &v) {
@@ -27,7 +30,7 @@ struct SortedValue
     double index;
 
     double bestval;
-
+    roomAtom* atom;
 
     bool operator > ( const SortedValue& rhs )
     {
@@ -54,14 +57,15 @@ struct SortedValue
 
     std::string toString()
     {
-        return std::to_string(val) + " ratio: " + std::to_string(ratio) + " index: " + std::to_string(index);
+        return std::to_string(val) + " ratio: " + std::to_string(ratio) + " index: " + std::to_string(index)
+                + " atom real values radius: " + std::to_string(atom->getInfo().getRadius()) + " angle " + std::to_string(atom->getInfo().getAngle());
     }
 };
 
 class SortedBestPickList
 {
 public:
-    using pairType = std::pair< int, SortedValue >;
+    using pairType = std::pair< double, SortedValue >;
 
     SortedBestPickList() = default;
     SortedBestPickList( size_t size, int offSet, bool isPrint )
@@ -78,9 +82,9 @@ public:
         this->pairList = rhs.pairList;
     }
 
-    void insert( int in, double val, double ratio, double indexVal )
+    void insert( double in, double val, double ratio, double indexVal, roomAtom* atom )
     {
-        auto newVal = SortedValue{val, ratio, indexVal,val};
+        auto newVal = SortedValue{val, ratio, indexVal,val, atom};
         auto pair = std::make_pair(in, newVal );
         auto index = findByOffSet(in);
         if ( index != -1)
@@ -221,7 +225,7 @@ public:
 
     void feed( const SortedBestPickList& in )
     {
-        std::vector <std::pair< int, SortedValue >> list = in.getPairList();
+        std::vector <std::pair< double, SortedValue >> list = in.getPairList();
 
         for ( size_t i = 0; i < list.size(); i++  )
         {
