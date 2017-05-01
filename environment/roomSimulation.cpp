@@ -228,8 +228,8 @@ roomSimulation::setRadiusAngleAtom()
         QPointF curPoint = startPoint;
         while (true)
         {
-            curPoint.setX(curPoint.x() + _roomParameters.pixel4EachAtom * sin(angle * GLOBAL_PI / 180));
-            curPoint.setY(curPoint.y() + _roomParameters.pixel4EachAtom * cos(angle * GLOBAL_PI / 180));
+            curPoint.setX(curPoint.x() + _roomParameters.pixel4EachAtom * sin(angle * GLOBAL_PI / 180.0));
+            curPoint.setY(curPoint.y() + _roomParameters.pixel4EachAtom * cos(angle * GLOBAL_PI / 180.0));
             if (!scene()->sceneRect().contains(curPoint))
                 break;
             if (_room_scene->itemAt(curPoint, QTransform()) != NULL)
@@ -285,8 +285,6 @@ CDataType roomSimulation::getImpulseResponce( CDataType& weights)
     SoundData<CDataType> data(99, in  );
     data.setInfo().setType( STypes::PULSE);
     data.setData(pulseData.begin(), pulseData.end());
-
-    _micArr->adjustArrayFocus( in, ArrayFocusMode::NO_FOCUS);
 
     _micArr->feed( data, weights );
     std::vector<double> temp;
@@ -576,7 +574,7 @@ roomSimulation::getAtomsInAngleDataBase( int angle, int jump  )
 std::vector< roomAtom* >
 roomSimulation::getAtomsInAngle( double angle, double jump  )
 {
-     double maxRad = (getRoomLen() / cos( angle * GLOBAL_PI / 180 ));
+     double maxRad = (getRoomLen() / cos( angle * GLOBAL_PI / 180.0 ));
      std::unordered_set< roomAtom* > uniqueSet;
      std::vector< roomAtom* > returnVal;
 

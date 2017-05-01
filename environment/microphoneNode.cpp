@@ -56,8 +56,8 @@ microphoneNode::setElemPos()
 {
     for (int i = 0; i < m_RoomVariables.numberOfMics; i++)
     {
-        double ypos = m_apartureList[i].getDistCenter() * sin(m_RoomVariables.angleOfTheMicrophone * GLOBAL_PI / 180);
-        double xpos = m_apartureList[i].getDistCenter() * cos(m_RoomVariables.angleOfTheMicrophone * GLOBAL_PI / 180);
+        double ypos = m_apartureList[i].getDistCenter() * sin(m_RoomVariables.angleOfTheMicrophone * GLOBAL_PI / 180.0);
+        double xpos = m_apartureList[i].getDistCenter() * cos(m_RoomVariables.angleOfTheMicrophone * GLOBAL_PI / 180.0);
         ypos += m_center.second;
         xpos += m_center.first;
 
@@ -68,7 +68,7 @@ microphoneNode::setElemPos()
 
 
 double
-microphoneNode::getDelay(int index, double focusDist, int steeringAngle) const
+microphoneNode::getDelay(int index, double focusDist, double steeringAngle) const
 {
     return m_apartureList[index].getDelay(focusDist, steeringAngle, m_mode);
 }
@@ -78,6 +78,14 @@ microphoneNode::getDistDelay(int index, double focusDist ) const
 {
     return m_apartureList[index].getDistDelay(focusDist);
 }
+
+double
+microphoneNode::getSteeringDelay(int index, double steeringAngle ) const
+{
+    return m_apartureList[index].getSteeringDelay(steeringAngle);
+}
+
+
 
 void
 microphoneNode::feed(const SoundData<CDataType>& input, const CDataType& weights)

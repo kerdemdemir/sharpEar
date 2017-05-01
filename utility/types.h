@@ -37,7 +37,7 @@
 #include <memory>
 #include <map>
 
-using Point = std::pair<int, int>;
+using Point = std::pair<double, double>;
 using DPoint = std::pair<double, double>;
 using SingleCDataType = std::complex<double>;
 using CDataType = std::vector< std::complex<double> > ;

@@ -73,7 +73,7 @@ public:
     {
         double xPos = relativePos.first - m_center.first  ;
         double yPos = relativePos.second - m_center.second ;
-        return  atan (   xPos / (yPos ? yPos : EPSILON)  ) * 180 / 3.14159265358979323846 ;
+        return  atan (   xPos / (yPos ? yPos : EPSILON)  ) * 180.0 / 3.14159265358979323846 ;
     }
 
     double
@@ -156,12 +156,6 @@ public:
         return m_apartureList[apartureIndex].getData( dataIndex );
     }
 
-    std::complex<double>
-    getFocussedData( int apartureIndex, int dataIndex  ) const
-    {
-        return m_apartureList[apartureIndex].getFocusData( dataIndex );
-    }
-
     double getTotalWeight()
     {
         return std::abs(std::accumulate(m_Allweights.begin(), m_Allweights.end(), std::complex<double>(0)));
@@ -218,16 +212,6 @@ public:
         return m_elemCount * m_RoomVariables.distancesBetweenMics / 100.0;
     }
 
-    void adjustArrayFocus( const SoundInfo& in, ArrayFocusMode mode )
-    {
-        m_mode = mode;
-        for ( size_t i = 0; i < m_apartureList.size(); i++ )
-        {
-            m_apartureList[i].adjustArrayFocus(in, mode);
-        }
-
-    }
-
     double totalLength()
     {
         return (m_elemCount - 1) * m_RoomVariables.distancesBetweenMics;
@@ -238,9 +222,10 @@ public:
         return m_mode;
     }
 
-    double getDelay(int index, double focusDist, int steeringAngle) const;
+    double getDelay(int index, double focusDist, double steeringAngle) const;
     double getDistDelay(int index, double focusDist) const;
     double weightRealSum;
+    double getSteeringDelay(int index, double steeringAngle) const;
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);

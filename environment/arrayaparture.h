@@ -37,14 +37,14 @@ public:
     }
 
     double
-    getDelay( double focusDist, int steeringAngle, ArrayFocusMode mode ) const
+    getDelay( double focusDist, double steeringAngle, ArrayFocusMode mode ) const
     {
         if ( mode == ArrayFocusMode::NO_FOCUS)
             return 0;
         else if ( mode == ArrayFocusMode::RADIUS_FOCUS )
             return pow(m_distCenter, 2) / (2.0 * focusDist);
 
-        double dist = m_distCenter * sin(steeringAngle * GLOBAL_PI / 180) +   pow(m_distCenter, 2) / (2.0 * focusDist);
+        double dist = -m_distCenter * sin(steeringAngle * GLOBAL_PI / 180.0) +   pow(m_distCenter, 2) / (2.0 * focusDist);
         return dist / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec ;
     }
 
@@ -56,8 +56,8 @@ public:
 
     void feed ( const SoundData<CDataType>& input  )
     {
-      size_t delay = getDistDelay( input.getDistance(m_pos) ) - m_timeDelay ;
-      //double delay = getDelay(input.getInfo().getDistance(), input.getInfo().getAngle(),ArrayFocusMode::NO_FOCUS );
+      size_t delay = getDistDelay( input.getDistance(m_pos) ) ;
+      size_t delay2 = getDelay(input.getInfo().getDistance(), input.getInfo().getAngle(),ArrayFocusMode::POINT_FOCUS );
       CDataConstIter beginIter = input.getData();
       leapIter leapIte = getLeapIter(input, delay);
       auto tempLeap = *leapIte->second;
@@ -154,9 +154,9 @@ public:
         in = sharpFFT(in, false);
     }
 
-    void adjustArrayFocus( const SoundInfo& in, ArrayFocusMode mode )
+    double getSteeringDelay( double steeringAngle ) const
     {
-        m_timeDelay = getDelay( in.getRadius(), in.getAngle(), mode);
+         return m_distCenter * sin(steeringAngle * GLOBAL_PI / 180.0)  / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec;
     }
 
     QPoint getPos() const
@@ -194,7 +194,6 @@ public:
     void clearLeapData()
     {
         m_leapData.clear();
-        m_timeDelay = 0;
     }
 
     const CDataType& getData() const
@@ -213,11 +212,6 @@ public:
             auto leapIndex = index - m_apartureData.size();
             return m_sumLeapData[leapIndex];
         }
-    }
-
-    std::complex<double> getFocusData( size_t index ) const
-    {
-       return getData( index - m_timeDelay);
     }
 
 private:

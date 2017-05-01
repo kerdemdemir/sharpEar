@@ -79,7 +79,7 @@ public:
     {
         if (isCm == false)
             pos = Point( pos.first * m_RoomVariables.pixel2RealRatio, pos.second * m_RoomVariables.pixel2RealRatio);
-        return atan((pos.first - m_selfData.getRealPos().first) / (pos.second - m_selfData.getRealPos().second)) * 180 / GLOBAL_PI;
+        return atan((pos.first - m_selfData.getRealPos().first) / (pos.second - m_selfData.getRealPos().second)) * 180.0 / GLOBAL_PI;
     }
 
     void setNewRoomParams(roomVariables &roomVariables)
@@ -105,7 +105,7 @@ public:
         m_arrayDelay.resize(m_array->getElemCount());
         for (int i = 0; i < m_array->getElemCount(); i++)
         {
-            m_arrayDelay[i] = m_array->getDelay( i, m_selfData.getRadius(), m_selfData.getAngle());
+            m_arrayDelay[i] = m_array->getSteeringDelay( i, m_selfData.getAngle());
         }
     }
 
@@ -199,7 +199,7 @@ public:
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget);
 
-    void sumWhole(std::vector<double>& output);
+    void sumWhole(std::vector<double>& output, ArrayFocusMode mode = ArrayFocusMode::RADIUS_FOCUS);
     std::vector<double> sumWhole();
 
     void start();

@@ -35,7 +35,7 @@ roomAtom::getAtomDelay( int i, ArrayFocusMode mode )
     if ( mode == ArrayFocusMode::NO_FOCUS)
         return m_apartureDist[i];
 
-    return m_apartureDist[i] + m_arrayDelay[i];
+    return m_apartureDist[i] - m_arrayDelay[i];
 
 }
 
@@ -73,13 +73,13 @@ roomAtom::sumSingle()
 }
 
 void
-roomAtom::sumWhole(std::vector< double > & output)
+roomAtom::sumWhole(std::vector< double > & output, ArrayFocusMode mode)
 {
     for (int i = 0; i < m_RoomVariables.numberOfMics; i++)
     {
         for (size_t k = 0; k <  output.size(); k++)
         {
-            output[k] += m_array->getData(i, k + getAtomDelay(i, m_array->getMode())).real();
+            output[k] += m_array->getData(i, k + getAtomDelay(i, mode )).real();
         }
     }
 
