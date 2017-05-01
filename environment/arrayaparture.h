@@ -36,7 +36,7 @@ public:
         m_apartureData.resize( soundConfig.samplePerOutput );
     }
 
-    double
+    int
     getDelay( double focusDist, double steeringAngle, ArrayFocusMode mode ) const
     {
         if ( mode == ArrayFocusMode::NO_FOCUS)
@@ -45,19 +45,18 @@ public:
             return pow(m_distCenter, 2) / (2.0 * focusDist);
 
         double dist = -m_distCenter * sin(steeringAngle * GLOBAL_PI / 180.0) +   pow(m_distCenter, 2) / (2.0 * focusDist);
-        return dist / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec ;
+        return std::floor(dist / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec + 0.5) + getMicMaxDelay();
     }
 
-    double
+    int
     getDistDelay ( double focusDist  ) const
     {
-        return focusDist / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec ;
+        return std::floor(focusDist / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec + 0.5);
     }
 
     void feed ( const SoundData<CDataType>& input  )
     {
-      size_t delay = getDistDelay( input.getDistance(m_pos) ) ;
-      size_t delay2 = getDelay(input.getInfo().getDistance(), input.getInfo().getAngle(),ArrayFocusMode::POINT_FOCUS );
+      size_t delay = getDistDelay( input.getDistance(m_pos) ) + getMicMaxDelay();
       CDataConstIter beginIter = input.getData();
       leapIter leapIte = getLeapIter(input, delay);
       auto tempLeap = *leapIte->second;
@@ -154,9 +153,17 @@ public:
         in = sharpFFT(in, false);
     }
 
-    double getSteeringDelay( double steeringAngle ) const
+    int getSteeringDelay( double steeringAngle ) const
     {
-         return m_distCenter * sin(steeringAngle * GLOBAL_PI / 180.0)  / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec;
+        double returnVal = -m_distCenter * sin(steeringAngle * GLOBAL_PI / 180.0)  / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec;
+        return std::floor(returnVal + 0.5);
+    }
+
+    int getMicMaxDelay() const
+    {
+        double totalMicLen = m_RoomVariables.numberOfMics * m_RoomVariables.distancesBetweenMics;
+        double returnVal = totalMicLen / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec;
+        return std::floor(returnVal + 0.5);
     }
 
     QPoint getPos() const

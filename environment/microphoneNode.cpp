@@ -67,20 +67,17 @@ microphoneNode::setElemPos()
 }
 
 
-double
-microphoneNode::getDelay(int index, double focusDist, double steeringAngle) const
+int microphoneNode::getDelay(int index, double focusDist, double steeringAngle) const
 {
     return m_apartureList[index].getDelay(focusDist, steeringAngle, m_mode);
 }
 
-double
-microphoneNode::getDistDelay(int index, double focusDist ) const
+int microphoneNode::getDistDelay(int index, double focusDist ) const
 {
     return m_apartureList[index].getDistDelay(focusDist);
 }
 
-double
-microphoneNode::getSteeringDelay(int index, double steeringAngle ) const
+int microphoneNode::getSteeringDelay(int index, double steeringAngle ) const
 {
     return m_apartureList[index].getSteeringDelay(steeringAngle);
 }

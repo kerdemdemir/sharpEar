@@ -29,7 +29,7 @@ roomAtom::start2()
         m_relativeVal += elem.real();
 }
 
-double
+int
 roomAtom::getAtomDelay( int i, ArrayFocusMode mode )
 {
     if ( mode == ArrayFocusMode::NO_FOCUS)

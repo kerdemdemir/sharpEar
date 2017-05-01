@@ -114,7 +114,7 @@ public:
         m_apartureDist.resize(m_array->getElemCount());
         for (int i = 0; i < m_array->getElemCount(); i++)
         {            
-            m_apartureDist[i] = m_array->getDistDelay(i, getDistance( m_array->getPosition(i), true ));
+            m_apartureDist[i] = m_array->getDelay(i, getRadius(), getAngle());
         }
     }
 
@@ -161,8 +161,8 @@ public:
 protected:
 
     SoundInfo m_selfData;
-    std::vector<double> m_arrayDelay;
-    std::vector<double> m_apartureDist;
+    std::vector<int> m_arrayDelay;
+    std::vector<int> m_apartureDist;
 
 
 
@@ -246,7 +246,7 @@ private:
 
     void sumPart();
     double sumSingle();
-    double getAtomDelay( int i, ArrayFocusMode mode );
+    int getAtomDelay( int i, ArrayFocusMode mode );
 
     std::vector< std::complex<double> >  m_sumData;
     double m_relativeVal;

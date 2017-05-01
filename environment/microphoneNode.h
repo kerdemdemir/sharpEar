@@ -222,10 +222,10 @@ public:
         return m_mode;
     }
 
-    double getDelay(int index, double focusDist, double steeringAngle) const;
-    double getDistDelay(int index, double focusDist) const;
+    int getDelay(int index, double focusDist, double steeringAngle) const;
+    int getDistDelay(int index, double focusDist) const;
     double weightRealSum;
-    double getSteeringDelay(int index, double steeringAngle) const;
+    int getSteeringDelay(int index, double steeringAngle) const;
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
