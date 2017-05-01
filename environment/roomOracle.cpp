@@ -317,7 +317,7 @@ roomOracle::findSpeakers(const std::vector< roomAtom* >& atomList,
             continue;
 
         std::fill( wholeData.begin(), wholeData.end(), 0);
-        elem->sumWhole(wholeData, isRadius ? ArrayFocusMode::RADIUS_FOCUS : ArrayFocusMode::NO_FOCUS);
+        elem->sumWhole(wholeData, isRadius ? ArrayFocusMode::NO_FOCUS : ArrayFocusMode::NO_FOCUS);
         double curCount = 0;
 //        for ( auto elem : wholeData )
 //            curCount += std::abs(elem);
@@ -369,7 +369,7 @@ roomOracle::findBestSpeaker(const std::vector< roomAtom* >& atomList,
             continue;
 
         std::fill( wholeData.begin(), wholeData.end(), 0);
-        elem->sumWhole(wholeData, isRadius ? ArrayFocusMode::RADIUS_FOCUS : ArrayFocusMode::NO_FOCUS);
+        elem->sumWhole(wholeData, isRadius ? ArrayFocusMode::NO_FOCUS : ArrayFocusMode::NO_FOCUS);
         trainerIn.featureCalculation( wholeData  );
         trainerIn.predict( originalData.getSpeakerID() );
         double curRatio = trainerIn.getRatioResult(originalData.getSpeakerID());

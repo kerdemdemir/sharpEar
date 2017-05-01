@@ -56,7 +56,7 @@ public:
 
     void feed ( const SoundData<CDataType>& input  )
     {
-      size_t delay = getDistDelay( input.getDistance(m_pos) ) + getMicMaxDelay();
+      size_t delay = getDelay( input.getRadius(), input.getAngle(), ArrayFocusMode::POINT_FOCUS) + getMicMaxDelay();
       CDataConstIter beginIter = input.getData();
       leapIter leapIte = getLeapIter(input, delay);
       auto tempLeap = *leapIte->second;
