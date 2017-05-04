@@ -16,6 +16,7 @@
 #include "speakerProcess/mlModel/simpleSummerModel.h"
 #include "speakerProcess/featureExtractor/f0highlevelfeatures.h"
 #include "speakerProcess/featureExtractor/wavef0withamplitude.h"
+#include "speakerProcess/featureExtractor/peakFrequency.h"
 #include <QElapsedTimer>
 
 class TrainerComposer : public ModelBase
@@ -213,15 +214,36 @@ public:
         modelList.push_back( model );
     }
 
-    void initPGrams( int selectedGram, std::string selectedGramName )
+    void initPGrams( int selectedGram, std::string selectedGramName, bool isLoad )
     {
         auto F0FeaturePtr = std::make_shared<F0FeaturesAmplitude>(selectedGram);
         featureList.addExtractor(F0FeaturePtr);
         auto pitchGramRunnerModel = std::make_shared<PitchGramModel>(2, selectedGramName);
-        pitchGramRunnerModel->isLoad = true;
+        pitchGramRunnerModel->isLoad = isLoad;
         pitchGramRunnerModel->setFeature( F0FeaturePtr );
         addModel(pitchGramRunnerModel);
     }
+
+    void initPRadiusGrams( int selectedGram, std::string selectedGramName, bool isLoad )
+    {
+        auto F0FeaturePtr = std::make_shared<F0FeaturesMicArray>(selectedGram);
+        featureList.addExtractor(F0FeaturePtr);
+        auto pitchGramRunnerModel = std::make_shared<PitchGramModel>(2, selectedGramName);
+        pitchGramRunnerModel->isLoad = isLoad;
+        pitchGramRunnerModel->setFeature( F0FeaturePtr );
+        addModel(pitchGramRunnerModel);
+    }
+
+    void initPeakFreq( int selectedGram, std::string selectedGramName, bool isLoad )
+    {
+        auto F0FeaturePtr = std::make_shared<FreqeuncyPeak>(selectedGram);
+        featureList.addExtractor(F0FeaturePtr);
+        auto pitchGramRunnerModel = std::make_shared<PitchGramModel>(2, selectedGramName);
+        pitchGramRunnerModel->isLoad = isLoad;
+        pitchGramRunnerModel->setFeature( F0FeaturePtr );
+        addModel(pitchGramRunnerModel);
+    }
+
 
     void initP0Power( int selectedGram )
     {

@@ -22,7 +22,6 @@ public:
 
         dywapitch_inittracking(&pitchtracker);
 
-        aubio_pitch_set_tolerance (pitch, 0.95);
         aubio_pitch_set_silence (pitch, -30);
     }
 
@@ -34,35 +33,39 @@ public:
 
     void getFormants( double f0, cvec_t* inputComplex )
     {
-       double freqStep = sampleRate / win_s;
-       std::array< std::pair<size_t, double> , FORMANT_COUNT> formants{ std::make_pair(0.0, 0.0 ) };
+        double freqStep = (sampleRate/2) / win_s;
+        std::array< std::pair<double, double> , FORMANT_COUNT> formants;
+        formants[0].first = f0;
+        int formantIndex = formants[0].first / freqStep;
+        formants[0].second = inputComplex->norm[formantIndex];
 
-       size_t formantIndex = f0 / freqStep;
-       formants[0].second = inputComplex->norm[formantIndex];
-
-       for ( int curFreq = f0; curFreq < 7000; curFreq += f0 )
-       {
-            if ( curFreq < 1000 && curFreq >= 8000  )
-                continue;
-
-            int formant = curFreq / 1000;
-            formantIndex = curFreq / freqStep;
-            if ( formantIndex >= inputComplex->length )
-                continue;
-            float curFormantVal = inputComplex->norm[formantIndex];
-            formants[formant].first++;
-            formants[formant].second += curFormantVal;
-       }
-
-       if ( !formants[selectedFormant].first )
-       {
-            samples.at<double>(colSize, 0) = 0;
+        if ( selectedFormant == 0 )
+        {
+            samples.at<double>(colSize, 0) = (f0 - MIN_FREQ) / 10;
+            samples.at<double>(colSize, 1) = aubio_pitch_get_confidence(pitch);
             return;
-       }
+        }
 
-       double meanVal = formants[selectedFormant].second / formants[selectedFormant].first;
-       auto result =  meanVal; // * (IS_WAVELET ? 1.0 : aubio_pitch_get_confidence(pitch));
-       samples.at<double>(colSize, 0) = result;
+        for ( int curFreq = f0; curFreq < FORMANT_COUNT * 1000; curFreq += f0 )
+        {
+             if ( curFreq < 1000 )
+             {
+                 continue;
+             }
+             int formant = curFreq / 1000;
+             int formantIndex = curFreq / freqStep;
+             float curFormantVal = inputComplex->norm[formantIndex];
+             if ( formants[formant].second < curFormantVal )
+             {
+                 formants[formant].first = curFreq % 1000;
+                 formants[formant].second = curFormantVal;
+             }
+        }
+        if ( selectedFormant != -1 )
+        {
+            samples.at<double>(colSize, 0) = (formants[selectedFormant].first) / 25;//JUMPSIZE*2 ;// / (JUMPSIZE * 5);
+            samples.at<double>(colSize, 1) =  aubio_pitch_get_confidence(pitch);
+        }
 
     }
 

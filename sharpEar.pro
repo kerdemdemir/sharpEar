@@ -87,7 +87,8 @@ HEADERS  += mainwindow.h\
     speakerProcess/featureExtractor/dywapitchtrack.h \
     speakerProcess/featureExtractor/wavef0withamplitude.h \
     speakerProcess/mlModel/multiPitchModel.h \
-    speakerProcess/featureExtractor/PYINFeatureMicArray.h
+    speakerProcess/featureExtractor/PYINFeatureMicArray.h \
+    speakerProcess/featureExtractor/peakFrequency.h
 
 
 

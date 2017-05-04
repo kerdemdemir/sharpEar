@@ -29,7 +29,7 @@ public:
 
     void getFormants( double f0, cvec_t* inputComplex )
     {
-       double freqStep = sampleRate / win_s;
+       double freqStep = (sampleRate/2) / win_s;
        std::array< std::pair<double, double> , FORMANT_COUNT> formants;
        formants[0].first = f0;
        int formantIndex = formants[0].first / freqStep;
@@ -38,7 +38,7 @@ public:
        if ( selectedFormant == 0 )
        {
            samples.at<double>(colSize, 0) = (f0 - MIN_FREQ) / 10;
-           samples.at<double>(colSize, 1) = formants[0].second * formants[0].second * formants[0].second  ;//aubio_pitch_get_confidence(pitch);
+           samples.at<double>(colSize, 1) = formants[0].second;//aubio_pitch_get_confidence(pitch);
            return;
        }
 
@@ -59,7 +59,7 @@ public:
        }
        if ( selectedFormant != -1 )
        {
-           samples.at<double>(colSize, 0) = (formants[selectedFormant].first) / 40;//JUMPSIZE*2 ;// / (JUMPSIZE * 5);
+           samples.at<double>(colSize, 0) = (formants[selectedFormant].first) / 25;//JUMPSIZE*2 ;// / (JUMPSIZE * 5);
            samples.at<double>(colSize, 1) =  formants[selectedFormant].second;//aubio_pitch_get_confidence(pitch);
        }
     }

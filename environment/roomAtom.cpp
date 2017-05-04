@@ -179,12 +179,5 @@ void roomAtom::paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QW
 //** Graph Related Fuctions**//
 QRectF roomAtom::boundingRect() const
 {
-    if (!ENABLE_RADIAN_ANGLE)
-    {
-        return QRect(0, 0, m_RoomVariables.pixel4EachAtom,  m_RoomVariables.pixel4EachAtom);
-    }
-    else
-    {
-        return QRectF(m_RoomVariables.pixel4EachAtom/-2.0, m_RoomVariables.pixel4EachAtom/-2.0, m_RoomVariables.pixel4EachAtom,  m_RoomVariables.pixel4EachAtom);
-    }
+    return QRectF(m_RoomVariables.pixel4EachAtom/-2.0, m_RoomVariables.pixel4EachAtom/-2.0, m_RoomVariables.pixel4EachAtom,  m_RoomVariables.pixel4EachAtom);
 }

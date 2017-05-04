@@ -102,10 +102,10 @@ public:
 
     void setArrayDelay()
     {
-        m_arrayDelay.resize(m_array->getElemCount());
+        m_steeringDelay.resize(m_array->getElemCount());
         for (int i = 0; i < m_array->getElemCount(); i++)
         {
-            m_arrayDelay[i] = m_array->getSteeringDelay( i, m_selfData.getAngle());
+            m_steeringDelay[i] = m_array->getSteeringDelay( i, m_selfData.getAngle());
         }
     }
 
@@ -114,7 +114,7 @@ public:
         m_apartureDist.resize(m_array->getElemCount());
         for (int i = 0; i < m_array->getElemCount(); i++)
         {            
-            m_apartureDist[i] = m_array->getDelay(i, getRadius(), getAngle());
+            m_apartureDist[i] = m_array->getDistDelay(i, getDistance( m_array->getPosition(i), true ));
         }
     }
 
@@ -161,7 +161,7 @@ public:
 protected:
 
     SoundInfo m_selfData;
-    std::vector<int> m_arrayDelay;
+    std::vector<int> m_steeringDelay;
     std::vector<int> m_apartureDist;
 
 
@@ -199,7 +199,7 @@ public:
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget);
 
-    void sumWhole(std::vector<double>& output, ArrayFocusMode mode = ArrayFocusMode::RADIUS_FOCUS);
+    void sumWhole(std::vector<double>& output, ArrayFocusMode mode = ArrayFocusMode::NO_FOCUS);
     std::vector<double> sumWhole();
 
     void start();

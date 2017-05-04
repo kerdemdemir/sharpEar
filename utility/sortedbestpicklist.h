@@ -187,7 +187,7 @@ public:
 
 private:
 
-    int findByOffSet( int value )
+    int findByOffSet( double value )
     {
         for ( size_t i = 0; i < pairList.size(); i++)
         {

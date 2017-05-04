@@ -21,7 +21,6 @@
 #include <unordered_set>
 
 //#define DEBUG_TEST_MODE
-#define POINT_ALWAYS_CENTER
 size_t hopSize = 0;
 size_t win_s = 0 ;
 size_t sampleRate = 0;
@@ -102,10 +101,10 @@ roomSimulation::calcRoomParameters()
      if (ENABLE_UPSAMPLING)
         _soundParameters.samplesPerSec *= UP_SAMPLE_RATE;
     sampleRate = _soundParameters.samplesPerSec;
-    hopSize = 1024;
-    win_s = 2048;
+    hopSize = 2048;
+    win_s = 8192;
 
-    _soundParameters.currentOutputTime = 1 ;
+    _soundParameters.currentOutputTime = 2 ;
      _soundParameters.amplitude = 0;
     _soundParameters.samplePerOutput = _soundParameters.currentOutputTime * _soundParameters.samplesPerSec;
 
@@ -115,7 +114,7 @@ roomSimulation::calcRoomParameters()
     _roomParameters.pixel2RealRatio = (double)hndl_interActionManager->getBasicUserDialogValues()->listenRange
                                         / (double)_roomParameters.yPixelCount;
 
-    _roomParameters.pixel4EachAtom = 4;
+    _roomParameters.pixel4EachAtom = 6;
     _roomParameters.angleDist = 1;
     _roomParameters.numberOfAtomsIn1D = (double)hndl_interActionManager->getBasicUserDialogValues()->listenRange
                                         / hndl_interActionManager->getBasicUserDialogValues()->dx_dy;
@@ -196,18 +195,21 @@ roomSimulation::reset( int microphoneNumber, int distance )
 void
 roomSimulation::setAtoms()
 {
-    for (int x = _room_scene->sceneRect().left(); x < _room_scene->sceneRect().right()
+    auto atomJump = _roomParameters.pixel4EachAtom/-2.0 * _roomParameters.pixel2RealRatio;
+    int offSet = _roomParameters.pixel4EachAtom/2;
+    for (int x = _room_scene->sceneRect().left() + offSet; x < _room_scene->sceneRect().right()
                                                           ;x += _roomParameters.pixel4EachAtom)
     {
-         for (int y = _room_scene->sceneRect().top(); y < _room_scene->sceneRect().bottom()
+         for (int y = _room_scene->sceneRect().top() + offSet; y < _room_scene->sceneRect().bottom()
                                                           ;y += _roomParameters.pixel4EachAtom)
          {
             roomAtom* tempAtom = new roomAtom(_soundParameters, _roomParameters, _micArr);
             _room_scene->addItem(tempAtom);            
-            tempAtom->setPos(x, y);
+            tempAtom->setPos(x ,y);
             Point atomScenePos = std::make_pair(x, y);
-            Point atomCMPos = std::make_pair((x - _room_scene->sceneRect().left()) * _roomParameters.pixel2RealRatio ,
-                                             (y - _room_scene->sceneRect().top()) * _roomParameters.pixel2RealRatio );
+
+            Point atomCMPos = std::make_pair((x - _room_scene->sceneRect().left()) * _roomParameters.pixel2RealRatio + atomJump,
+                                             (y - _room_scene->sceneRect().top()) * _roomParameters.pixel2RealRatio + atomJump );
             tempAtom->createInfo( atomCMPos, atomScenePos );
             hndl2Atom.push_back(tempAtom);
             //atomDatabase->insert(tempAtom->getInfo().getRadius(), tempAtom->getInfo().getAngle(), tempAtom);
@@ -460,7 +462,7 @@ roomSimulation::getArcRadius( roomAtom* arcCenter )
         curRadius < (radius + radiusElemCount/2);
         curRadius += radiusEpsilon)
     {
-       for (int curAngle = angle - 45 ; curAngle < angle + 45; curAngle += 3)
+       for (int curAngle = angle - 45 ; curAngle < angle + 45; curAngle += 0.05)
        {
            roomAtom *atom = findAtomPolarImpl( curRadius, curAngle );
            if (atom == NULL)
@@ -521,22 +523,15 @@ roomSimulation::mouseReleaseEvent(QMouseEvent *event)
     if ( _roomDialogs->mouseReleased(clickPos) )
     {
         QPointF viewCord = mapToScene(clickPos.toPoint());
-        #ifdef POINT_ALWAYS_CENTER
-        if (isFirst)
-        {
-            isFirst = false;
-            viewCord = clickPos;
-        }
-        #endif
-        int xPos = viewCord.x();
-        int yPos = viewCord.y();
+
+        double xPos = viewCord.x();
+        double yPos = viewCord.y();
 
         if (_room_scene->sceneRect().contains(xPos, yPos) == false)
         {
            _roomDialogs->sendAlertBox("Please click inside the boundaries");
            return;
         }
-        //roomAtom* curAtom = findClosePoint(xPos, yPos);
         roomAtom* curAtom = qgraphicsitem_cast<roomAtom*>(_room_scene->itemAt( xPos, yPos, QTransform()));
         std::cout << "Room Simulation <User Atom Select> the info of atom will be printed " << std::endl;
         curAtom->print();

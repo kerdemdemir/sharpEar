@@ -45,18 +45,18 @@ public:
             return pow(m_distCenter, 2) / (2.0 * focusDist);
 
         double dist = -m_distCenter * sin(steeringAngle * GLOBAL_PI / 180.0) +   pow(m_distCenter, 2) / (2.0 * focusDist);
-        return std::floor(dist / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec + 0.5) + getMicMaxDelay();
+        return dist / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec + getMicMaxDelay();
     }
 
     int
     getDistDelay ( double focusDist  ) const
     {
-        return std::floor(focusDist / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec + 0.5);
+        return focusDist / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec;
     }
 
     void feed ( const SoundData<CDataType>& input  )
     {
-      size_t delay = getDelay( input.getRadius(), input.getAngle(), ArrayFocusMode::POINT_FOCUS) + getMicMaxDelay();
+      size_t delay = getDistDelay( input.getDistance(m_pos) ) ;
       CDataConstIter beginIter = input.getData();
       leapIter leapIte = getLeapIter(input, delay);
       auto tempLeap = *leapIte->second;
@@ -156,14 +156,14 @@ public:
     int getSteeringDelay( double steeringAngle ) const
     {
         double returnVal = -m_distCenter * sin(steeringAngle * GLOBAL_PI / 180.0)  / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec;
-        return std::floor(returnVal + 0.5);
+        return returnVal;
     }
 
     int getMicMaxDelay() const
     {
         double totalMicLen = m_RoomVariables.numberOfMics * m_RoomVariables.distancesBetweenMics;
         double returnVal = totalMicLen / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec;
-        return std::floor(returnVal + 0.5);
+        return returnVal;
     }
 
     QPoint getPos() const

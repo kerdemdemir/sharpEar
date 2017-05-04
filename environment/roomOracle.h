@@ -124,7 +124,7 @@ private:
     roomSimulation* m_roomSimulation;
     TrainerComposer trainer;
     TrainerComposer trainerRadius;
-
+    TrainerComposer trainerSpeakerElimination;
     roomAtom* soundPosition;
     SortedBestPickListScorer scorer;
     std::vector< double > nullAnglePositions;
@@ -143,8 +143,8 @@ private:
     void getNoice(roomAtom *speakerPos);
 
     void filterByPower(std::vector<roomAtom *> &atomList);
-    std::vector<roomAtom *> findSpeakers(const std::vector<roomAtom *> &atomList, SoundData<CDataType> &originalData, TrainerComposer &trainerIn, bool isRadius, bool isPrint);
-    roomAtom *findSpeaker(const std::vector<roomAtom *> &atomList, SoundData<CDataType> &originalData, TrainerComposer &trainerIn, double& ratio, std::string debugMessage, bool isRadius, bool isPrint);
+    std::vector<roomAtom *> findSpeakers(const std::vector<roomAtom *> &atomList, SoundData<CDataType> &originalData, TrainerComposer &trainerIn, double &ratio, bool isRadius, bool isPrint);
+    roomAtom *findSpeaker( std::vector<roomAtom *> &atomList, SoundData<CDataType> &originalData, TrainerComposer &trainerIn, double& ratio, std::string debugMessage, bool isRadius, bool isPrint);
     roomAtom* findBestSpeaker(const std::vector< roomAtom* >& atomList,
                                 SoundData<CDataType>& originalData,
                               TrainerComposer &trainerIn, double& ratio, bool isRadius, bool isPrint = true);

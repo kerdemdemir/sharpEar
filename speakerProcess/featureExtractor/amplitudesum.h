@@ -32,7 +32,7 @@ public:
     virtual void doChunk( fvec_t *inputSimple, cvec_t *inputComplex ) override
     {
         (void)(inputSimple);
-        double freqStep = sampleRate / win_s;
+        double freqStep = (sampleRate/2) / win_s;
 
         int startFreq = 1000 * selectedFormant;
         size_t startIndex = startFreq/ freqStep;
