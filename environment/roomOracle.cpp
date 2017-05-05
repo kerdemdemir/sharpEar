@@ -22,17 +22,17 @@ roomOracle::roomOracle(size_t sampleRate, size_t packetSize, int speakerID, int 
     m_noiceID = noiceID;
 
     std::string trainPath("D:/speakerWavs/train1/upSampled");
-    trainer.initPGrams(0, "SilenceRemove2GramDefaultAubioUpsampledWindow4Times", true );
+    trainer.initPGrams(1, "UpsampledF12Grams", true );
     //trainer.initPWave(0, "WaveF0");
-    trainerRadius.initPeakFreq(6, "2GramPeakWindow4Times", false );
-
+    //trainerRadius.initPRadiusGrams(7, "1GramPitchFreq", true );
+    trainerRadius.initP0Power(7);
     //trainer.initYINPGrams(0, "F0YinFFT2GramNormal");
     //trainer.initYINPGrams(0, "F0MultiYinFFT2Gram");
     //3Gramtrainer.initPGrams(0, "F0YinFFT");
     //trainer.initPGrams(0, "F0YinFFT2Gram");
     //trainer.initMFCC();
     train(trainer, trainPath);
-    train(trainerRadius, trainPath);
+    //train(trainerRadius, trainPath);
 
     trainerSpeakerElimination.initP0Power(2);
 //    trainerRadius.initPGrams(2, "F2");
@@ -66,7 +66,6 @@ void roomOracle::preprocess(const std::vector< SoundDataRef > &input, int packet
         if ( !nullAnglePositions.empty() )
             fftWeight();
         auto soundPos = feedArray(input, m_weight);
-        isSoundLocated = true;
         SoundData<CDataType>& dataOriginal = soundPos;
         auto atomInRadius = m_roomSimulation->findAtomPolarImpl(dataOriginal.getInfo().getRadius(), dataOriginal.getInfo().getAngle());
         auto snrVal = dataOriginal.calculateSNR(atomInRadius->sumWhole());
@@ -93,7 +92,7 @@ void roomOracle::preprocess(const std::vector< SoundDataRef > &input, int packet
         }
 
 
-        auto atomsInMiddle = m_roomSimulation->getAtomsInAngle( angle, 20 );
+        auto atomsInMiddle = m_roomSimulation->getAtomsInAngle( angle, 100, 7.0 );
         soundPositionLocal = findSpeaker( atomsInMiddle, originalSound, trainerRadius, curRatioRad, " radius ", true,true );
     }
 
@@ -231,7 +230,7 @@ roomOracle::iterativeProcess(  SoundData<CDataType>& originalData,  bool isPrint
 
         auto beforeDist = originalData.getDistance( beforeIteration->getInfo().getRealPos() );
 
-        auto atomsInMiddle = m_roomSimulation->getAtomsInAngle( angle, 20 );
+        auto atomsInMiddle = m_roomSimulation->getAtomsInAngle( angle, 100 );
         auto curRadAtom = findSpeaker( atomsInMiddle, originalData, trainerRadius, startRatio , " iterative radius ", true,isPrint );
         if ( !curRadAtom )
             return beforeIteration;
@@ -302,6 +301,7 @@ roomOracle::findSpeaker(                 std::vector< roomAtom* >& atomList,
     {
         ratio = prevRatio;
     }
+
     returnVal = m_roomSimulation->findAtomPolarImpl(radius, angle);
 
     return returnVal;
@@ -320,7 +320,7 @@ roomOracle::findSpeakers(const std::vector< roomAtom* >& atomList,
 
     std::vector<roomAtom*> returnVal;
     std::vector<double> wholeData(m_packetSize);
-    SortedBestPickList bestPicker( 10, isRadius ? 200 : 3, true);
+    SortedBestPickList bestPicker( 10, isRadius ? 100 : 3, true);
 
     for (auto elem : atomList)
     {
@@ -393,11 +393,11 @@ roomOracle::findBestSpeaker(const std::vector< roomAtom* >& atomList,
             continue;
 
         std::fill( wholeData.begin(), wholeData.end(), 0);
-        elem->sumWhole(wholeData, isRadius ? ArrayFocusMode::RADIUS_FOCUS : ArrayFocusMode::NO_FOCUS );
+        elem->sumWhole(wholeData, ArrayFocusMode::POINT_FOCUS );
         trainerIn.featureCalculation( wholeData  );
         trainerIn.predict( originalData.getSpeakerID() );
         double curRatio = trainerIn.getRatioResult(originalData.getSpeakerID());
-        double curVal = trainerIn.getNormalizedRawResult(originalData.getSpeakerID());
+        double curVal =  isRadius ? trainerIn.getRawResult( originalData.getSpeakerID() ) : trainerIn.getNormalizedRawResult(originalData.getSpeakerID());
         trainerIn.clearResults(originalData.getSpeakerID());
         auto key = isRadius ? elem->getInfo().getRadius() : elem->getInfo().getAngle();
         double lastVal =  isRadius ? curVal*curRatio : ((sqrt(curVal) * pow(curRatio,3)  ) ) ;

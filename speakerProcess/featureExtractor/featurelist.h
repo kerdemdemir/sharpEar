@@ -85,8 +85,12 @@ public:
     FeatureList()
     {
         inputSimple = new_fvec(hopSize);
+        inputSimpleForFFT = new_fvec(win_s*2);
+        std::fill_n(inputSimpleForFFT->data, inputSimpleForFFT->length, 0);
+
         phaseVocedor = new_aubio_pvoc( win_s, hopSize);
-        inputComplex = new_cvec(win_s);
+        fftAubio  = nullptr;
+        inputComplex = new_cvec(win_s*2);
     }
 
     ~FeatureList()
@@ -96,8 +100,16 @@ public:
         del_aubio_pvoc(phaseVocedor);
     }
 
+    void initFFT( size_t size )
+    {
+        fftAubio = new_aubio_fft( size );
+    }
+
     int start ( const DataType& input )
     {
+        if ( fftAubio == nullptr )
+            initFFT( win_s*2 );
+
         auto readerChunks =  ranges::view::all(input) | ranges::view::chunk(hopSize);
         int chunkCount = readerChunks.size();
 
@@ -111,8 +123,9 @@ public:
 
         RANGES_FOR( auto chunk, readerChunks )
         {
-            copyRangeToArray( chunk, inputSimple->data );
-            aubio_pvoc_do( phaseVocedor, inputSimple, inputComplex );
+            copyRangeToArrays( chunk, inputSimple->data, inputSimpleForFFT->data );
+            aubio_fft_do (fftAubio, inputSimpleForFFT, inputComplex);
+            //aubio_pvoc_do( phaseVocedor, inputSimple, inputComplex );
             for ( auto extractor : extractors )
             {
                 extractor->doChunk( inputSimple, inputComplex );
@@ -167,7 +180,9 @@ private:
 
     Reader reader;
     fvec_t *inputSimple;
+    fvec_t *inputSimpleForFFT;
     aubio_pvoc_t *phaseVocedor;
+    aubio_fft_t *fftAubio;
     cvec_t *inputComplex;
     std::vector< std::shared_ptr<FeatureExtractor> > extractors;
 

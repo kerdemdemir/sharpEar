@@ -96,16 +96,26 @@ public:
         auto nearFieldDistCM = (2 * m_array->getMicLenghtMeter() * m_array->getMicLenghtMeter()) / WAVE_LENGHT_METER * 100;
         if ( getDistance( m_array->getMiddlePos(), true ) < nearFieldDistCM )
             isNearField = true;
-        setArrayDelay();
+        setSteeringDelay();
+        setFocusDelay();
         setApartureDist();
     }
 
-    void setArrayDelay()
+    void setSteeringDelay()
     {
         m_steeringDelay.resize(m_array->getElemCount());
         for (int i = 0; i < m_array->getElemCount(); i++)
         {
-            m_steeringDelay[i] = m_array->getSteeringDelay( i, m_selfData.getAngle());
+            m_steeringDelay[i] = m_array->getSteeringDelay( i, m_selfData.getAngle()) + m_array->getMaximumDelay();
+        }
+    }
+
+    void setFocusDelay()
+    {
+        m_focusDelay.resize(m_array->getElemCount());
+        for (int i = 0; i < m_array->getElemCount(); i++)
+        {
+            m_focusDelay[i] = m_array->getFocusDelay( i, m_selfData.getRadius());
         }
     }
 
@@ -113,8 +123,8 @@ public:
     {
         m_apartureDist.resize(m_array->getElemCount());
         for (int i = 0; i < m_array->getElemCount(); i++)
-        {            
-            m_apartureDist[i] = m_array->getDistDelay(i, getDistance( m_array->getPosition(i), true ));
+        {
+            m_apartureDist[i] = m_focusDelay[i] + m_steeringDelay[i];
         }
     }
 
@@ -151,7 +161,7 @@ public:
         auto nearFieldDistCM = (2 * m_array->getMicLenghtMeter() * m_array->getMicLenghtMeter()) / WAVE_LENGHT_METER * 100;
         if ( getDistance( m_array->getMiddlePos(), true ) < nearFieldDistCM )
             isNearField = true;
-        setArrayDelay();
+        setSteeringDelay();
         setApartureDist();
     }
 
@@ -162,6 +172,7 @@ protected:
 
     SoundInfo m_selfData;
     std::vector<int> m_steeringDelay;
+    std::vector<int> m_focusDelay;
     std::vector<int> m_apartureDist;
 
 
@@ -199,7 +210,7 @@ public:
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *item, QWidget *widget);
 
-    void sumWhole(std::vector<double>& output, ArrayFocusMode mode = ArrayFocusMode::NO_FOCUS);
+    void sumWhole(std::vector<double>& output, ArrayFocusMode mode = ArrayFocusMode::POINT_FOCUS);
     std::vector<double> sumWhole();
 
     void start();

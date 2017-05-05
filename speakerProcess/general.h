@@ -37,6 +37,18 @@ void copyRangeToArray( T range, U& array )
 
 template < typename T, typename U>
 inline
+void copyRangeToArrays( T range, U& array1, U& array2 )
+{
+    int pos = 0;
+    RANGES_FOR( auto elem, range )
+    {
+        array1[pos] = elem;
+        array2[pos++] = elem;
+    }
+}
+
+template < typename T, typename U>
+inline
 void copyComplexRangeToArray( T range, U& array )
 {
     int pos = 0;

@@ -32,10 +32,12 @@ roomAtom::start2()
 int
 roomAtom::getAtomDelay( int i, ArrayFocusMode mode )
 {
-    if ( mode == ArrayFocusMode::NO_FOCUS)
+    if ( mode == ArrayFocusMode::POINT_FOCUS)
         return m_apartureDist[i];
-
-    return m_apartureDist[i] - m_arrayDelay[i];
+    else if ( mode == ArrayFocusMode::RADIUS_FOCUS)
+        return m_steeringDelay[i];
+    else
+        return m_focusDelay[i];
 
 }
 
@@ -63,7 +65,7 @@ roomAtom::sumSingle()
 
     for (int i = 0; i < m_RoomVariables.numberOfMics; i++)
     {
-        size_t startingSample =  m_sumOffset + m_arrayDelay[i];
+        size_t startingSample =  m_sumOffset + m_steeringDelay[i];
         if (startingSample < m_array->getData(i).size())
             result += std::abs(m_array->getData(i, startingSample) );
 

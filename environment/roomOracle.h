@@ -125,6 +125,7 @@ private:
     TrainerComposer trainer;
     TrainerComposer trainerRadius;
     TrainerComposer trainerSpeakerElimination;
+    TrainerComposer trainerSpeakerEliminationRadius;
     roomAtom* soundPosition;
     SortedBestPickListScorer scorer;
     std::vector< double > nullAnglePositions;

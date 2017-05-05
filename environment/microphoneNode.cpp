@@ -21,7 +21,7 @@ microphoneNode::microphoneNode(const packetSound &sound, const roomVariables &ro
 
 
     m_elemCount = m_RoomVariables.numberOfMics;
-
+    maximumDelay = m_apartureList.front().getMicMaxDelay();
     setFlag(ItemIsSelectable, true);
     setFlag(ItemIsMovable, true);
 
@@ -65,12 +65,16 @@ microphoneNode::setElemPos()
 
     }
 }
-
-
-int microphoneNode::getDelay(int index, double focusDist, double steeringAngle) const
+int microphoneNode::getMaximumDelay() const
 {
-    return m_apartureList[index].getDelay(focusDist, steeringAngle, m_mode);
+    return maximumDelay;
 }
+
+void microphoneNode::setMaximumDelay(int value)
+{
+    maximumDelay = value;
+}
+
 
 int microphoneNode::getDistDelay(int index, double focusDist ) const
 {
@@ -82,6 +86,10 @@ int microphoneNode::getSteeringDelay(int index, double steeringAngle ) const
     return m_apartureList[index].getSteeringDelay(steeringAngle);
 }
 
+int microphoneNode::getFocusDelay(int index, double focusDist ) const
+{
+    return m_apartureList[index].getFocusDelay(focusDist);
+}
 
 
 void

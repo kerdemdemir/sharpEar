@@ -228,7 +228,7 @@ public:
     {
         auto F0FeaturePtr = std::make_shared<F0FeaturesMicArray>(selectedGram);
         featureList.addExtractor(F0FeaturePtr);
-        auto pitchGramRunnerModel = std::make_shared<PitchGramModel>(2, selectedGramName);
+        auto pitchGramRunnerModel = std::make_shared<PitchGramModel>(1, selectedGramName);
         pitchGramRunnerModel->isLoad = isLoad;
         pitchGramRunnerModel->setFeature( F0FeaturePtr );
         addModel(pitchGramRunnerModel);

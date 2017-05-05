@@ -222,10 +222,13 @@ public:
         return m_mode;
     }
 
-    int getDelay(int index, double focusDist, double steeringAngle) const;
     int getDistDelay(int index, double focusDist) const;
     double weightRealSum;
     int getSteeringDelay(int index, double steeringAngle) const;
+    int getFocusDelay(int index, double focusDist) const;
+    int getMaximumDelay() const;
+    void setMaximumDelay(int value);
+
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
@@ -244,7 +247,7 @@ private:
     int m_sceneWidth;
     SoundInfo m_sourceInfo;
     ArrayFocusMode m_mode;
-
+    int maximumDelay;
 
     CDataType m_Allweights;
     std::vector< ArrayAparture > m_apartureList;

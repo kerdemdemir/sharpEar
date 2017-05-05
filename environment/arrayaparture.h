@@ -12,9 +12,9 @@ static constexpr int FILTERSIZE = 11;
 
 enum class ArrayFocusMode
 {
-    NO_FOCUS,
+    POINT_FOCUS,
     RADIUS_FOCUS,
-    POINT_FOCUS
+    STEER_FOCUS,
 };
 
 using leapMap =   std::unordered_map< int, std::shared_ptr<CDataType>  >;
@@ -34,18 +34,7 @@ public:
 
         m_sumLeapData.resize( soundConfig.samplePerOutput );
         m_apartureData.resize( soundConfig.samplePerOutput );
-    }
-
-    int
-    getDelay( double focusDist, double steeringAngle, ArrayFocusMode mode ) const
-    {
-        if ( mode == ArrayFocusMode::NO_FOCUS)
-            return 0;
-        else if ( mode == ArrayFocusMode::RADIUS_FOCUS )
-            return pow(m_distCenter, 2) / (2.0 * focusDist);
-
-        double dist = -m_distCenter * sin(steeringAngle * GLOBAL_PI / 180.0) +   pow(m_distCenter, 2) / (2.0 * focusDist);
-        return dist / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec + getMicMaxDelay();
+        maximumDelay = getMicMaxDelay();
     }
 
     int
@@ -56,7 +45,7 @@ public:
 
     void feed ( const SoundData<CDataType>& input  )
     {
-      size_t delay = getDistDelay( input.getDistance(m_pos) ) ;
+      size_t delay = getSteeringDelay( input.getAngle() ) + getFocusDelay( input.getRadius() ) + maximumDelay ;
       CDataConstIter beginIter = input.getData();
       leapIter leapIte = getLeapIter(input, delay);
       auto tempLeap = *leapIte->second;
@@ -156,14 +145,22 @@ public:
     int getSteeringDelay( double steeringAngle ) const
     {
         double returnVal = -m_distCenter * sin(steeringAngle * GLOBAL_PI / 180.0)  / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec;
-        return returnVal;
+        return std::floor(returnVal+0.5);
+    }
+
+    int getFocusDelay( double focusDist ) const
+    {
+        if ( focusDist < 0.1 )
+            return 0;
+        double returnVal =   (pow(m_distCenter, 2) / (2.0 * focusDist)) / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec;
+        return std::floor(returnVal+0.5);
     }
 
     int getMicMaxDelay() const
     {
-        double totalMicLen = m_RoomVariables.numberOfMics * m_RoomVariables.distancesBetweenMics;
+        double totalMicLen = ( m_RoomVariables.numberOfMics * m_RoomVariables.distancesBetweenMics -1 )/ 2.0;
         double returnVal = totalMicLen / GLOBAL_SOUND_SPEED * (double)m_SoundParameters.samplesPerSec;
-        return returnVal;
+        return std::floor(returnVal+0.5);
     }
 
     QPoint getPos() const
@@ -229,7 +226,7 @@ private:
     double  m_timeDelay;
     bool isCenter;
     std::complex<double> m_weight;
-
+    size_t maximumDelay;
     std::unordered_map<int, std::shared_ptr<CDataType>>  m_leapData; // Leap Data for each source
 
 

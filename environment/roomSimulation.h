@@ -93,6 +93,7 @@ public:
     std::vector<roomAtom *> getAtomsInRadiusDataBase(int curRadius);
     roomAtom *findAtomeWithXY(double x, double y);
     roomAtom *findAtomPolarImpl(double radius, double angle, std::unordered_set<roomAtom *> &uniqueMap);
+    std::vector<roomAtom *> getAtomsInAngle(double angle, double jump, double offsetAngle);
 public slots:
 
     void startBeamforming();

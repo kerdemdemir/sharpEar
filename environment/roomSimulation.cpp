@@ -462,7 +462,7 @@ roomSimulation::getArcRadius( roomAtom* arcCenter )
         curRadius < (radius + radiusElemCount/2);
         curRadius += radiusEpsilon)
     {
-       for (int curAngle = angle - 45 ; curAngle < angle + 45; curAngle += 0.05)
+       for (int curAngle = angle - 45 ; curAngle < angle + 45; curAngle += 0.1)
        {
            roomAtom *atom = findAtomPolarImpl( curRadius, curAngle );
            if (atom == NULL)
@@ -592,6 +592,22 @@ roomSimulation::getAtomsInAngle( double angle, double jump  )
      return returnVal;
 }
 
+
+std::vector< roomAtom* >
+roomSimulation::getAtomsInAngle( double angle, double jump, double offsetAngle )
+{
+    std::vector< roomAtom* > returnVal;
+    std::unordered_set< roomAtom* > uniqueSet;
+    for ( double offset = -offsetAngle; offset < offsetAngle; offset += 0.3 )
+    {
+        std::vector< roomAtom* > tempRadiusList = getAtomsInAngle( angle + offset, jump );
+        for ( auto elem : tempRadiusList)
+            uniqueSet.insert(elem);
+    }
+    returnVal.insert(returnVal.end(), uniqueSet.begin(), uniqueSet.end() );
+    return returnVal;
+}
+
 std::vector< roomAtom* >
 roomSimulation::getMiddleAtoms()
 {
@@ -639,6 +655,8 @@ roomSimulation::getAtomInRadius( double curRadius, int start, int offSet )
 
     return returnVal;
 }
+
+
 
 void
 roomSimulation::drawYAxisGraph(int xAxisCordinates, bool lowPassFilter )

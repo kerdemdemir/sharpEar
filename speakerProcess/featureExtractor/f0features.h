@@ -5,7 +5,7 @@
 #include "speakerProcess/general.h"
 #include <aubio.h>
 
-constexpr int FORMANT_COUNT = 7;
+constexpr int FORMANT_COUNT = 8;
 constexpr int STATE_COUNT =  ((MAX_FREQ - MIN_FREQ) / JUMPSIZE);
 
 class F0Features : public FeatureExtractor

@@ -197,7 +197,7 @@ struct SoundData
     using value_type = T;
     using iterator = typename T::iterator;
 
-    SoundData (int ID,  Point posGraph, Point posReal, int ang, int rad, STypes sType = STypes::UNDEFINED )
+    SoundData (int ID,  Point posGraph, Point posReal, double ang, double rad, STypes sType = STypes::UNDEFINED )
     {
         SNRVal = 0;
         id = ID;
