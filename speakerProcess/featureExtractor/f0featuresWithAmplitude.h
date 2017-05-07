@@ -42,26 +42,26 @@ public:
            return;
        }
 
-       for ( int curFreq = f0; curFreq < FORMANT_COUNT * 1000; curFreq += f0 )
+       int startFreq = 1000 * selectedFormant;
+       size_t startIndex = startFreq/ freqStep;
+       size_t stopIndex = ((selectedFormant + 1) * 1000) / freqStep;
+       stopIndex = std::min( stopIndex, inputComplex->length -1 );
+
+       double result = -1000000;
+       size_t bestIndex = startIndex;
+       size_t curIndex = startIndex;
+       while( curIndex != stopIndex  )
        {
-            if ( curFreq < 1000 )
-            {
-                continue;
-            }
-            int formant = curFreq / 1000;
-            int formantIndex = curFreq / freqStep;
-            float curFormantVal = inputComplex->norm[formantIndex];
-            if ( formants[formant].second < curFormantVal )
-            {
-                formants[formant].first = curFreq % 1000;
-                formants[formant].second = curFormantVal;
-            }
+           if (  inputComplex->norm[ curIndex ]  > result)
+           {
+               result = inputComplex->norm[ curIndex ];
+               bestIndex = curIndex;
+           }
+           curIndex++;
        }
-       if ( selectedFormant != -1 )
-       {
-           samples.at<double>(colSize, 0) = (formants[selectedFormant].first) / 25;//JUMPSIZE*2 ;// / (JUMPSIZE * 5);
-           samples.at<double>(colSize, 1) =  formants[selectedFormant].second;//aubio_pitch_get_confidence(pitch);
-       }
+
+       samples.at<double>(colSize, 0) = freqStep*(bestIndex-startIndex) / 25.0;
+       samples.at<double>(colSize, 1) = result;
     }
 
     virtual DataType2D& getFeatures() override

@@ -150,6 +150,7 @@ private:
     std::pair< double, double > _relativeSourceDist;
     std::vector<std::pair< double, double > > _relativeSourceDistVec;
 
+    void addLineToScene(const QLineF &line);
 };
 
 #endif // ROOMSIMULATION_H

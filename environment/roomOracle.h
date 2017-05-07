@@ -137,7 +137,7 @@ private:
     double  angle;
     double  radius;
     double maxRatio;
-    std::pair< int, int > maxValRadAngle;
+    std::pair< double, double > maxValRadAngle;
     std::fstream m_resultFile;
     SoundDataRef feedArray(const std::vector< SoundDataRef > &input, const CDataType &weights);
     void fftWeight( );

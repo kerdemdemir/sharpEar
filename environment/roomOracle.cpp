@@ -22,18 +22,22 @@ roomOracle::roomOracle(size_t sampleRate, size_t packetSize, int speakerID, int 
     m_noiceID = noiceID;
 
     std::string trainPath("D:/speakerWavs/train1/upSampled");
-    trainer.initPGrams(1, "UpsampledF12Grams", true );
+    //trainer.initPGrams(1, "UpsampledF12Grams", false );
+    trainer.initPGrams(0, "SilenceRemove2GramDefaultAubioUpsampledWindow4Times", true );
+    train(trainer, trainPath);
+
+    trainerRadius.initPeakFreq(7, "ConstantsPitch1GramStrict", true );
+    train(trainerRadius, trainPath);
     //trainer.initPWave(0, "WaveF0");
     //trainerRadius.initPRadiusGrams(7, "1GramPitchFreq", true );
-    trainerRadius.initP0Power(7);
     //trainer.initYINPGrams(0, "F0YinFFT2GramNormal");
     //trainer.initYINPGrams(0, "F0MultiYinFFT2Gram");
     //3Gramtrainer.initPGrams(0, "F0YinFFT");
     //trainer.initPGrams(0, "F0YinFFT2Gram");
     //trainer.initMFCC();
-    train(trainer, trainPath);
-    //train(trainerRadius, trainPath);
 
+    //train(trainerRadius, trainPath);
+    trainerSpeakerEliminationRadius.initP0Power(7);
     trainerSpeakerElimination.initP0Power(2);
 //    trainerRadius.initPGrams(2, "F2");
 //    //trainerRadius.initHighLevelGMM();
@@ -46,7 +50,7 @@ roomOracle::roomOracle(size_t sampleRate, size_t packetSize, int speakerID, int 
     m_lookAngle = 0;
     angle = -999;
     radius = -999;
-    maxRatio = 0;
+    maxRatio = -999;
     maxValRadAngle = std::make_pair(1000, 0);
     m_resultFile.open("LocationingResultFile.txt", std::fstream::out);
 }
@@ -268,16 +272,29 @@ roomOracle::findSpeaker(                 std::vector< roomAtom* >& atomList,
     std::cout  << "Will search for "  << keyString  << " before this search values were " << "Radius: " << radius << " Angle: " << angle << " Ratio: " << ratio << std::endl;
     std::cout <<  "Originally Atom: " << originalData.getString() << std::endl ;
     roomAtom* returnVal = nullptr ;
+    if ( radius != -999 && angle != -999 )
+    {
+       returnVal = m_roomSimulation->findAtomPolarImpl(radius, angle);
+    }
+    roomAtom* maxRatioAtom = nullptr;
+    if ( maxRatio > 0 )
+        maxRatioAtom = m_roomSimulation->findAtomPolarImpl( maxValRadAngle.first,  maxValRadAngle.second);
+
     double prevRatio = ratio;
     if ( isRadius || !isAngleLocated )
     {
         if (isRadius)
         {
-            returnVal = findBestSpeaker(atomList, originalData, trainerIn, ratio, isRadius, isPrint );
+            auto speakers = findSpeakers(atomList, originalData, trainerSpeakerEliminationRadius, ratio, isRadius, isPrint );
+            speakers.push_back(returnVal);
+            speakers.push_back(maxRatioAtom);
+            returnVal = findBestSpeaker(speakers, originalData, trainerIn, ratio, isRadius, isPrint );
         }
         else
         {
             auto speakers = findSpeakers(atomList, originalData, trainerSpeakerElimination, ratio, isRadius, isPrint );
+            speakers.push_back(returnVal);
+            speakers.push_back(maxRatioAtom);
             returnVal = findBestSpeaker(speakers, originalData, trainerIn, ratio, isRadius, isPrint );
         }
     }
@@ -288,7 +305,7 @@ roomOracle::findSpeaker(                 std::vector< roomAtom* >& atomList,
     }
     if ( ratio > prevRatio )
     {
-        if ( !isRadius && !isAngleLocated )
+        if ( !isAngleLocated )
             angle = returnVal->getAngle();
 
         if ( !isRadiusLocated )
@@ -329,11 +346,6 @@ roomOracle::findSpeakers(const std::vector< roomAtom* >& atomList,
 
         auto atomStruct = qgraphicsitem_cast<roomAtom*>(elem);
         if (atomStruct == nullptr)
-
-            continue;
-
-        auto dummyCheck = qgraphicsitem_cast<QGraphicsLineItem*>(elem);
-        if (dummyCheck != nullptr)
             continue;
 
         std::fill( wholeData.begin(), wholeData.end(), 0);
@@ -377,19 +389,13 @@ roomOracle::findBestSpeaker(const std::vector< roomAtom* >& atomList,
     double maxScore = -10000000;
     roomAtom* bestPossibleAtom = nullptr;
     SortedBestPickList bestPicker(10, isRadius ? 100 : 1, true);
-    int counter = 0;
     for (auto elem : atomList)
     {
-        counter++;
         if ( elem == nullptr)
             continue;
 
         auto atomStruct = qgraphicsitem_cast<roomAtom*>(elem);
         if (atomStruct == nullptr)
-            continue;
-
-        auto dummyCheck = qgraphicsitem_cast<QGraphicsLineItem*>(elem);
-        if (dummyCheck != nullptr)
             continue;
 
         std::fill( wholeData.begin(), wholeData.end(), 0);

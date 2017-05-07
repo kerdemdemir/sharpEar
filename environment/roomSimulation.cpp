@@ -61,19 +61,26 @@ roomSimulation::roomSimulation(QRectF boudingRect, QWidget *parent) :
     _sharpPlot2 = NULL;
 }
 
-void roomSimulation::setBoundingLines()
+void roomSimulation::addLineToScene( const QLineF& line )
 {
     QPen lineDrawPen = QPen(Qt::red);
+    auto resultLine = _room_scene->addLine(line, lineDrawPen);
+    resultLine->setActive(false);
+    resultLine->setEnabled(false);
+    resultLine->setSelected(false);
+}
 
+void roomSimulation::setBoundingLines()
+{
     QLineF topLine(_room_scene->sceneRect().topLeft(), _room_scene->sceneRect().topRight());
     QLineF leftLine(_room_scene->sceneRect().topLeft(), _room_scene->sceneRect().bottomLeft());
     QLineF rightLine(_room_scene->sceneRect().topRight(), _room_scene->sceneRect().bottomRight());
     QLineF bottomLine(_room_scene->sceneRect().bottomLeft(), _room_scene->sceneRect().bottomRight());
 
-    _room_scene->addLine(topLine, lineDrawPen);
-    _room_scene->addLine(leftLine, lineDrawPen);
-    _room_scene->addLine(rightLine, lineDrawPen);
-    _room_scene->addLine(bottomLine, lineDrawPen);
+    addLineToScene(topLine);
+    addLineToScene(leftLine);
+    addLineToScene(rightLine);
+    addLineToScene(bottomLine);
 
 }
 
@@ -365,8 +372,13 @@ roomSimulation::findAtomPolarImpl( double radius, double angle )
     double yPos = _room_scene->sceneRect().top() + (abs(cosVal) / _roomParameters.pixel2RealRatio);
     double sinVal  = radius * sin(angle * GLOBAL_PI / 180.0);
     double xPos = _micArr->getSceneMiddlePos().first + ( sinVal / _roomParameters.pixel2RealRatio );
+    roomAtom* returnVal = qgraphicsitem_cast<roomAtom*>(_room_scene->itemAt( xPos, yPos, QTransform()));
 
-    return qgraphicsitem_cast<roomAtom*>(_room_scene->itemAt( xPos, yPos, QTransform()));
+    auto dummyCheck = qgraphicsitem_cast<QGraphicsLineItem*>(returnVal);
+    if (dummyCheck != nullptr)
+        return nullptr;
+
+    return returnVal;
 }
 
 roomAtom*
@@ -569,11 +581,10 @@ roomSimulation::getAtomsInAngleDataBase( int angle, int jump  )
 std::vector< roomAtom* >
 roomSimulation::getAtomsInAngle( double angle, double jump  )
 {
-     double maxRad = (getRoomLen() / cos( angle * GLOBAL_PI / 180.0 ));
      std::unordered_set< roomAtom* > uniqueSet;
      std::vector< roomAtom* > returnVal;
 
-     for (double curRadius = 200 ; curRadius < maxRad; curRadius += jump)
+     for (double curRadius = 200 ; curRadius < getRoomLen(); curRadius += jump)
      {
         roomAtom *atom = findAtomPolarImpl( curRadius, angle );
         if ( !atom )

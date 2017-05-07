@@ -16,7 +16,7 @@ public:
     {
         selectedFormant = formant;
         char cStr[] = "default";
-        samples = cv::Mat(  1, 1 , CV_64FC1 );
+        samples = cv::Mat(  1, 2 , CV_64FC1 );
         pitchOut = new_fvec (1); // output candidate
         pitch = new_aubio_pitch (cStr, win_s, hopSize, sampleRate);
 
