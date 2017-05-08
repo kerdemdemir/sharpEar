@@ -23,10 +23,12 @@ roomOracle::roomOracle(size_t sampleRate, size_t packetSize, int speakerID, int 
 
     std::string trainPath("D:/speakerWavs/train1/upSampled");
     //trainer.initPGrams(1, "UpsampledF12Grams", false );
-    trainer.initPGrams(0, "SilenceRemove2GramDefaultAubioUpsampledWindow4Times", true );
+    //trainer.initPGrams(0, "SilenceRemove2GramDefaultAubioUpsampledWindow4Times", true );
+    trainer.initPGrams(0, "PGram3GramsFinalized", true );
+
     train(trainer, trainPath);
 
-    trainerRadius.initPeakFreq(7, "ConstantsPitch1GramStrict", true );
+    trainerRadius.initPeakFreq(6, "ConstantsPitch1GramStrict2khz", false );
     train(trainerRadius, trainPath);
     //trainer.initPWave(0, "WaveF0");
     //trainerRadius.initPRadiusGrams(7, "1GramPitchFreq", true );
